@@ -41,7 +41,7 @@ A lightweight, modern screenshot and screen recording tool for Windows — a rep
 - **Movable area** — drag the recording outline (or its tab) to follow what you're recording.
 - **GPU encoding** with NVIDIA, Intel or AMD when available, falling back to x264; 30 or 60 fps.
 - **Trim editor** opens when you stop: drag the handles on the filmstrip, then save, save as MP4 or GIF, export a GIF at a chosen width, or copy the file.
-- **Straight to the clipboard** — finished recordings and exported clips are copied as files, ready to paste into a chat or folder (on by default, switch it off in Settings).
+- **Straight to the clipboard** — finished recordings and exported clips are copied as files, ready to paste into a chat or folder (follows the same *Copy to clipboard* setting as screenshots).
 - Uses **FFmpeg**: Lumina downloads it for you on first run (about 115 MB, one click), or point it at your own `ffmpeg.exe` in Settings.
 
 ![The trim editor with a filmstrip timeline and trim handles](docs/screenshots/trim.png)

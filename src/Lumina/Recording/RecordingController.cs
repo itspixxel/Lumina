@@ -130,7 +130,7 @@ public sealed class RecordingController
         }
         if (path != null && File.Exists(path))
         {
-            if (App.Settings.CopyRecordingToClipboard) ClipboardService.CopyFile(path);
+            if (App.Settings.CopyToClipboard) ClipboardService.CopyFile(path);
             VideoEditorWindow.Open(path);
         }
     }

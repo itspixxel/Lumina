@@ -121,7 +121,6 @@ public partial class SettingsWindow : ChromeWindow
         Select(RecordingCountdown, _s.RecordingCountdown.ToString());
         RecordCursor.IsChecked = _s.RecordCursor;
         HardwareEncoding.IsChecked = _s.HardwareEncoding;
-        CopyRecordingToClipboard.IsChecked = _s.CopyRecordingToClipboard;
         RecordingsDirectory.Text = _s.RecordingsDirectory;
         FillAudio();
         SyncFfmpeg();
@@ -158,7 +157,6 @@ public partial class SettingsWindow : ChromeWindow
         _s.MicrophoneDevice = (MicDevice.SelectedItem as ComboBoxItem)?.Tag as string;
         _s.RecordCursor = RecordCursor.IsChecked == true;
         _s.HardwareEncoding = HardwareEncoding.IsChecked == true;
-        _s.CopyRecordingToClipboard = CopyRecordingToClipboard.IsChecked == true;
         string dir = RecordingsDirectory.Text.Trim();
         if (dir.Length > 0)
         {

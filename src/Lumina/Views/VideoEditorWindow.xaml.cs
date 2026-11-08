@@ -302,7 +302,7 @@ public partial class VideoEditorWindow : ChromeWindow
     private void Done(string text, string? path)
     {
         _lastExport = path;
-        if (path != null && App.Settings.CopyRecordingToClipboard && ClipboardService.CopyFile(path)) text += " · copied";
+        if (path != null && App.Settings.CopyToClipboard && ClipboardService.CopyFile(path)) text += " · copied";
         StatusPanel.Visibility = Visibility.Visible;
         StatusText.Text = text;
         StatusLink.Visibility = path != null ? Visibility.Visible : Visibility.Collapsed;
