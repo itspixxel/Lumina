@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Windows;
 using Lumina.Capture;
+using Lumina.Recording;
 using Lumina.Services;
 using Lumina.Views;
 
@@ -20,6 +21,7 @@ public partial class App : Application
     public static App Instance => (App)Current;
     public static AppSettings Settings { get; private set; } = new();
     public CaptureController Controller { get; } = new();
+    public RecordingController Recorder { get; } = new();
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -51,11 +53,29 @@ public partial class App : Application
 
         _tray = new TrayIcon();
         _hook = new KeyboardHook(Dispatcher);
-        _hook.CaptureRequested += mode => Controller.Start(mode);
+        _hook.CaptureRequested += mode =>
+        {
+            if (mode == CaptureMode.Record) Recorder.Toggle();
+            else if (!Recorder.IsRecording) Controller.Start(mode);
+        };
         ApplyShortcuts();
         _hook.Start();
 
         if (!e.Args.Contains("--background")) ShowHome();
+        if (!Settings.SetupShown)
+        {
+            // First launch: say hello and offer the FFmpeg download, so recording is ready before it's needed.
+            if (Ffmpeg.IsAvailable)
+            {
+                Settings.SetupShown = true;
+                SettingsService.Save(Settings);
+            }
+            Dispatcher.BeginInvoke(() => RecordingSetupWindow.ShowSetup(firstRun: true), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+        }
+        else if (Ffmpeg.IsAvailable && Settings.HardwareEncoding)
+        {
+            _ = Ffmpeg.PickEncoderAsync(); // warm up so the first recording starts instantly
+        }
     }
 
     public static void ApplyShortcuts()

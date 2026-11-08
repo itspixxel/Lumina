@@ -12,7 +12,10 @@ using Lumina.Services;
 
 namespace Lumina.Capture;
 
-public enum CaptureMode { Region, Window, Screen, Freeform }
+public enum CaptureMode { Region, Window, Screen, Freeform, Record }
+
+/// <summary>An area picked for recording, in physical virtual-desktop pixels.</summary>
+public sealed record RecordArea(Int32Rect Bounds, string? AppName);
 
 public sealed record CaptureResult(BitmapSource Image, string? AppName);
 
@@ -25,6 +28,7 @@ internal sealed class CaptureSession
 {
     private readonly List<OverlayWindow> _overlays = new();
     private readonly TaskCompletionSource<CaptureResult?> _tcs = new();
+    private readonly TaskCompletionSource<RecordArea?> _area = new();
     private readonly string? _foregroundApp;
     private Point _dragStart, _dragCurrent, _spaceAnchor;
     private bool _moved, _spaceHeld, _done;
@@ -35,12 +39,16 @@ internal sealed class CaptureSession
     public IReadOnlyList<MonitorInfo> Monitors { get; }
     public AppSettings Settings { get; }
     public CaptureMode Mode { get; private set; }
+    /// <summary>Picking an area to record: no freeform, and no snapshot is taken from the selection.</summary>
+    public bool ForRecording { get; private init; }
     public Point? Cursor { get; private set; }
     public bool IsSelecting { get; private set; }
     public bool HasSelection => IsSelecting && _moved;
     public List<Point> Lasso { get; } = new();
     public WindowInfo? HoverWindow { get; private set; }
     public MonitorInfo? HoverMonitor { get; private set; }
+    /// <summary>The screen whose overlay shows the toolbar: the one the cursor was last on.</summary>
+    public MonitorInfo? ToolbarMonitor { get; private set; }
     public Int32Rect SelectionRect => RectUtil.FromPoints(_dragStart, _dragCurrent);
     /// <summary>The area being captured, set once the user commits; drives the shutter animation.</summary>
     public Int32Rect? FinalRect { get; private set; }
@@ -72,10 +80,11 @@ internal sealed class CaptureSession
     {
         var cursor = NativeMethods.GetCursorPos(out var pt) ? new Point(pt.X, pt.Y) : new Point(0, 0);
         var startMonitor = MonitorAt(cursor) ?? Monitors.FirstOrDefault(m => m.IsPrimary) ?? Monitors[0];
+        ToolbarMonitor = startMonitor;
 
         foreach (var monitor in Monitors)
         {
-            var overlay = new OverlayWindow(this, monitor, showToolbar: monitor == startMonitor);
+            var overlay = new OverlayWindow(this, monitor, showToolbar: true);
             _overlays.Add(overlay);
             overlay.Show();
         }
@@ -87,12 +96,26 @@ internal sealed class CaptureSession
         active.Focus();
     }
 
+    /// <summary>Lets the user pick a region, window or screen to record.</summary>
+    public static Task<RecordArea?> PickRecordingAreaAsync(AppSettings settings)
+    {
+        string? foreground = WindowFinder.GetForegroundProcessName();
+        var snapshot = ScreenCapture.CaptureVirtualScreen(false);
+        var session = new CaptureSession(snapshot, WindowFinder.GetWindows(), MonitorInfo.GetAll(), settings, CaptureMode.Region, foreground)
+        {
+            ForRecording = true,
+        };
+        session.Open();
+        return session._area.Task;
+    }
+
     public MonitorInfo? MonitorAt(Point p) => Monitors.FirstOrDefault(m => RectUtil.Contains(m.Bounds, p));
 
     public void SetMode(CaptureMode mode)
     {
         if (_done) return; // capture animation is playing
         if (Mode == mode) return;
+        if (ForRecording && mode is CaptureMode.Freeform or CaptureMode.Record) return;
         Mode = mode;
         IsSelecting = false;
         Lasso.Clear();
@@ -108,6 +131,8 @@ internal sealed class CaptureSession
         Cursor = p;
         HoverWindow = Windows.FirstOrDefault(w => RectUtil.Contains(w.Bounds, p));
         HoverMonitor = MonitorAt(p);
+        // The toolbar follows the cursor to whichever screen it's on (but stays put mid-drag).
+        if (!IsSelecting && HoverMonitor != null) ToolbarMonitor = HoverMonitor;
 
         if (IsSelecting)
         {
@@ -262,6 +287,12 @@ internal sealed class CaptureSession
         if (_done) return;
         _done = true;
         rect = RectUtil.Intersect(rect, Snapshot.Bounds);
+        if (ForRecording)
+        {
+            _area.TrySetResult(new RecordArea(rect, app));
+            CloseOverlays();
+            return;
+        }
         var image = Snapshot.Crop(rect);
         Complete(rect, new CaptureResult(image, app));
     }
@@ -334,6 +365,7 @@ internal sealed class CaptureSession
         _done = true;
         CloseOverlays();
         _tcs.TrySetResult(null);
+        _area.TrySetResult(null);
     }
 
     private void CloseOverlays()

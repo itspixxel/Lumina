@@ -200,25 +200,30 @@
                     </StackPanel>
                 </DockPanel>
             </Button>
-            <Border Grid.Column="4" Margin="0,0,12,0" Height="128" CornerRadius="14" Padding="16,14" BorderThickness="1"
-                    BorderBrush="{StaticResource StrokeBrush}" Background="Transparent"
-                    ToolTip="Screen recording arrives in the next phase"
+            <Button Grid.Column="4" Style="{StaticResource ModeCard}" Click="Record_Click" x:Name="RecordCard"
                     v:Fx.Entrance="True" v:Fx.EntranceDelay="240" v:Fx.EntranceOffset="18">
-                <DockPanel Opacity="0.55">
+                <DockPanel>
                     <DockPanel DockPanel.Dock="Top">
                         <Border Style="{StaticResource IconTile}">
                             <Path Style="{StaticResource Icon}" Data="{StaticResource IconRecord}" Stroke="{StaticResource AccentTextBrush}" />
                         </Border>
-                        <Border HorizontalAlignment="Right" VerticalAlignment="Top" CornerRadius="6" Padding="7,2" Background="{StaticResource RaisedBrush}">
-                            <TextBlock Text="Soon" FontSize="11" Foreground="{StaticResource Text2Brush}" />
+                        <!-- Shows "Set up" until FFmpeg is installed, the download progress, or that a recording is running -->
+                        <Border x:Name="RecordBadge" HorizontalAlignment="Right" VerticalAlignment="Top" CornerRadius="6" Padding="6,2,7,2"
+                                Background="#33FFB020" Visibility="Collapsed">
+                            <StackPanel Orientation="Horizontal">
+                                <Path x:Name="RecordBadgeIcon" Data="{StaticResource IconWarning}" Stroke="#FFC24D" StrokeThickness="2.2"
+                                      StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                                      Width="12" Height="12" Stretch="Uniform" Margin="0,0,5,0" VerticalAlignment="Center" />
+                                <TextBlock x:Name="RecordBadgeText" Text="Set up" FontSize="11" Foreground="#FFC24D" VerticalAlignment="Center" />
+                            </StackPanel>
                         </Border>
                     </DockPanel>
                     <StackPanel VerticalAlignment="Bottom">
                         <TextBlock Text="Record" Style="{StaticResource CardTitle}" />
-                        <TextBlock Text="Video and GIF" Style="{StaticResource CardCaption}" />
+                        <TextBlock x:Name="RecordCaption" Text="Video with sound" Style="{StaticResource CardCaption}" />
                     </StackPanel>
                 </DockPanel>
-            </Border>
+            </Button>
         </Grid>
 
         <!-- Options -->
@@ -315,7 +320,7 @@
                     <Path Style="{StaticResource Icon}" Data="{StaticResource IconRegion}" Stroke="{StaticResource AccentTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Border>
                 <TextBlock Text="Your captures show up here" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,14,0,4" />
-                <TextBlock Text="Take one with Win + Shift + S, or pick a mode above." Foreground="{StaticResource Text2Brush}" HorizontalAlignment="Center" />
+                <TextBlock Text="Use your capture shortcut, or pick a mode above." Foreground="{StaticResource Text2Brush}" HorizontalAlignment="Center" />
             </StackPanel>
         </Grid>
     </Grid>

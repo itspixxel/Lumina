@@ -1,6 +1,6 @@
 # Lumina
 
-A lightweight, modern screenshot tool for Windows — a replacement for Snipping Tool with a fast capture overlay, a floating preview, and a non-destructive markup editor.
+A lightweight, modern screenshot and screen recording tool for Windows — a replacement for Snipping Tool with a fast capture overlay, a floating preview, a non-destructive markup editor, and screen recording with a trim editor.
 
 > **Alpha.** Lumina is early and under active development. Expect rough edges, and please report anything that breaks.
 
@@ -30,6 +30,15 @@ A lightweight, modern screenshot tool for Windows — a replacement for Snipping
 - Open any image file from the home window to mark it up.
 - Smooth zoom (Ctrl + scroll zooms around the cursor), fit-to-window and 1:1, full undo/redo.
 
+### Screen recording
+- **Win + Shift + R** (or the Record card / tray menu) picks a region, window or screen with the same overlay, then counts down and records.
+- **Sound** — system audio and/or microphone, each with its own device. Pick devices and mute either source right from the overlay's toolbar.
+- **Recording bar** — timer, pause/resume, stop, per-source mute and discard. It never steals focus and never shows up in the video.
+- **Movable area** — drag the recording outline (or its tab) to follow what you're recording.
+- **GPU encoding** with NVIDIA, Intel or AMD when available, falling back to x264; 30 or 60 fps.
+- **Trim editor** opens when you stop: drag the handles on the filmstrip, then save, save as MP4 or GIF, export a GIF at a chosen width, or copy the file.
+- Uses **FFmpeg**: Lumina downloads it for you on first run (about 115 MB, one click), or point it at your own `ffmpeg.exe` in Settings.
+
 ### Gallery
 - Recent captures on the home window, with multi-select (click the corner circle, or Ctrl / Shift + click), copy, reveal in Explorer and delete to the Recycle Bin.
 
@@ -49,6 +58,7 @@ Lumina lives in the system tray. Settings are stored in `%AppData%\Lumina`. For 
 | Where | Keys | Action |
 | --- | --- | --- |
 | Anywhere | `Win + Shift + S` | Start a capture |
+| Anywhere | `Win + Shift + R` | Start a recording, or stop the one running |
 | Overlay | `1` `2` `3` `4` / `R` `W` `S` `L` | Region / Window / Screen / Freeform |
 | Overlay | `F` or `Enter` | Capture the screen under the cursor |
 | Overlay | Hold `Space` while dragging | Move the selection |
@@ -59,6 +69,10 @@ Lumina lives in the system tray. Settings are stored in `%AppData%\Lumina`. For 
 | Editor | `Ctrl + Z` / `Ctrl + Y` | Undo / redo |
 | Editor | `Ctrl + C`, `Ctrl + S`, `Ctrl + Shift + S` | Copy, save, save as |
 | Editor | `Ctrl + 0` / `Ctrl + 1` / `Ctrl + scroll` | Fit, actual size, zoom |
+| Trim editor | `Space` | Play / pause |
+| Trim editor | `←` / `→` (`Shift` = 5 s) | Step a frame |
+| Trim editor | `I` / `O`, `Home` / `End` | Set trim start / end, jump to start / end |
+| Trim editor | `Ctrl + C`, `Ctrl + S` | Copy the video, save the trim |
 
 ## Building from source
 
@@ -82,6 +96,7 @@ dotnet publish src/Lumina -c Release -r win-x64 --self-contained -p:PublishSingl
 src/Lumina/
   Capture/    screen capture, the selection overlay and capture animations
   Editor/     markup document, annotations and the editing canvas
+  Recording/  screen recorder, WASAPI audio capture, FFmpeg setup and the recording flow
   Services/   settings, output, clipboard, global hotkey hook, startup
   Views/      home, editor, settings, preview, dialogs and the motion helpers (Fx)
   Themes/     the "Midnight" design system
@@ -92,7 +107,7 @@ tools/        icon generator
 
 - [x] Capture overlay, quick preview, markup editor, settings
 - [x] Gallery with multi-select
-- [ ] Screen recording (video and GIF) with a trimming editor
+- [x] Screen recording (video and GIF) with a trimming editor
 - [ ] Full gallery view with search
 - [ ] Optional short-link uploads (temporary, self-hosted storage)
 - [ ] Installer and auto-update

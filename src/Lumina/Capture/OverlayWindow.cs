@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Interop;
@@ -14,6 +15,8 @@ using System.Windows.Media.Effects;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Lumina.Native;
+using Lumina.Recording;
+using Lumina.Services;
 using Lumina.Views;
 using Shapes = System.Windows.Shapes;
 
@@ -28,6 +31,11 @@ internal sealed class OverlayWindow : Window
     private readonly FrameworkElement? _toolbar;
     private TextBlock? _hint;
     private readonly Dictionary<CaptureMode, RadioButton> _modeButtons = new();
+    // The open device list and the chevron that opened it. A plain popup rather than a ContextMenu: a menu grabs
+    // the mouse while open, which swallowed clicks on the chevron instead of letting it close the list.
+    private Popup? _audioPopup;
+    private Button? _audioArrow;
+    private bool _toolbarHere;
 
     public MonitorInfo Monitor { get; }
 
@@ -64,8 +72,28 @@ internal sealed class OverlayWindow : Window
 
         SourceInitialized += (_, _) => Place();
         Loaded += (_, _) => Place();
-        PreviewKeyDown += (_, e) => _session.HandleKeyDown(e);
+        PreviewKeyDown += (_, e) =>
+        {
+            if (_audioPopup?.IsOpen == true)
+            {
+                // Esc closes the device list, not the whole capture.
+                if (e.Key == Key.Escape) CloseAudioList();
+                e.Handled = true;
+                return;
+            }
+            _session.HandleKeyDown(e);
+        };
+        PreviewMouseDown += (_, e) =>
+        {
+            if (_audioPopup?.IsOpen != true) return;
+            var hit = e.OriginalSource as DependencyObject;
+            if (IsInside(hit, _audioArrow)) return; // the chevron toggles the list itself
+            CloseAudioList();
+            // A click elsewhere on the screen only dismisses the list; it doesn't start a selection.
+            if (!IsInside(hit, _toolbar)) e.Handled = true;
+        };
         PreviewKeyUp += (_, e) => _session.HandleKeyUp(e);
+        Deactivated += (_, _) => CloseAudioList();
         Deactivated += (_, _) => Dispatcher.BeginInvoke(_session.CheckFocus, DispatcherPriority.Background);
         Closed += (_, _) => session.ModeChanged -= SyncModeButtons;
     }
@@ -90,9 +118,14 @@ internal sealed class OverlayWindow : Window
         _surface.InvalidateVisual();
         if (_toolbar != null)
         {
-            bool hide = _session.IsSelecting || _session.IsFinishing;
+            bool here = _session.ToolbarMonitor == Monitor;
+            bool hide = !here || _session.IsSelecting || _session.IsFinishing;
             _toolbar.IsHitTestVisible = !hide;
             Fx.SetShow(_toolbar, !hide); // fades out while dragging a selection, back in after
+            if (here && !_toolbarHere && !hide && _toolbar.IsLoaded)
+                Fx.PlayEntrance(_toolbar, 0, offsetY: -18, fromScale: 0.94); // drops in on the screen the cursor moved to
+            _toolbarHere = here;
+            if (!here) CloseAudioList();
         }
     }
 
@@ -146,6 +179,15 @@ internal sealed class OverlayWindow : Window
     private FrameworkElement BuildToolbar()
     {
         var panel = new StackPanel { Orientation = Orientation.Horizontal };
+        if (_session.ForRecording)
+        {
+            // A red "REC" tag so it's obvious this selection starts a recording.
+            var tag = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 8, 0) };
+            tag.Children.Add(new Shapes.Ellipse { Width = 9, Height = 9, Fill = Res("DangerBrush", Brushes.Red), VerticalAlignment = VerticalAlignment.Center });
+            tag.Children.Add(new TextBlock { Text = "Record", FontWeight = FontWeights.SemiBold, Foreground = Res("TextBrush", Brushes.White), Margin = new Thickness(7, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center });
+            panel.Children.Add(tag);
+            panel.Children.Add(new Shapes.Rectangle { Style = Application.Current.TryFindResource("VDivider") as Style, Margin = new Thickness(4, 0, 6, 0) });
+        }
         var toggleStyle = Application.Current.TryFindResource("ToolRadio") as Style;
 
         void AddMode(CaptureMode mode, string icon, string tip)
@@ -169,11 +211,17 @@ internal sealed class OverlayWindow : Window
         AddMode(CaptureMode.Region, "IconRegion", "Region (1)");
         AddMode(CaptureMode.Window, "IconWindow", "Window (2)");
         AddMode(CaptureMode.Screen, "IconScreen", "Full screen (3)");
-        AddMode(CaptureMode.Freeform, "IconFreeform", "Freeform (4)");
+        if (!_session.ForRecording) AddMode(CaptureMode.Freeform, "IconFreeform", "Freeform (4)");
+        if (_session.ForRecording)
+        {
+            panel.Children.Add(new Shapes.Rectangle { Style = Application.Current.TryFindResource("VDivider") as Style, Margin = new Thickness(6, 0, 4, 0) });
+            panel.Children.Add(AudioControl(AudioFlow.Output));
+            panel.Children.Add(AudioControl(AudioFlow.Input));
+        }
 
         _hint = new TextBlock
         {
-            Text = HintFor(_session.Mode),
+            Text = HintFor(_session.Mode, _session.ForRecording),
             VerticalAlignment = VerticalAlignment.Center,
             Margin = new Thickness(12, 0, 8, 0),
             MinWidth = 210,
@@ -203,17 +251,241 @@ internal sealed class OverlayWindow : Window
         };
         if (Application.Current.TryFindResource("Pill") is Style pillStyle) pill.Style = pillStyle;
         TextElement.SetFontFamily(pill, (FontFamily)Application.Current.Resources["UiFont"]);
-        Fx.SetShow(pill, true);
-        pill.Loaded += (_, _) => Fx.PlayEntrance(pill, 60, offsetY: -18, fromScale: 0.94);
+        _toolbarHere = _session.ToolbarMonitor == Monitor;
+        Fx.SetShow(pill, _toolbarHere);
+        pill.IsHitTestVisible = _toolbarHere;
+        pill.Loaded += (_, _) =>
+        {
+            if (_toolbarHere) Fx.PlayEntrance(pill, 60, offsetY: -18, fromScale: 0.94);
+        };
         return pill;
     }
 
-    private static string HintFor(CaptureMode mode) => mode switch
+    // ---------- Recording sound ----------
+
+    /// <summary>
+    /// A split control: the icon turns the source on or off (struck through when off, like Snipping Tool's),
+    /// the chevron beside it opens the device list.
+    /// </summary>
+    private FrameworkElement AudioControl(AudioFlow flow)
     {
-        CaptureMode.Region => "Drag to select · click a window",
-        CaptureMode.Window => "Click a window to capture it",
-        CaptureMode.Screen => "Click a screen · F for this one",
-        CaptureMode.Freeform => "Draw around anything",
+        bool output = flow == AudioFlow.Output;
+        string kind = output ? "System audio" : "Microphone";
+        bool IsOn() => output ? App.Settings.RecordSystemAudio : App.Settings.RecordMicrophone;
+
+        var glyph = new StrikeIcon(output ? "IconSpeaker" : "IconMic");
+        var toggle = new Button
+        {
+            Content = glyph,
+            Style = Application.Current.TryFindResource("IconButton") as Style,
+            Focusable = false,
+            Cursor = Cursors.Hand,
+            ToolTip = "",
+        };
+
+        void Sync(bool animate) => glyph.SetStruck(!IsOn(), animate);
+        Sync(false);
+
+        toggle.ToolTipOpening += (_, _) =>
+        {
+            if (!IsOn())
+            {
+                toggle.ToolTip = $"{kind} is off · click to turn on";
+                return;
+            }
+            string? id = output ? App.Settings.SystemAudioDevice : App.Settings.MicrophoneDevice;
+            string device = id == null
+                ? AudioDevices.Default(flow)?.Name ?? "default device"
+                : AudioDevices.List(flow).Find(d => d.Id == id)?.Name ?? "unplugged device";
+            toggle.ToolTip = $"{kind}: {device} · click to turn off";
+        };
+        toggle.Click += (_, _) =>
+        {
+            if (output) App.Settings.RecordSystemAudio = !App.Settings.RecordSystemAudio;
+            else App.Settings.RecordMicrophone = !App.Settings.RecordMicrophone;
+            SettingsService.Save(App.Settings);
+            Sync(true);
+        };
+
+        // The chevron flips while its list is open.
+        var flip = new RotateTransform();
+        var chevron = new Shapes.Path
+        {
+            Data = Geometry.Parse("M0,0 L4,4 L8,0"),
+            Stroke = Res("Text2Brush", Brushes.Gray),
+            StrokeThickness = 1.6,
+            StrokeStartLineCap = PenLineCap.Round,
+            StrokeEndLineCap = PenLineCap.Round,
+            StrokeLineJoin = PenLineJoin.Round,
+            Width = 8,
+            Height = 4,
+            Stretch = Stretch.None,
+            RenderTransformOrigin = new Point(0.5, 0.5),
+            RenderTransform = flip,
+        };
+        var arrow = new Button
+        {
+            Content = chevron,
+            Style = Application.Current.TryFindResource("IconButton") as Style,
+            Padding = new Thickness(5, 7, 5, 7),
+            Focusable = false,
+            Cursor = Cursors.Hand,
+            ToolTip = output ? "Choose the output to record" : "Choose the microphone",
+            VerticalAlignment = VerticalAlignment.Stretch,
+        };
+        void Flip(bool open) => flip.BeginAnimation(RotateTransform.AngleProperty,
+            new DoubleAnimation(open ? 180 : 0, TimeSpan.FromMilliseconds(200)) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } });
+
+        // The device list: a card in a popup, refilled each time it opens.
+        var list = new StackPanel();
+        var card = new Border
+        {
+            Child = list,
+            Margin = new Thickness(10, 6, 14, 16), // room for the shadow
+            Padding = new Thickness(5),
+            MinWidth = 196,
+            CornerRadius = new CornerRadius(12),
+            Background = Res("RaisedBrush", Brushes.Black),
+            BorderBrush = Res("StrokeStrongBrush", Brushes.Gray),
+            BorderThickness = new Thickness(1),
+            Effect = Application.Current.TryFindResource("FloatShadow") as Effect,
+        };
+        // The entrance animation goes on the card, not the popup's child: a popup places itself using its child's transform.
+        var host = new Grid { Children = { card } };
+        TextElement.SetFontFamily(host, (FontFamily)Application.Current.Resources["UiFont"]);
+        TextElement.SetFontSize(host, 13);
+        var popup = new Popup
+        {
+            Child = host,
+            PlacementTarget = toggle,
+            Placement = PlacementMode.Bottom,
+            HorizontalOffset = -10, // cancel the shadow margin so the card lines up with the control
+            VerticalOffset = -2,
+            AllowsTransparency = true,
+            StaysOpen = true, // closed by us: chevron, Esc, or a click elsewhere
+            PopupAnimation = PopupAnimation.None,
+            Focusable = false,
+        };
+        popup.Opened += (_, _) =>
+        {
+            Flip(true);
+            Fx.PlayEntrance(card, 0, offsetY: -6, fromScale: 0.96);
+        };
+        popup.Closed += (_, _) =>
+        {
+            Flip(false);
+            if (_audioPopup == popup)
+            {
+                _audioPopup = null;
+                _audioArrow = null;
+            }
+        };
+        arrow.Click += (_, _) =>
+        {
+            if (popup.IsOpen)
+            {
+                popup.IsOpen = false;
+                return;
+            }
+            CloseAudioList(); // the other source's list
+            FillAudioList(list, flow, () =>
+            {
+                popup.IsOpen = false;
+                Sync(true);
+            });
+            _audioPopup = popup;
+            _audioArrow = arrow;
+            popup.IsOpen = true;
+        };
+
+        var group = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(2, 0, 2, 0) };
+        group.Children.Add(toggle);
+        group.Children.Add(arrow);
+        return group;
+    }
+
+    private void CloseAudioList()
+    {
+        if (_audioPopup != null) _audioPopup.IsOpen = false;
+    }
+
+    private static bool IsInside(DependencyObject? d, DependencyObject? ancestor)
+    {
+        if (ancestor == null) return false;
+        while (d != null)
+        {
+            if (d == ancestor) return true;
+            d = d is Visual or System.Windows.Media.Media3D.Visual3D ? VisualTreeHelper.GetParent(d) : LogicalTreeHelper.GetParent(d);
+        }
+        return false;
+    }
+
+    private static void FillAudioList(StackPanel list, AudioFlow flow, Action changed)
+    {
+        var s = App.Settings;
+        bool output = flow == AudioFlow.Output;
+        bool on = output ? s.RecordSystemAudio : s.RecordMicrophone;
+        string? selected = output ? s.SystemAudioDevice : s.MicrophoneDevice;
+        list.Children.Clear();
+        var rowStyle = Application.Current.TryFindResource("MenuRowButton") as Style;
+
+        void AddDevice(string name, string? id)
+        {
+            var row = new DockPanel();
+            // The chosen device is ticked; dimmed while the source is off.
+            var check = Check(id != selected ? 0 : on ? 1 : 0.4);
+            check.Margin = new Thickness(0, 0, 10, 0);
+            DockPanel.SetDock(check, Dock.Left);
+            row.Children.Add(check);
+            row.Children.Add(new TextBlock { Text = name, MaxWidth = 300, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center });
+            var item = new Button { Content = row, Style = rowStyle, ToolTip = name };
+            item.Click += (_, _) =>
+            {
+                // Picking a device also turns the source on.
+                if (output)
+                {
+                    s.SystemAudioDevice = id;
+                    s.RecordSystemAudio = true;
+                }
+                else
+                {
+                    s.MicrophoneDevice = id;
+                    s.RecordMicrophone = true;
+                }
+                SettingsService.Save(s);
+                changed();
+            };
+            list.Children.Add(item);
+        }
+
+        AddDevice(AudioDevices.DefaultLabel(flow), null);
+        var devices = AudioDevices.List(flow);
+        foreach (var device in devices) AddDevice(device.Name, device.Id);
+        if (selected != null && !devices.Exists(d => d.Id == selected)) AddDevice("Unplugged device", selected);
+    }
+
+    private static Shapes.Path Check(double opacity = 1) => new()
+    {
+        Data = Geometry.Parse("M3,9.5 L7,13.5 L15,5"),
+        Stroke = Res("AccentTextBrush", Brushes.White),
+        StrokeThickness = 1.8,
+        StrokeStartLineCap = PenLineCap.Round,
+        StrokeEndLineCap = PenLineCap.Round,
+        StrokeLineJoin = PenLineJoin.Round,
+        Width = 18,
+        Height = 18,
+        Opacity = opacity,
+    };
+
+    private static string HintFor(CaptureMode mode, bool record) => (mode, record) switch
+    {
+        (CaptureMode.Region, true) => "Drag an area to record · click a window",
+        (CaptureMode.Window, true) => "Click a window to record it",
+        (CaptureMode.Screen, true) => "Click a screen to record · F for this one",
+        (CaptureMode.Region, _) => "Drag to select · click a window",
+        (CaptureMode.Window, _) => "Click a window to capture it",
+        (CaptureMode.Screen, _) => "Click a screen · F for this one",
+        (CaptureMode.Freeform, _) => "Draw around anything",
         _ => "",
     };
 
@@ -222,7 +494,7 @@ internal sealed class OverlayWindow : Window
         if (_modeButtons.TryGetValue(_session.Mode, out var button)) button.IsChecked = true;
         if (_hint != null)
         {
-            _hint.Text = HintFor(_session.Mode);
+            _hint.Text = HintFor(_session.Mode, _session.ForRecording);
             Fx.PlayEntrance(_hint, 0, offsetY: 5);
         }
     }

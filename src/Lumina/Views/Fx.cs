@@ -259,8 +259,20 @@ public static class Fx
     private static void Animate(UIElement el, DependencyProperty property, double to, Duration duration, IEasingFunction ease) =>
         el.BeginAnimation(property, Anim(null, to, duration, ease));
 
-    private static DoubleAnimation Anim(double? from, double to, Duration duration, IEasingFunction ease, TimeSpan? begin = null, bool freeze = true)
+    private static AnimationTimeline Anim(double? from, double to, Duration duration, IEasingFunction ease, TimeSpan? begin = null, bool freeze = true)
     {
+        // A delayed animation with a start value holds that value from the very first frame. A plain BeginTime
+        // would leave the element at its resting value until the delay ran out, so it shows, vanishes and
+        // then animates in: the entrance looks like it plays twice.
+        if (from is double start && begin is TimeSpan wait && wait > TimeSpan.Zero && duration.HasTimeSpan)
+        {
+            var held = new DoubleAnimationUsingKeyFrames { Duration = wait + duration.TimeSpan };
+            held.KeyFrames.Add(new DiscreteDoubleKeyFrame(start, KeyTime.FromTimeSpan(TimeSpan.Zero)));
+            held.KeyFrames.Add(new DiscreteDoubleKeyFrame(start, KeyTime.FromTimeSpan(wait)));
+            held.KeyFrames.Add(new EasingDoubleKeyFrame(to, KeyTime.FromTimeSpan(wait + duration.TimeSpan), ease));
+            if (freeze) held.Freeze();
+            return held;
+        }
         var a = new DoubleAnimation { To = to, Duration = duration, EasingFunction = ease };
         if (from is double f) a.From = f;
         if (begin is TimeSpan b) a.BeginTime = b;

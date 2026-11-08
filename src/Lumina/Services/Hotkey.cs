@@ -18,6 +18,7 @@ public sealed class HotkeyBinding
     public CaptureMode Mode { get; set; } = CaptureMode.Region;
 
     public static HotkeyBinding WinShiftS => new() { Modifiers = HotkeyModifiers.Win | HotkeyModifiers.Shift, Key = VK_S };
+    public static HotkeyBinding WinShiftR => new() { Modifiers = HotkeyModifiers.Win | HotkeyModifiers.Shift, Key = VK_R, Mode = CaptureMode.Record };
     public static HotkeyBinding PrintScreen => new() { Key = VK_SNAPSHOT };
 
     public HotkeyBinding Clone() => new() { Modifiers = Modifiers, Key = Key, Mode = Mode };

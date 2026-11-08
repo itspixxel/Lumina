@@ -7,6 +7,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using Lumina.Capture;
 using Lumina.Native;
+using Lumina.Recording;
 using Lumina.Services;
 using Drawing = System.Drawing;
 using Forms = System.Windows.Forms;
@@ -31,7 +32,7 @@ internal sealed class TrayIcon : IDisposable
         _icon.MouseClick += (_, e) =>
         {
             if (e.Button == Forms.MouseButtons.Left) App.ShowHome();
-            else if (e.Button == Forms.MouseButtons.Middle) App.Instance.Controller.Start(CaptureMode.Region);
+            else if (e.Button == Forms.MouseButtons.Middle && !App.Instance.Recorder.IsRecording) App.Instance.Controller.Start(CaptureMode.Region);
             else if (e.Button == Forms.MouseButtons.Right) ShowMenu();
         };
     }
@@ -50,7 +51,16 @@ internal sealed class TrayIcon : IDisposable
     private void ShowMenu()
     {
         var controller = App.Instance.Controller;
+        var recorder = App.Instance.Recorder;
         var menu = new ContextMenu();
+
+        if (recorder.IsRecording)
+        {
+            menu.Items.Add(Item("Stop recording", ShortcutFor(CaptureMode.Record), "IconStop", recorder.Stop));
+            menu.Items.Add(Item(recorder.IsPaused ? "Resume recording" : "Pause recording", null,
+                recorder.IsPaused ? "IconPlay" : "IconPause", recorder.TogglePause));
+            menu.Items.Add(new Separator());
+        }
 
         menu.Items.Add(Item("Capture region", ShortcutFor(CaptureMode.Region), "IconRegion", () => controller.Start(CaptureMode.Region, settleMs: 150)));
         menu.Items.Add(Item("Capture window", ShortcutFor(CaptureMode.Window), "IconWindow", () => controller.Start(CaptureMode.Window, settleMs: 150)));
@@ -61,6 +71,8 @@ internal sealed class TrayIcon : IDisposable
         foreach (int seconds in new[] { 3, 5, 10 })
             delayed.Items.Add(Item($"{seconds} seconds", null, null, () => controller.Start(CaptureMode.Region, seconds, 150)));
         menu.Items.Add(delayed);
+        if (!recorder.IsRecording)
+            menu.Items.Add(Item(Ffmpeg.IsAvailable ? "Record screen" : "Record screen (set up)", ShortcutFor(CaptureMode.Record), "IconRecord", recorder.Start));
 
         menu.Items.Add(new Separator());
         menu.Items.Add(Item("Open Lumina", null, "IconHome", App.ShowHome));

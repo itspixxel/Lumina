@@ -11,7 +11,7 @@ internal static class NativeMethods
 
     public const int WH_KEYBOARD_LL = 13;
     public const int WM_KEYDOWN = 0x0100, WM_KEYUP = 0x0101, WM_SYSKEYDOWN = 0x0104, WM_SYSKEYUP = 0x0105, WM_QUIT = 0x0012;
-    public const int VK_SHIFT = 0x10, VK_CONTROL = 0x11, VK_MENU = 0x12, VK_LWIN = 0x5B, VK_RWIN = 0x5C, VK_SNAPSHOT = 0x2C, VK_S = 0x53;
+    public const int VK_SHIFT = 0x10, VK_CONTROL = 0x11, VK_MENU = 0x12, VK_LWIN = 0x5B, VK_RWIN = 0x5C, VK_SNAPSHOT = 0x2C, VK_S = 0x53, VK_R = 0x52;
     public const uint LLKHF_INJECTED = 0x10;
     public const uint KEYEVENTF_KEYUP = 0x0002;
     /// <summary>Unassigned virtual key used to stop Windows treating a swallowed Win chord as a lone Win press.</summary>
@@ -22,7 +22,9 @@ internal static class NativeMethods
     public static readonly IntPtr HWND_TOPMOST = new(-1);
     public const int CURSOR_SHOWING = 0x1, DI_NORMAL = 0x3;
     public const int GWL_EXSTYLE = -20;
-    public const long WS_EX_TRANSPARENT = 0x20;
+    public const long WS_EX_TRANSPARENT = 0x20, WS_EX_TOOLWINDOW = 0x80, WS_EX_NOACTIVATE = 0x08000000;
+    /// <summary>Keeps a window off every screen capture (Windows 10 2004+), including our own recordings.</summary>
+    public const uint WDA_EXCLUDEFROMCAPTURE = 0x11;
     public const uint MONITORINFOF_PRIMARY = 1;
 
     [StructLayout(LayoutKind.Sequential)]
@@ -107,6 +109,10 @@ internal static class NativeMethods
     [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hWnd);
     [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr hWnd, out RECT rect);
     [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW")] public static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int index);
+    [DllImport("user32.dll", EntryPoint = "SetWindowLongPtrW")] public static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int index, IntPtr value);
+    [DllImport("user32.dll")] public static extern bool SetWindowDisplayAffinity(IntPtr hWnd, uint affinity);
+    [DllImport("winmm.dll")] public static extern uint timeBeginPeriod(uint ms);
+    [DllImport("winmm.dll")] public static extern uint timeEndPeriod(uint ms);
     [DllImport("user32.dll")] public static extern bool SetWindowPos(IntPtr hWnd, IntPtr after, int x, int y, int cx, int cy, uint flags);
 
     [DllImport("user32.dll")] public static extern bool GetCursorInfo(ref CURSORINFO ci);

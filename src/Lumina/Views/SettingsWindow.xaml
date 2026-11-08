@@ -62,6 +62,84 @@
                 </StackPanel>
             </Border>
 
+            <TextBlock Text="RECORDING" Style="{StaticResource Section}" />
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <!-- FFmpeg -->
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Button x:Name="FfmpegDownload" Style="{StaticResource AccentButton}" Content="Download" Margin="8,0,0,0" Click="FfmpegDownload_Click" />
+                            <Button x:Name="FfmpegBrowse" Content="Browse" Margin="8,0,0,0" Click="FfmpegBrowse_Click" ToolTip="Use an ffmpeg.exe you already have" />
+                            <Button x:Name="FfmpegReset" Content="Reset" Margin="8,0,0,0" Click="FfmpegReset_Click" ToolTip="Stop using your own ffmpeg.exe" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="FFmpeg" FontWeight="SemiBold" />
+                            <TextBlock x:Name="FfmpegStatus" Style="{StaticResource Hint}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" />
+                        </StackPanel>
+                    </DockPanel>
+                    <Border Style="{StaticResource RowDivider}" Margin="0,14,0,6" />
+
+                    <Grid Margin="0,6,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,24,0">
+                            <TextBlock Text="Frame rate" Style="{StaticResource FieldLabel}" />
+                            <ComboBox x:Name="RecordingFps" Width="160">
+                                <ComboBoxItem Content="30 fps" Tag="30" />
+                                <ComboBoxItem Content="60 fps · smoother" Tag="60" />
+                            </ComboBox>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="Countdown" Style="{StaticResource FieldLabel}" />
+                            <ComboBox x:Name="RecordingCountdown" Width="140">
+                                <ComboBoxItem Content="None" Tag="0" />
+                                <ComboBoxItem Content="3 seconds" Tag="3" />
+                                <ComboBoxItem Content="5 seconds" Tag="5" />
+                            </ComboBox>
+                        </StackPanel>
+                    </Grid>
+
+                    <TextBlock Text="Sound" Style="{StaticResource FieldLabel}" Margin="0,18,0,4" />
+                    <DockPanel Margin="0,4,0,0">
+                        <ComboBox x:Name="SystemDevice" DockPanel.Dock="Right" Width="260" Margin="20,0,0,0" VerticalAlignment="Center" />
+                        <CheckBox x:Name="RecordSystemAudio" Click="AudioCheck_Click">
+                            <StackPanel>
+                                <TextBlock Text="System audio" />
+                                <TextBlock Style="{StaticResource Hint}" Text="Whatever plays through this output." />
+                            </StackPanel>
+                        </CheckBox>
+                    </DockPanel>
+                    <DockPanel Margin="0,4,0,0">
+                        <ComboBox x:Name="MicDevice" DockPanel.Dock="Right" Width="260" Margin="20,0,0,0" VerticalAlignment="Center" />
+                        <CheckBox x:Name="RecordMicrophone" Click="AudioCheck_Click">
+                            <StackPanel>
+                                <TextBlock Text="Microphone" />
+                                <TextBlock Style="{StaticResource Hint}" Text="Your voice, from this input." />
+                            </StackPanel>
+                        </CheckBox>
+                    </DockPanel>
+                    <Border Style="{StaticResource RowDivider}" Margin="0,8,0,2" />
+                    <CheckBox x:Name="RecordCursor"><TextBlock Text="Show the mouse pointer in recordings" /></CheckBox>
+                    <Border Style="{StaticResource RowDivider}" />
+                    <CheckBox x:Name="HardwareEncoding">
+                        <StackPanel>
+                            <TextBlock Text="Use the graphics card to encode" />
+                            <TextBlock Style="{StaticResource Hint}" Text="Lighter on the CPU when your GPU supports it (NVIDIA, Intel or AMD)." />
+                        </StackPanel>
+                    </CheckBox>
+
+                    <TextBlock Text="Recordings folder" Style="{StaticResource FieldLabel}" Margin="0,14,0,8" />
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="Open" Margin="8,0,0,0" Click="OpenRecordingsFolder_Click" />
+                        <Button DockPanel.Dock="Right" Content="Browse" Margin="8,0,0,0" Click="BrowseRecordings_Click" />
+                        <TextBox x:Name="RecordingsDirectory" />
+                    </DockPanel>
+                </StackPanel>
+            </Border>
+
             <TextBlock Text="AFTER CAPTURE" Style="{StaticResource Section}" />
             <Border Style="{StaticResource Card}" Padding="18,6">
                 <StackPanel>

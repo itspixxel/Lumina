@@ -36,7 +36,7 @@ public static class KeycapRow
 public sealed class ShortcutEditor : StackPanel
 {
     private static readonly (CaptureMode Mode, string Name)[] Modes =
-        { (CaptureMode.Region, "Region"), (CaptureMode.Window, "Window"), (CaptureMode.Screen, "Full screen"), (CaptureMode.Freeform, "Freeform") };
+        { (CaptureMode.Region, "Region"), (CaptureMode.Window, "Window"), (CaptureMode.Screen, "Full screen"), (CaptureMode.Freeform, "Freeform"), (CaptureMode.Record, "Record screen") };
 
     private readonly StackPanel _rows = new();
     private readonly TextBlock _message;

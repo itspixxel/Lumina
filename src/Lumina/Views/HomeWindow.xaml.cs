@@ -13,6 +13,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using ShapePath = System.Windows.Shapes.Path;
 using Lumina.Capture;
+using Lumina.Recording;
+using CaptureMode = Lumina.Capture.CaptureMode;
 using Lumina.Services;
 using Microsoft.Win32;
 
@@ -53,9 +55,24 @@ public partial class HomeWindow : ChromeWindow
     {
         InitializeComponent();
         App.Instance.Controller.Captured += RefreshRecent;
-        Closed += (_, _) => App.Instance.Controller.Captured -= RefreshRecent;
-        Activated += (_, _) => UpdateHint();
-        Loaded += (_, _) => RefreshRecent();
+        Ffmpeg.StateChanged += UpdateRecordCard;
+        App.Instance.Recorder.StateChanged += UpdateRecordCard;
+        Closed += (_, _) =>
+        {
+            App.Instance.Controller.Captured -= RefreshRecent;
+            Ffmpeg.StateChanged -= UpdateRecordCard;
+            App.Instance.Recorder.StateChanged -= UpdateRecordCard;
+        };
+        Activated += (_, _) =>
+        {
+            UpdateHint();
+            UpdateRecordCard();
+        };
+        Loaded += (_, _) =>
+        {
+            RefreshRecent();
+            UpdateRecordCard();
+        };
     }
 
     private void UpdateHint()
@@ -65,6 +82,38 @@ public partial class HomeWindow : ChromeWindow
         ShortcutPanel.Visibility = main != null ? Visibility.Visible : Visibility.Collapsed;
         ShortcutOffText.Visibility = main != null ? Visibility.Collapsed : Visibility.Visible;
         if (main != null) KeycapRow.Fill(ShortcutKeys, main.Parts());
+    }
+
+    /// <summary>The Record card warns until FFmpeg is set up, and shows download progress.</summary>
+    private void UpdateRecordCard()
+    {
+        var shortcut = TrayIcon.ShortcutFor(CaptureMode.Record);
+        string? badge = null;
+        bool warn = false;
+        if (App.Instance.Recorder.IsRecording) badge = "Recording";
+        else if (Ffmpeg.IsInstalling) badge = Ffmpeg.InstallProgress is double p ? $"Installing {p:P0}" : "Installing";
+        else if (!Ffmpeg.IsAvailable)
+        {
+            badge = "Set up";
+            warn = true;
+        }
+
+        RecordBadge.Visibility = badge != null ? Visibility.Visible : Visibility.Collapsed;
+        RecordBadgeText.Text = badge ?? "";
+        RecordBadgeIcon.Visibility = warn ? Visibility.Visible : Visibility.Collapsed;
+        var tint = warn ? Color.FromRgb(0xFF, 0xC2, 0x4D) : ((SolidColorBrush)FindResource("AccentTextBrush")).Color;
+        RecordBadgeText.Foreground = new SolidColorBrush(tint);
+        RecordBadge.Background = new SolidColorBrush(Color.FromArgb(0x33, tint.R, tint.G, tint.B));
+        RecordCaption.Text = shortcut != null ? shortcut : "Video with sound";
+        RecordCard.ToolTip = warn
+            ? "Recording needs FFmpeg, a free download. Click to set it up."
+            : shortcut != null ? $"Record your screen ({shortcut})" : "Record your screen";
+    }
+
+    private void Record_Click(object sender, RoutedEventArgs e)
+    {
+        if (App.Instance.Recorder.IsRecording) App.Instance.Recorder.Stop();
+        else App.Instance.Recorder.Start();
     }
 
     public async void RefreshRecent()

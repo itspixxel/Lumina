@@ -95,7 +95,7 @@ public static class ScreenCapture
         }
     }
 
-    private static void DrawCursor(IntPtr hdc, int originX, int originY)
+    internal static void DrawCursor(IntPtr hdc, int originX, int originY)
     {
         var ci = new CURSORINFO { cbSize = Marshal.SizeOf<CURSORINFO>() };
         if (!GetCursorInfo(ref ci) || (ci.flags & CURSOR_SHOWING) == 0) return;

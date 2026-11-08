@@ -41,6 +41,23 @@ public static class OutputService
         return path;
     }
 
+    /// <summary>Picks a unique .mp4 path in the recordings folder, named with the same pattern as captures.</summary>
+    public static string ReserveVideoPath(string? appName)
+    {
+        var s = App.Settings;
+        Directory.CreateDirectory(s.RecordingsDirectory);
+        string name = FileNameFormatter.Format(s.FileNamePattern, appName, s.Counter, DateTime.Now);
+        if (s.FileNamePattern.Contains("{n}"))
+        {
+            s.Counter++;
+            SettingsService.Save(s);
+        }
+        string path = Path.Combine(s.RecordingsDirectory, name + ".mp4");
+        for (int i = 2; File.Exists(path); i++)
+            path = Path.Combine(s.RecordingsDirectory, $"{name}_{i}.mp4");
+        return path;
+    }
+
     public static Task SaveAsync(BitmapSource image, string path) => StaTask.Run(() => Encode(image, path));
 
     public static void Encode(BitmapSource image, string path)

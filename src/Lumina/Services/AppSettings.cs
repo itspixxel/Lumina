@@ -39,7 +39,25 @@ public sealed class AppSettings
     public int JpegQuality { get; set; } = 90;
     public int Counter { get; set; } = 1;
 
+    // Recording
+    /// <summary>An ffmpeg.exe the user picked. Null uses the copy Lumina installed (or one on PATH).</summary>
+    public string? FfmpegPath { get; set; }
+    public string RecordingsDirectory { get; set; } =
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyVideos), "Lumina");
+    public int RecordingFps { get; set; } = 30;
+    public bool RecordCursor { get; set; } = true;
+    public int RecordingCountdown { get; set; } = 3;
+    public bool RecordSystemAudio { get; set; } = true;
+    /// <summary>Output device to record from (WASAPI endpoint id). Null follows the Windows default.</summary>
+    public string? SystemAudioDevice { get; set; }
+    public bool RecordMicrophone { get; set; }
+    public string? MicrophoneDevice { get; set; }
+    public bool HardwareEncoding { get; set; } = true;
+
     // General
+    /// <summary>The welcome / recording setup card has been shown once.</summary>
+    public bool SetupShown { get; set; }
+    public int SettingsVersion { get; set; }
     public string Theme { get; set; } = "System";
     public bool StartWithWindows { get; set; }
 
@@ -57,6 +75,13 @@ public sealed class AppSettings
         }
         Hotkeys.RemoveAll(h => h.Key == 0);
         HookWinShiftS = HookPrintScreen = null;
+        if (SettingsVersion < 2)
+        {
+            // Recording arrived: give it Snipping Tool's shortcut unless that's already taken.
+            var record = HotkeyBinding.WinShiftR;
+            if (!Hotkeys.Exists(h => h.SameKeys(record))) Hotkeys.Add(record);
+            SettingsVersion = 2;
+        }
         return this;
     }
 }
