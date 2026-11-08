@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\lumina.ico</ApplicationIcon>
+    <AssemblyName>Lumina</AssemblyName>
+    <RootNamespace>Lumina</RootNamespace>
+    <Product>Lumina</Product>
+    <Version>0.1.0</Version>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <!-- WPF Fluent theme APIs (ThemeMode) are flagged experimental. -->
+    <!-- WFO0003: WPF owns DPI awareness here (per-monitor v2 via app.manifest); WinForms is only used for the tray icon. -->
+    <NoWarn>$(NoWarn);WPF0001;WFO0003</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\lumina.ico" />
+  </ItemGroup>
+
+</Project>
