@@ -11,10 +11,16 @@ public enum ImageFormatKind { Png, Jpeg }
 public sealed class AppSettings
 {
     // Shortcuts
-    public bool HookWinShiftS { get; set; } = true;
-    public bool HookPrintScreen { get; set; }
+    /// <summary>Global capture shortcuts. Null until migrated from the old Win+Shift+S / Print Screen switches.</summary>
+    public List<HotkeyBinding>? Hotkeys { get; set; }
+
+    // Old shortcut switches, read once to migrate and then dropped from the file.
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public bool? HookWinShiftS { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public bool? HookPrintScreen { get; set; }
 
     // Capture
+    /// <summary>Hide Lumina's own windows while capturing so they don't end up in the shot.</summary>
+    public bool HideWindowsDuringCapture { get; set; } = true;
     public bool ShowMagnifier { get; set; } = true;
     public bool CaptureCursor { get; set; }
 
@@ -40,6 +46,19 @@ public sealed class AppSettings
     // Editor
     /// <summary>Custom colors picked in the editor, most recent first.</summary>
     public List<string> RecentColors { get; set; } = new();
+
+    internal AppSettings Migrate()
+    {
+        if (Hotkeys == null)
+        {
+            Hotkeys = new();
+            if (HookWinShiftS != false) Hotkeys.Add(HotkeyBinding.WinShiftS);
+            if (HookPrintScreen == true) Hotkeys.Add(HotkeyBinding.PrintScreen);
+        }
+        Hotkeys.RemoveAll(h => h.Key == 0);
+        HookWinShiftS = HookPrintScreen = null;
+        return this;
+    }
 }
 
 public static class SettingsService
@@ -57,14 +76,14 @@ public static class SettingsService
             if (File.Exists(AppPaths.SettingsFile))
             {
                 var settings = JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(AppPaths.SettingsFile), Options);
-                if (settings != null) return settings;
+                if (settings != null) return settings.Migrate();
             }
         }
         catch (Exception ex)
         {
             Log.Error(ex, "Loading settings; using defaults");
         }
-        return new AppSettings();
+        return new AppSettings().Migrate();
     }
 
     public static void Save(AppSettings settings)

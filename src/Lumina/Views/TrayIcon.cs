@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -24,9 +25,9 @@ internal sealed class TrayIcon : IDisposable
         _icon = new Forms.NotifyIcon
         {
             Icon = new Drawing.Icon(stream, Forms.SystemInformation.SmallIconSize),
-            Text = "Lumina · Win+Shift+S to capture",
             Visible = true,
         };
+        UpdateTooltip();
         _icon.MouseClick += (_, e) =>
         {
             if (e.Button == Forms.MouseButtons.Left) App.ShowHome();
@@ -35,15 +36,26 @@ internal sealed class TrayIcon : IDisposable
         };
     }
 
+    /// <summary>The first shortcut set for a capture mode, for menus and hints.</summary>
+    public static string? ShortcutFor(CaptureMode mode) =>
+        App.Settings.Hotkeys?.FirstOrDefault(h => h.Mode == mode)?.ToString();
+
+    public void UpdateTooltip()
+    {
+        string? key = App.Settings.Hotkeys?.FirstOrDefault()?.ToString();
+        string text = key == null ? "Lumina" : $"Lumina · {key} to capture";
+        _icon.Text = text.Length > 63 ? text[..63] : text;
+    }
+
     private void ShowMenu()
     {
         var controller = App.Instance.Controller;
         var menu = new ContextMenu();
 
-        menu.Items.Add(Item("Capture region", "Win+Shift+S", "IconRegion", () => controller.Start(CaptureMode.Region, settleMs: 150)));
-        menu.Items.Add(Item("Capture window", null, "IconWindow", () => controller.Start(CaptureMode.Window, settleMs: 150)));
-        menu.Items.Add(Item("Capture full screen", null, "IconScreen", () => controller.Start(CaptureMode.Screen, settleMs: 150)));
-        menu.Items.Add(Item("Freeform capture", null, "IconFreeform", () => controller.Start(CaptureMode.Freeform, settleMs: 150)));
+        menu.Items.Add(Item("Capture region", ShortcutFor(CaptureMode.Region), "IconRegion", () => controller.Start(CaptureMode.Region, settleMs: 150)));
+        menu.Items.Add(Item("Capture window", ShortcutFor(CaptureMode.Window), "IconWindow", () => controller.Start(CaptureMode.Window, settleMs: 150)));
+        menu.Items.Add(Item("Capture full screen", ShortcutFor(CaptureMode.Screen), "IconScreen", () => controller.Start(CaptureMode.Screen, settleMs: 150)));
+        menu.Items.Add(Item("Freeform capture", ShortcutFor(CaptureMode.Freeform), "IconFreeform", () => controller.Start(CaptureMode.Freeform, settleMs: 150)));
 
         var delayed = Item("Capture after delay", null, "IconTimer", null);
         foreach (int seconds in new[] { 3, 5, 10 })

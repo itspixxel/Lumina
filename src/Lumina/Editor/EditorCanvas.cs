@@ -379,7 +379,7 @@ public sealed class EditorCanvas : Canvas
         EditorTool.Rectangle => Shape(ShapeKind.Rectangle),
         EditorTool.Ellipse => Shape(ShapeKind.Ellipse),
         EditorTool.Pen => new StrokeAnnotation { Points = { p }, Color = CurrentColor, Thickness = CurrentThickness },
-        EditorTool.Highlighter => new StrokeAnnotation { Points = { p }, Highlighter = true, Color = HighlighterColor(), Thickness = CurrentThickness },
+        EditorTool.Highlighter => new StrokeAnnotation { Points = { p }, Highlighter = true, Color = CurrentColor, Thickness = CurrentThickness },
         EditorTool.Pixelate => new PixelateAnnotation { X = p.X, Y = p.Y, Color = CurrentColor, Style = PixelateStyle, Strength = PixelateStrength },
         EditorTool.Spotlight => new SpotlightAnnotation
         {
@@ -393,14 +393,6 @@ public sealed class EditorCanvas : Canvas
         Kind = kind, X1 = _start.X, Y1 = _start.Y, X2 = _start.X, Y2 = _start.Y,
         Color = CurrentColor, Thickness = CurrentThickness,
     };
-
-    /// <summary>Highlighters look wrong in black/white, so those fall back to classic yellow.</summary>
-    private Color HighlighterColor()
-    {
-        var c = CurrentColor;
-        bool grey = Math.Abs(c.R - c.G) < 12 && Math.Abs(c.G - c.B) < 12;
-        return grey ? Color.FromRgb(0xFF, 0xD6, 0x0A) : c;
-    }
 
     protected override void OnMouseMove(MouseEventArgs e)
     {

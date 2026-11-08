@@ -144,12 +144,10 @@
             <TextBlock Text="Capture anything" FontFamily="{StaticResource DisplayFont}" FontSize="30" FontWeight="SemiBold" />
             <StackPanel x:Name="ShortcutPanel" Orientation="Horizontal" Margin="0,8,0,0">
                 <TextBlock Text="Press" Foreground="{StaticResource Text2Brush}" VerticalAlignment="Center" Margin="0,0,6,0" />
-                <Border Style="{StaticResource Keycap}"><TextBlock Text="Win" FontSize="11" FontWeight="SemiBold" /></Border>
-                <Border Style="{StaticResource Keycap}"><TextBlock Text="Shift" FontSize="11" FontWeight="SemiBold" /></Border>
-                <Border Style="{StaticResource Keycap}"><TextBlock Text="S" FontSize="11" FontWeight="SemiBold" /></Border>
+                <StackPanel x:Name="ShortcutKeys" Orientation="Horizontal" />
                 <TextBlock Text="from anywhere, or pick a mode" Foreground="{StaticResource Text2Brush}" VerticalAlignment="Center" Margin="6,0,0,0" />
             </StackPanel>
-            <TextBlock x:Name="ShortcutOffText" Text="Capture shortcuts are off. Turn them on in Settings."
+            <TextBlock x:Name="ShortcutOffText" Text="No capture shortcut set. Add one in Settings."
                        Foreground="{StaticResource Text2Brush}" Margin="0,8,0,0" Visibility="Collapsed" />
         </StackPanel>
 

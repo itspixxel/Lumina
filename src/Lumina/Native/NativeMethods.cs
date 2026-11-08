@@ -90,6 +90,8 @@ internal static class NativeMethods
     [DllImport("user32.dll")] public static extern IntPtr CallNextHookEx(IntPtr hook, int code, IntPtr wParam, IntPtr lParam);
     [DllImport("user32.dll")] public static extern short GetAsyncKeyState(int vk);
     [DllImport("user32.dll")] public static extern void keybd_event(byte vk, byte scan, uint flags, UIntPtr extra);
+    public const uint MAPVK_VK_TO_CHAR = 2;
+    [DllImport("user32.dll")] public static extern uint MapVirtualKey(uint code, uint mapType);
     [DllImport("user32.dll")] public static extern int GetMessage(out MSG msg, IntPtr hwnd, uint min, uint max);
     [DllImport("user32.dll")] public static extern bool PostThreadMessage(uint threadId, uint msg, IntPtr wParam, IntPtr lParam);
     [DllImport("kernel32.dll")] public static extern uint GetCurrentThreadId();

@@ -60,11 +60,11 @@ public partial class HomeWindow : ChromeWindow
 
     private void UpdateHint()
     {
-        ShortcutPanel.Visibility = App.Settings.HookWinShiftS ? Visibility.Visible : Visibility.Collapsed;
-        ShortcutOffText.Visibility = App.Settings.HookWinShiftS ? Visibility.Collapsed : Visibility.Visible;
-        ShortcutOffText.Text = App.Settings.HookPrintScreen
-            ? "Press Print Screen from anywhere, or pick a mode"
-            : "Capture shortcuts are off. Turn them on in Settings.";
+        var hotkeys = App.Settings.Hotkeys ?? new();
+        var main = hotkeys.FirstOrDefault(h => h.Mode == Capture.CaptureMode.Region) ?? hotkeys.FirstOrDefault();
+        ShortcutPanel.Visibility = main != null ? Visibility.Visible : Visibility.Collapsed;
+        ShortcutOffText.Visibility = main != null ? Visibility.Collapsed : Visibility.Visible;
+        if (main != null) KeycapRow.Fill(ShortcutKeys, main.Parts());
     }
 
     public async void RefreshRecent()

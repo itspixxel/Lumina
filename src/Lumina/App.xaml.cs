@@ -15,6 +15,8 @@ public partial class App : Application
     private TrayIcon? _tray;
     private KeyboardHook? _hook;
 
+    public static KeyboardHook? Hook => Instance._hook;
+
     public static App Instance => (App)Current;
     public static AppSettings Settings { get; private set; } = new();
     public CaptureController Controller { get; } = new();
@@ -49,7 +51,7 @@ public partial class App : Application
 
         _tray = new TrayIcon();
         _hook = new KeyboardHook(Dispatcher);
-        _hook.CaptureRequested += () => Controller.Start(CaptureMode.Region);
+        _hook.CaptureRequested += mode => Controller.Start(mode);
         ApplyShortcuts();
         _hook.Start();
 
@@ -60,9 +62,9 @@ public partial class App : Application
     {
         if (Instance._hook is { } hook)
         {
-            hook.InterceptWinShiftS = Settings.HookWinShiftS;
-            hook.InterceptPrintScreen = Settings.HookPrintScreen;
+            hook.SetBindings(Settings.Hotkeys!);
         }
+        Instance._tray?.UpdateTooltip();
     }
 
     public static void ShowHome()

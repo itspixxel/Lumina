@@ -25,10 +25,14 @@ public sealed class CaptureController
         try
         {
             QuickPreviewWindow.CloseCurrent();
-            foreach (var w in Application.Current.Windows.OfType<HomeWindow>().Where(w => w.IsVisible))
+            if (App.Settings.HideWindowsDuringCapture)
             {
-                w.Hide();
-                hidden.Add(w);
+                foreach (var w in Application.Current.Windows.OfType<Window>()
+                             .Where(w => w.IsVisible && w is HomeWindow or SettingsWindow or EditorWindow).ToList())
+                {
+                    w.Hide();
+                    hidden.Add(w);
+                }
             }
             // Give DWM time to finish hiding windows/menus so they don't end up in the shot.
             if (hidden.Count > 0) settleMs = Math.Max(settleMs, 200);

@@ -19,10 +19,9 @@ public partial class SettingsWindow : ChromeWindow
     {
         InitializeComponent();
 
-        HookWinShiftS.IsChecked = _s.HookWinShiftS;
-        HookPrintScreen.IsChecked = _s.HookPrintScreen;
         ShowMagnifier.IsChecked = _s.ShowMagnifier;
         CaptureCursor.IsChecked = _s.CaptureCursor;
+        HideWindows.IsChecked = _s.HideWindowsDuringCapture;
         CopyToClipboard.IsChecked = _s.CopyToClipboard;
         AutoSave.IsChecked = _s.AutoSave;
         ShowQuickPreview.IsChecked = _s.ShowQuickPreview;
@@ -48,10 +47,9 @@ public partial class SettingsWindow : ChromeWindow
 
     protected override void OnClosed(EventArgs e)
     {
-        _s.HookWinShiftS = HookWinShiftS.IsChecked == true;
-        _s.HookPrintScreen = HookPrintScreen.IsChecked == true;
         _s.ShowMagnifier = ShowMagnifier.IsChecked == true;
         _s.CaptureCursor = CaptureCursor.IsChecked == true;
+        _s.HideWindowsDuringCapture = HideWindows.IsChecked == true;
         _s.CopyToClipboard = CopyToClipboard.IsChecked == true;
         _s.AutoSave = AutoSave.IsChecked == true;
         _s.ShowQuickPreview = ShowQuickPreview.IsChecked == true;
