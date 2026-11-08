@@ -53,6 +53,8 @@ public sealed class AppSettings
     public bool RecordMicrophone { get; set; }
     public string? MicrophoneDevice { get; set; }
     public bool HardwareEncoding { get; set; } = true;
+    /// <summary>Put finished recordings and trim exports on the clipboard as files.</summary>
+    public bool CopyRecordingToClipboard { get; set; } = true;
 
     // General
     /// <summary>The welcome / recording setup card has been shown once.</summary>

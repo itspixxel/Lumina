@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Specialized;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -38,11 +39,19 @@ public static class ClipboardService
         data.SetImage(image);
         if (png.Length > 0) data.SetData("PNG", new MemoryStream(png), false);
 
+        return Set(() => Clipboard.SetDataObject(data, true));
+    }
+
+    /// <summary>Puts a file on the clipboard, as Explorer's Copy does, so it pastes into chats and folders.</summary>
+    public static bool CopyFile(string path) => Set(() => Clipboard.SetFileDropList(new StringCollection { path }));
+
+    private static bool Set(Action set)
+    {
         for (int attempt = 0; attempt < 10; attempt++)
         {
             try
             {
-                Clipboard.SetDataObject(data, true);
+                set();
                 return true;
             }
             catch (COMException)

@@ -128,7 +128,11 @@ public sealed class RecordingController
             RestoreWindows();
             StateChanged?.Invoke();
         }
-        if (path != null && File.Exists(path)) VideoEditorWindow.Open(path);
+        if (path != null && File.Exists(path))
+        {
+            if (App.Settings.CopyRecordingToClipboard) ClipboardService.CopyFile(path);
+            VideoEditorWindow.Open(path);
+        }
     }
 
     public async void Discard()

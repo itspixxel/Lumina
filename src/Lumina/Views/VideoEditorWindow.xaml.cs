@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -303,6 +302,7 @@ public partial class VideoEditorWindow : ChromeWindow
     private void Done(string text, string? path)
     {
         _lastExport = path;
+        if (path != null && App.Settings.CopyRecordingToClipboard && ClipboardService.CopyFile(path)) text += " · copied";
         StatusPanel.Visibility = Visibility.Visible;
         StatusText.Text = text;
         StatusLink.Visibility = path != null ? Visibility.Visible : Visibility.Collapsed;
@@ -396,15 +396,7 @@ public partial class VideoEditorWindow : ChromeWindow
             file = Path.Combine(dir, Path.GetFileNameWithoutExtension(_path) + "_clip.mp4");
             if (!await RunAsync("Preparing clip…", () => ExportMp4Async(file))) return;
         }
-        try
-        {
-            Clipboard.SetFileDropList(new StringCollection { file });
-            Done("Copied to clipboard", null);
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Copy video");
-        }
+        Done(ClipboardService.CopyFile(file) ? "Copied to clipboard" : "Clipboard is busy, try again", null);
     }
 
     // ---------- UI ----------
