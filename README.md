@@ -4,6 +4,8 @@ A lightweight, modern screenshot and screen recording tool for Windows — a rep
 
 > **Alpha.** Lumina is early and under active development. Expect rough edges, and please report anything that breaks.
 
+![Lumina's home window with capture modes and recent captures](docs/screenshots/home.png)
+
 ## Features
 
 ### Capture
@@ -30,6 +32,8 @@ A lightweight, modern screenshot and screen recording tool for Windows — a rep
 - Open any image file from the home window to mark it up.
 - Smooth zoom (Ctrl + scroll zooms around the cursor), fit-to-window and 1:1, full undo/redo.
 
+![The markup editor with a box, numbered steps, an arrow, text, a highlight and blurred emails](docs/screenshots/editor.png)
+
 ### Screen recording
 - **Win + Shift + R** (or the Record card / tray menu) picks a region, window or screen with the same overlay, then counts down and records.
 - **Sound** — system audio and/or microphone, each with its own device. Pick devices and mute either source right from the overlay's toolbar.
@@ -39,8 +43,12 @@ A lightweight, modern screenshot and screen recording tool for Windows — a rep
 - **Trim editor** opens when you stop: drag the handles on the filmstrip, then save, save as MP4 or GIF, export a GIF at a chosen width, or copy the file.
 - Uses **FFmpeg**: Lumina downloads it for you on first run (about 115 MB, one click), or point it at your own `ffmpeg.exe` in Settings.
 
+![The trim editor with a filmstrip timeline and trim handles](docs/screenshots/trim.png)
+
 ### Gallery
 - Recent captures on the home window, with multi-select (click the corner circle, or Ctrl / Shift + click), copy, reveal in Explorer and delete to the Recycle Bin.
+
+<p align="center"><img src="docs/screenshots/settings.png" width="520" alt="Settings: shortcuts, capture options and recording with audio devices"></p>
 
 ## Install
 
