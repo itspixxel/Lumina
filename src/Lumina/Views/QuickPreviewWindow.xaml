@@ -53,7 +53,7 @@
                     <Button Style="{StaticResource PreviewButton}" Click="Edit_Click" ToolTip="Mark up">
                         <Path Style="{StaticResource Icon}" Data="{StaticResource IconPen}" />
                     </Button>
-                    <Button Style="{StaticResource PreviewButton}" Click="Delete_Click" ToolTip="Delete">
+                    <Button Style="{StaticResource PreviewButton}" Click="Delete_Click" ToolTip="Move to Recycle Bin · Shift+click deletes permanently">
                         <Path Style="{StaticResource Icon}" Data="{StaticResource IconTrash}" />
                     </Button>
                 </StackPanel>

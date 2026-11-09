@@ -82,19 +82,27 @@
                     <TextBlock Text="Copy" Margin="7,0,0,0" VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
-            <Button Style="{StaticResource IconButton}" Click="SaveAs_Click" ToolTip="Save as (Ctrl+Shift+S)" Margin="2,0">
-                <Path Style="{StaticResource Icon}" Data="{StaticResource IconSaveAs}" />
+            <Button Style="{StaticResource GhostButton}" Click="SaveAs_Click" ToolTip="Save a copy somewhere else (Ctrl+Shift+S)" Padding="10,6" Margin="2,0">
+                <TextBlock Text="Save as…" VerticalAlignment="Center" />
             </Button>
-            <Button Style="{StaticResource AccentButton}" Click="Save_Click" ToolTip="Save (Ctrl+S)" Margin="6,0,0,0" Padding="14,6">
-                <StackPanel Orientation="Horizontal">
-                    <Path Style="{StaticResource Icon}" Data="{StaticResource IconSave}" />
-                    <TextBlock Text="Save" Margin="7,0,0,0" VerticalAlignment="Center" />
+            <!-- Save while there's something to write; a quiet "Saved" once the file on disk is up to date -->
+            <Grid Margin="6,0,0,0" VerticalAlignment="Center">
+                <Button x:Name="SaveButton" Style="{StaticResource AccentButton}" Click="Save_Click" ToolTip="Save (Ctrl+S)" Padding="14,6">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Style="{StaticResource Icon}" Data="{StaticResource IconSave}" />
+                        <TextBlock Text="Save" Margin="7,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+                <StackPanel x:Name="SavedLabel" Orientation="Horizontal" Margin="10,0,6,0" VerticalAlignment="Center" Visibility="Collapsed"
+                            Background="Transparent">
+                    <Path Style="{StaticResource Icon}" Data="{StaticResource IconCheck}" Stroke="{StaticResource AccentTextBrush}" />
+                    <TextBlock Text="Saved" Margin="6,0,0,0" VerticalAlignment="Center" Foreground="{StaticResource Text2Brush}" />
                 </StackPanel>
-            </Button>
+            </Grid>
         </StackPanel>
     </v:ChromeWindow.TitleBarContent>
 
-    <Grid>
+    <Grid SizeChanged="Root_SizeChanged">
         <!-- Canvas -->
         <ScrollViewer x:Name="Scroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
                       Background="{StaticResource DotGridBrush}" Focusable="False"
@@ -227,7 +235,7 @@
         </StackPanel>
 
         <!-- Color and size -->
-        <Border Style="{StaticResource Pill}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,18" Padding="10,6"
+        <Border x:Name="ColorBar" Style="{StaticResource Pill}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,18" Padding="10,6"
                 v:Fx.Entrance="True" v:Fx.EntranceOffset="16" v:Fx.EntranceDelay="130">
             <StackPanel Orientation="Horizontal">
                 <RadioButton Style="{StaticResource Swatch}" Background="#FF3B30" ToolTip="Red" Checked="Color_Checked" IsChecked="True" />
@@ -256,14 +264,17 @@
             </StackPanel>
         </Border>
 
-        <!-- Status -->
-        <Border HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="18,0,0,24" CornerRadius="8" Padding="10,5"
+        <!-- Image size -->
+        <Border x:Name="SizePill" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="18,0,0,24" CornerRadius="8" Padding="10,5"
                 Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource StrokeBrush}" BorderThickness="1">
             <TextBlock x:Name="StatusText" FontSize="12" Foreground="{StaticResource Text2Brush}" />
         </Border>
 
+        <!-- Messages (copied, saved…), above the color bar -->
+        <v:Toast x:Name="Toast" VerticalAlignment="Bottom" Margin="24,0,24,72" />
+
         <!-- Zoom -->
-        <Border Style="{StaticResource Pill}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,18,18" Padding="4"
+        <Border x:Name="ZoomPill" Style="{StaticResource Pill}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,18,18" Padding="4"
                 v:Fx.Entrance="True" v:Fx.EntranceOffset="16" v:Fx.EntranceDelay="170">
             <StackPanel Orientation="Horizontal">
                 <Button Style="{StaticResource IconButton}" Click="ZoomOut_Click" ToolTip="Zoom out (Ctrl+-)" Content="−" FontSize="15" Padding="10,3" />

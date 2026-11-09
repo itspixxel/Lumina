@@ -274,6 +274,20 @@ public static class ProjectStore
         }
     }
 
+    /// <summary>Keeps a capture's markup attached to it when the file is renamed.</summary>
+    public static void Move(string fromPath, string toPath)
+    {
+        try
+        {
+            if (File.Exists(JsonPath(fromPath))) File.Move(JsonPath(fromPath), JsonPath(toPath), true);
+            if (File.Exists(OriginalPath(fromPath))) File.Move(OriginalPath(fromPath), OriginalPath(toPath), true);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Moving edit project");
+        }
+    }
+
     public static void Delete(string outputPath)
     {
         try

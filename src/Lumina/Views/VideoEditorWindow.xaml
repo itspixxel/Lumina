@@ -28,10 +28,10 @@
 
     <v:ChromeWindow.TitleBarContent>
         <StackPanel Orientation="Horizontal">
-            <Button Style="{StaticResource IconButton}" Click="ShowInFolder_Click" ToolTip="Show in folder">
+            <Button Style="{StaticResource IconButton}" Click="ShowInFolder_Click" ToolTip="Show in folder (Ctrl+E)">
                 <Path Style="{StaticResource Icon}" Data="{StaticResource IconFolder}" />
             </Button>
-            <Button Style="{StaticResource IconButton}" Click="Delete_Click" ToolTip="Move to Recycle Bin" Margin="2,0,0,0"
+            <Button Style="{StaticResource IconButton}" Click="Delete_Click" ToolTip="Move to Recycle Bin (Del) · Shift+Del deletes permanently" Margin="2,0,0,0"
                     Foreground="{StaticResource DangerBrush}">
                 <Path Style="{StaticResource Icon}" Data="{StaticResource IconTrash}" />
             </Button>
@@ -59,6 +59,8 @@
                 </Border>
                 <TextBlock x:Name="LoadingText" Text="Loading…" Foreground="{StaticResource Text2Brush}"
                            HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <!-- Messages and export progress -->
+                <v:Toast x:Name="Toast" VerticalAlignment="Bottom" Margin="16,0,16,16" />
             </Grid>
         </Border>
 
@@ -72,12 +74,21 @@
                     VerticalAlignment="Center" Click="Play_Click" ToolTip="Play (Space)" Margin="0,0,14,0">
                 <Path x:Name="PlayIcon" Data="{StaticResource IconPlay}" Fill="White" Stretch="Uniform" Width="14" Height="16" Margin="3,0,0,0" />
             </Button>
-            <v:TrimTimeline x:Name="Timeline" Grid.Column="1" VerticalAlignment="Center" />
+            <v:TrimTimeline x:Name="Timeline" Grid.Column="1" VerticalAlignment="Center"
+                            ToolTip="Drag the ends to trim · I and O set them at the playhead · ← → step, Shift for 5 s" />
         </Grid>
 
-        <!-- Times + actions -->
-        <DockPanel Grid.Row="2" Margin="0,14,0,0" LastChildFill="False">
-            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+        <!-- Times + actions. The actions drop to their own line when the window is too narrow for both. -->
+        <Grid x:Name="BottomBar" Grid.Row="2" Margin="0,14,0,0" SizeChanged="BottomBar_SizeChanged">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <StackPanel x:Name="TimeGroup" Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock x:Name="TimeText" Text="0:00.0" FontFamily="Cascadia Mono, Consolas" FontSize="13" VerticalAlignment="Center" />
                 <TextBlock x:Name="DurationText" Text=" / 0:00.0" FontFamily="Cascadia Mono, Consolas" FontSize="13"
                            Foreground="{StaticResource Text3Brush}" VerticalAlignment="Center" />
@@ -89,14 +100,15 @@
                     </StackPanel>
                 </Border>
                 <Button x:Name="ResetTrim" Style="{StaticResource GhostButton}" Padding="8,4" Margin="4,0,0,0" FontSize="12"
-                        Click="ResetTrim_Click" Visibility="Collapsed" ToolTip="Undo the trim">
+                        Click="ResetTrim_Click" Visibility="Collapsed" ToolTip="Undo the trim (R)">
                     <TextBlock Text="Reset" Foreground="{StaticResource Text2Brush}" />
                 </Button>
             </StackPanel>
 
-            <StackPanel x:Name="Actions" DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+            <StackPanel x:Name="Actions" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right"
+                        Margin="16,0,0,0">
                 <ToggleButton x:Name="AudioToggle" Style="{StaticResource ChipToggle}" IsChecked="True" Click="AudioToggle_Click"
-                              ToolTip="Keep the sound in saved MP4s">
+                              ToolTip="Keep the sound in saved MP4s (M)">
                     <StackPanel Orientation="Horizontal">
                         <Path x:Name="AudioIcon" Style="{StaticResource ChipIcon}" Data="{StaticResource IconSpeaker}" />
                         <TextBlock x:Name="AudioText" Text="Sound on" />
@@ -109,39 +121,37 @@
                     <ComboBoxItem Content="GIF · 1080 px" Tag="1080" />
                     <ComboBoxItem Content="GIF · Original" Tag="0" />
                 </ComboBox>
-                <Button Margin="6,0,0,0" Click="Gif_Click" ToolTip="Save the clip as an animated GIF next to the video">
+                <Button Margin="6,0,0,0" Click="Gif_Click" ToolTip="Save the clip as an animated GIF next to the video (Ctrl+G)">
                     <StackPanel Orientation="Horizontal">
                         <Path Style="{StaticResource ChipIcon}" Data="{StaticResource IconSaveAs}" />
                         <TextBlock Text="Export GIF" />
                     </StackPanel>
                 </Button>
                 <Rectangle Style="{StaticResource VDivider}" Margin="10,0" />
-                <Button Style="{StaticResource IconButton}" Click="Copy_Click" ToolTip="Copy the video file (Ctrl+C)">
-                    <Path Style="{StaticResource Icon}" Data="{StaticResource IconCopy}" />
-                </Button>
-                <Button Margin="6,0,0,0" Click="SaveAs_Click" ToolTip="Save a copy as MP4 or GIF">
-                    <TextBlock Text="Save as…" />
-                </Button>
-                <Button x:Name="SaveButton" Style="{StaticResource AccentButton}" Margin="8,0,0,0" Click="Save_Click"
-                        ToolTip="Apply the trim to the recording (Ctrl+S)">
+                <Button Click="Copy_Click" ToolTip="Copy the video file (Ctrl+C)">
                     <StackPanel Orientation="Horizontal">
-                        <Path Style="{StaticResource ChipIcon}" Data="{StaticResource IconSave}" Stroke="White" />
-                        <TextBlock Text="Save" />
+                        <Path Style="{StaticResource ChipIcon}" Data="{StaticResource IconCopy}" />
+                        <TextBlock Text="Copy" />
                     </StackPanel>
                 </Button>
+                <Button Margin="6,0,0,0" Click="SaveAs_Click" ToolTip="Save a copy as MP4 or GIF (Ctrl+Shift+S)">
+                    <TextBlock Text="Save as…" />
+                </Button>
+                <!-- Save only once there's a trim (or sound change) to write; otherwise the recording is already saved -->
+                <Grid Margin="8,0,0,0" VerticalAlignment="Center">
+                    <Button x:Name="SaveButton" Style="{StaticResource AccentButton}" Click="Save_Click"
+                            ToolTip="Apply the trim to the recording (Ctrl+S)" Visibility="Collapsed">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Style="{StaticResource ChipIcon}" Data="{StaticResource IconSave}" Stroke="White" />
+                            <TextBlock Text="Save" />
+                        </StackPanel>
+                    </Button>
+                    <StackPanel x:Name="SavedLabel" Orientation="Horizontal" Margin="6,0,4,0" VerticalAlignment="Center" Background="Transparent">
+                        <Path Style="{StaticResource Icon}" Data="{StaticResource IconCheck}" Stroke="{StaticResource AccentTextBrush}" />
+                        <TextBlock Text="Saved" Margin="6,0,0,0" VerticalAlignment="Center" Foreground="{StaticResource Text2Brush}" />
+                    </StackPanel>
+                </Grid>
             </StackPanel>
-
-            <!-- Progress / status, between the two groups -->
-            <StackPanel x:Name="StatusPanel" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0" Visibility="Collapsed">
-                <Border x:Name="ProgressTrack" Width="120" Height="4" CornerRadius="2" Background="{StaticResource RaisedBrush}"
-                        VerticalAlignment="Center" Margin="0,0,10,0">
-                    <Border x:Name="ProgressFill" CornerRadius="2" Background="{StaticResource AccentGradient}" HorizontalAlignment="Left" Width="0" />
-                </Border>
-                <TextBlock x:Name="StatusText" FontSize="12" Foreground="{StaticResource Text2Brush}" VerticalAlignment="Center" />
-                <TextBlock x:Name="StatusLink" FontSize="12" Margin="8,0,0,0" VerticalAlignment="Center" Visibility="Collapsed">
-                    <Hyperlink Click="StatusLink_Click" Foreground="{StaticResource AccentTextBrush}">Show in folder</Hyperlink>
-                </TextBlock>
-            </StackPanel>
-        </DockPanel>
+        </Grid>
     </Grid>
 </v:ChromeWindow>

@@ -121,10 +121,10 @@
 
     <v:ChromeWindow.TitleBarContent>
         <StackPanel Orientation="Horizontal">
-            <Button Style="{StaticResource IconButton}" Click="OpenFolder_Click" ToolTip="Open captures folder">
+            <Button Style="{StaticResource IconButton}" Click="OpenFolder_Click" ToolTip="Open folder (Ctrl+E)">
                 <Path Style="{StaticResource Icon}" Data="{StaticResource IconFolder}" />
             </Button>
-            <Button Style="{StaticResource IconButton}" Click="Settings_Click" ToolTip="Settings" Margin="2,0,0,0">
+            <Button Style="{StaticResource IconButton}" Click="Settings_Click" ToolTip="Settings (Ctrl+,)" Margin="2,0,0,0">
                 <Path Style="{StaticResource Icon}" Data="{StaticResource IconSettings}" />
             </Button>
         </StackPanel>
@@ -156,7 +156,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition /><ColumnDefinition /><ColumnDefinition /><ColumnDefinition /><ColumnDefinition />
             </Grid.ColumnDefinitions>
-            <Button Grid.Column="0" Style="{StaticResource PrimaryModeCard}" Tag="Region" Click="Mode_Click" v:Fx.Entrance="True" v:Fx.EntranceDelay="60" v:Fx.EntranceOffset="18">
+            <Button Grid.Column="0" Style="{StaticResource PrimaryModeCard}" Tag="Region" x:Name="RegionCard" Click="Mode_Click" v:Fx.Entrance="True" v:Fx.EntranceDelay="60" v:Fx.EntranceOffset="18">
                 <DockPanel>
                     <Border DockPanel.Dock="Top" Style="{StaticResource IconTile}" Background="#33FFFFFF" TextElement.Foreground="White">
                         <Path Style="{StaticResource Icon}" Data="{StaticResource IconRegion}" Stroke="White" />
@@ -167,7 +167,7 @@
                     </StackPanel>
                 </DockPanel>
             </Button>
-            <Button Grid.Column="1" Style="{StaticResource ModeCard}" Tag="Window" Click="Mode_Click" v:Fx.Entrance="True" v:Fx.EntranceDelay="105" v:Fx.EntranceOffset="18">
+            <Button Grid.Column="1" Style="{StaticResource ModeCard}" Tag="Window" x:Name="WindowCard" Click="Mode_Click" v:Fx.Entrance="True" v:Fx.EntranceDelay="105" v:Fx.EntranceOffset="18">
                 <DockPanel>
                     <Border DockPanel.Dock="Top" Style="{StaticResource IconTile}">
                         <Path Style="{StaticResource Icon}" Data="{StaticResource IconWindow}" Stroke="{StaticResource AccentTextBrush}" />
@@ -178,7 +178,7 @@
                     </StackPanel>
                 </DockPanel>
             </Button>
-            <Button Grid.Column="2" Style="{StaticResource ModeCard}" Tag="Screen" Click="Mode_Click" v:Fx.Entrance="True" v:Fx.EntranceDelay="150" v:Fx.EntranceOffset="18">
+            <Button Grid.Column="2" Style="{StaticResource ModeCard}" Tag="Screen" x:Name="ScreenCard" Click="Mode_Click" v:Fx.Entrance="True" v:Fx.EntranceDelay="150" v:Fx.EntranceOffset="18">
                 <DockPanel>
                     <Border DockPanel.Dock="Top" Style="{StaticResource IconTile}">
                         <Path Style="{StaticResource Icon}" Data="{StaticResource IconScreen}" Stroke="{StaticResource AccentTextBrush}" />
@@ -189,7 +189,7 @@
                     </StackPanel>
                 </DockPanel>
             </Button>
-            <Button Grid.Column="3" Style="{StaticResource ModeCard}" Tag="Freeform" Click="Mode_Click" v:Fx.Entrance="True" v:Fx.EntranceDelay="195" v:Fx.EntranceOffset="18">
+            <Button Grid.Column="3" Style="{StaticResource ModeCard}" Tag="Freeform" x:Name="FreeformCard" Click="Mode_Click" v:Fx.Entrance="True" v:Fx.EntranceDelay="195" v:Fx.EntranceOffset="18">
                 <DockPanel>
                     <Border DockPanel.Dock="Top" Style="{StaticResource IconTile}">
                         <Path Style="{StaticResource Icon}" Data="{StaticResource IconFreeform}" Stroke="{StaticResource AccentTextBrush}" />
@@ -236,7 +236,7 @@
                 <ComboBoxItem Content="5 seconds" Tag="5" />
                 <ComboBoxItem Content="10 seconds" Tag="10" />
             </ComboBox>
-            <Button Margin="10,0,0,0" Click="OpenImage_Click" ToolTip="Mark up any image file">
+            <Button Margin="10,0,0,0" Click="OpenImage_Click" ToolTip="Mark up any image file (Ctrl+O)">
                 <StackPanel Orientation="Horizontal">
                     <Path Style="{StaticResource Icon}" Data="{StaticResource IconPen}" />
                     <TextBlock Text="Open image" Margin="8,0,0,0" VerticalAlignment="Center" />
@@ -244,11 +244,11 @@
             </Button>
         </StackPanel>
 
-        <!-- Recent -->
+        <!-- Gallery -->
         <Grid Grid.Row="3" Margin="0,30,0,4" MinHeight="40">
-            <TextBlock Text="Recent" FontFamily="{StaticResource DisplayFont}" FontSize="18" FontWeight="SemiBold"
+            <TextBlock Text="Gallery" FontFamily="{StaticResource DisplayFont}" FontSize="18" FontWeight="SemiBold"
                        VerticalAlignment="Center" HorizontalAlignment="Left" />
-            <TextBlock x:Name="RecentHint" Text="Click to edit · Ctrl or Shift+click to select" FontSize="12"
+            <TextBlock x:Name="RecentHint" Text="Click to open · Ctrl or Shift+click to select" FontSize="12"
                        VerticalAlignment="Center" HorizontalAlignment="Right" Foreground="{StaticResource Text3Brush}" />
 
             <!-- Selection actions, shown while anything is selected -->
@@ -267,10 +267,10 @@
                     <Button Style="{StaticResource IconButton}" Click="SelectionCopy_Click" ToolTip="Copy (Ctrl+C)">
                         <Path Style="{StaticResource Icon}" Data="{StaticResource IconCopy}" />
                     </Button>
-                    <Button Style="{StaticResource IconButton}" Click="SelectionFolder_Click" ToolTip="Show in folder">
+                    <Button Style="{StaticResource IconButton}" Click="SelectionFolder_Click" ToolTip="Show in folder (Ctrl+E)">
                         <Path Style="{StaticResource Icon}" Data="{StaticResource IconFolder}" />
                     </Button>
-                    <Button Style="{StaticResource IconButton}" Click="SelectionDelete_Click" ToolTip="Move to Recycle Bin (Delete)"
+                    <Button Style="{StaticResource IconButton}" Click="SelectionDelete_Click" ToolTip="Move to Recycle Bin (Del) · Shift+Del deletes permanently"
                             Foreground="{StaticResource DangerBrush}">
                         <Path Style="{StaticResource Icon}" Data="{StaticResource IconTrash}" />
                     </Button>
@@ -299,14 +299,34 @@
                                         <Border Height="112" CornerRadius="8" Background="{StaticResource WindowBrush}" ClipToBounds="True">
                                             <Image Source="{Binding Thumb}" Stretch="Uniform" Margin="2" RenderOptions.BitmapScalingMode="HighQuality" />
                                         </Border>
+                                        <Border Width="34" Height="34" CornerRadius="17" Background="#A61C1B29" BorderBrush="#40FFFFFF" BorderThickness="1"
+                                                HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"
+                                                Visibility="{Binding IsVideo, Converter={StaticResource BoolToVisibility}}">
+                                            <Path Data="{StaticResource IconPlay}" Fill="White" Stretch="Uniform" Width="11" Height="12" Margin="3,0,0,0" />
+                                        </Border>
                                         <Border Style="{StaticResource SelectDot}" PreviewMouseLeftButtonDown="SelectDot_MouseDown"
                                                 ToolTip="Select · Ctrl+click to add, Shift+click for a range">
-                                            <Path Data="M6.5,11.5 L9.5,14.5 L15,9" Stroke="White" StrokeThickness="2.2" Margin="-2,-2,0,0"
+                                            <Path Data="M5.5,10.2 L8.6,13.3 L14.5,7.2" Stroke="White" StrokeThickness="2.2"
                                                   StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
                                                   Opacity="0" v:Fx.ShowPop="True" v:Fx.Show="{Binding IsSelected}" />
                                         </Border>
                                     </Grid>
-                                    <TextBlock Text="{Binding Name}" FontSize="12" Margin="4,8,4,0" TextTrimming="CharacterEllipsis" />
+                                    <Grid Margin="4,8,4,0">
+                                        <TextBlock Text="{Binding Name}" FontSize="12" TextTrimming="CharacterEllipsis">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsRenaming}" Value="True">
+                                                            <Setter Property="Visibility" Value="Hidden" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                        <TextBox FontSize="12" Padding="4,1" Margin="-5,-3" Visibility="{Binding IsRenaming, Converter={StaticResource BoolToVisibility}}"
+                                                 IsVisibleChanged="RenameBox_IsVisibleChanged" KeyDown="RenameBox_KeyDown"
+                                                 LostKeyboardFocus="RenameBox_LostKeyboardFocus" />
+                                    </Grid>
                                     <TextBlock Text="{Binding Info}" FontSize="11" Margin="4,1,4,4" Foreground="{StaticResource Text3Brush}" />
                                 </StackPanel>
                             </Button>

@@ -53,6 +53,7 @@
             <Geometry x:Key="IconScissors">M6,6 m-3,0 a3,3 0 1 0 6,0 a3,3 0 1 0 -6,0 M6,18 m-3,0 a3,3 0 1 0 6,0 a3,3 0 1 0 -6,0 M8.2,8.2 L20,20 M8.2,15.8 L20,4</Geometry>
             <Geometry x:Key="IconWarning">M12,3.5 L21.5,20 H2.5 Z M12,10 V14 M12,17 V17.2</Geometry>
             <Geometry x:Key="IconDownload">M12,4 V15 M7,10 L12,15 L17,10 M5,20 H19</Geometry>
+            <Geometry x:Key="IconCheck">M5,12.5 L10,17.5 L19,7</Geometry>
 
             <Style x:Key="Icon" TargetType="Path">
                 <Setter Property="Width" Value="24" />

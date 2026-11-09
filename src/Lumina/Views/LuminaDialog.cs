@@ -182,6 +182,12 @@ public sealed class LuminaDialog : Window
     }
 
     /// <summary>A simple notice with one OK button.</summary>
+    /// <summary>The Shift+Delete question: deleting skips the Recycle Bin.</summary>
+    public static bool ConfirmPermanentDelete(Window? owner, string what) =>
+        Show(owner, $"Permanently delete {what}?", "It skips the Recycle Bin and can't be undone.", DialogKind.Warning, null,
+            new DialogButton("Cancel", "cancel", Cancel: true),
+            new DialogButton("Delete permanently", "delete", Danger: true)) == "delete";
+
     public static void Alert(Window? owner, string title, string message, DialogKind kind = DialogKind.Error) =>
         Show(owner, title, message, kind, null, new DialogButton("OK", "ok", Primary: true, Cancel: true));
 
