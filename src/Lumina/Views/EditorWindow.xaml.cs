@@ -21,7 +21,7 @@ public partial class EditorWindow : ChromeWindow
     private Task? _pendingSave;
     // The file at _path holds what was captured or last saved (false while an auto-save is still being written).
     private bool _onDisk;
-    private bool _ready, _syncing;
+    private bool _ready, _syncing, _deleting;
 
     // Zoom eases toward a target, keeping the point under the cursor (or the view centre) still.
     private bool _fitMode = true, _fitFill;
@@ -310,6 +310,7 @@ public partial class EditorWindow : ChromeWindow
         SaveButton.Visibility = saved ? Visibility.Collapsed : Visibility.Visible;
         SavedLabel.Visibility = saved ? Visibility.Visible : Visibility.Collapsed;
         SavedLabel.ToolTip = _path;
+        FolderButton.IsEnabled = DeleteButton.IsEnabled = _path != null;
     }
 
     /// <summary>Lifts the color bar above the corner pills when the window is too narrow for all three in one row.</summary>
@@ -358,7 +359,7 @@ public partial class EditorWindow : ChromeWindow
             _onDisk = true;
             Canvas.MarkSaved();
             UpdateTitle();
-            Flash($"Saved {Path.GetFileName(_path)}");
+            FlashSaved();
             App.Instance.Controller.NotifySaved();
             return true;
         }
@@ -393,7 +394,7 @@ public partial class EditorWindow : ChromeWindow
             ProjectStore.Save(_path, Canvas.Doc);
             Canvas.MarkSaved();
             UpdateTitle();
-            Flash($"Saved {Path.GetFileName(_path)}");
+            FlashSaved();
             App.Instance.Controller.NotifySaved();
         }
         catch (Exception ex)
@@ -405,10 +406,50 @@ public partial class EditorWindow : ChromeWindow
 
     private void Flash(string message) => Toast.Show(message);
 
+    private void FlashSaved()
+    {
+        string path = _path!;
+        Toast.Show($"Saved {Path.GetFileName(path)}", "Show in folder", () => OutputService.ShowInFolder(path));
+    }
+
+    private void ShowInFolder_Click(object sender, RoutedEventArgs e) => ShowInFolder();
+
+    private void ShowInFolder()
+    {
+        if (_path != null) OutputService.ShowInFolder(_path);
+    }
+
+    private async void Delete_Click(object sender, RoutedEventArgs e) => await DeleteAsync();
+
+    /// <summary>Asks, then moves the screenshot to the Recycle Bin, or deletes it for good with Shift held.</summary>
+    private async Task DeleteAsync()
+    {
+        if (_path == null) return;
+        bool permanent = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
+        bool sure = permanent
+            ? LuminaDialog.ConfirmPermanentDelete(this, Path.GetFileName(_path))
+            : LuminaDialog.Show(this, "Delete this screenshot?", "It goes to the Recycle Bin, so you can still restore it.",
+                DialogKind.Warning, null,
+                new DialogButton("Cancel", "cancel", Cancel: true),
+                new DialogButton("Delete", "delete", Danger: true)) == "delete";
+        if (!sure) return;
+        // A capture that's still being written would otherwise land on disk after it was deleted.
+        if (_pendingSave != null)
+        {
+            try { await _pendingSave; } catch { /* nothing was written */ }
+        }
+        string path = _path;
+        _deleting = true;
+        Close();
+        if (permanent) OutputService.DeletePermanently(path);
+        else OutputService.Recycle(path);
+        App.Instance.Controller.NotifySaved();
+    }
+
     protected override async void OnClosing(System.ComponentModel.CancelEventArgs e)
     {
         Canvas.CommitText();
-        if (!Canvas.IsDirty)
+        if (!Canvas.IsDirty || _deleting)
         {
             base.OnClosing(e);
             return;
@@ -551,6 +592,8 @@ public partial class EditorWindow : ChromeWindow
                 case Key.Y: Canvas.Redo(); break;
                 case Key.C: e.Handled = true; await CopyAsync(); return;
                 case Key.S: e.Handled = true; await SaveAsync(); return;
+                case Key.E: ShowInFolder(); break;
+                case Key.Delete: e.Handled = true; await DeleteAsync(); return;
                 case Key.D0 or Key.NumPad0: Fit(fill: true); break;
                 case Key.D1 or Key.NumPad1: SetZoom(1 / DpiScale); break;
                 case Key.OemPlus or Key.Add: ZoomBy(1.25); break;
@@ -565,6 +608,7 @@ public partial class EditorWindow : ChromeWindow
         {
             if (key == Key.Z) { Canvas.Redo(); e.Handled = true; }
             else if (key == Key.S) { e.Handled = true; await SaveAsAsync(); }
+            else if (key == Key.Delete) { e.Handled = true; await DeleteAsync(); }
             return;
         }
 
