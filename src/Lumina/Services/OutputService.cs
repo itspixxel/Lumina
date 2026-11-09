@@ -19,6 +19,9 @@ public static class OutputService
     public static bool IsImageFile(string path) =>
         ImageExtensions.Contains(Path.GetExtension(path).ToLowerInvariant());
 
+    public static bool IsVideoFile(string path) =>
+        string.Equals(Path.GetExtension(path), ".mp4", StringComparison.OrdinalIgnoreCase);
+
     /// <summary>Picks a unique file path in the output folder using the user's naming pattern.</summary>
     public static string ReservePath(string? appName)
     {
@@ -132,10 +135,21 @@ public static class OutputService
         catch (Exception ex) { Log.Error(ex, "Show in folder"); }
     }
 
-    /// <summary>Opens Explorer with every given file selected (files must share a folder).</summary>
+    /// <summary>Opens Explorer with every given file selected, one window per folder they're in.</summary>
     public static void ShowInFolder(IReadOnlyList<string> paths)
     {
         var existing = paths.Where(File.Exists).ToList();
+        if (existing.Count == 0)
+        {
+            OpenOutputFolder();
+            return;
+        }
+        foreach (var group in existing.GroupBy(p => Path.GetDirectoryName(p)!, StringComparer.OrdinalIgnoreCase))
+            ShowInOneFolder(group.ToList());
+    }
+
+    private static void ShowInOneFolder(List<string> existing)
+    {
         if (existing.Count <= 1)
         {
             ShowInFolder(existing.FirstOrDefault() ?? "");
@@ -170,14 +184,27 @@ public static class OutputService
     [DllImport("shell32.dll")]
     private static extern int SHOpenFolderAndSelectItems(IntPtr folder, uint count, IntPtr[] items, uint flags);
 
-    public static void OpenOutputFolder()
+    public static void OpenOutputFolder() => OpenFolder(App.Settings.OutputDirectory);
+
+    public static void OpenFolder(string dir)
     {
         try
         {
-            Directory.CreateDirectory(App.Settings.OutputDirectory);
-            Process.Start(new ProcessStartInfo(App.Settings.OutputDirectory) { UseShellExecute = true });
+            Directory.CreateDirectory(dir);
+            Process.Start(new ProcessStartInfo(dir) { UseShellExecute = true });
         }
-        catch (Exception ex) { Log.Error(ex, "Open output folder"); }
+        catch (Exception ex) { Log.Error(ex, $"Open folder {dir}"); }
+    }
+
+    /// <summary>Deletes a file for good (no Recycle Bin), along with its markup project.</summary>
+    public static void DeletePermanently(string path)
+    {
+        try
+        {
+            if (File.Exists(path)) File.Delete(path);
+            ProjectStore.Delete(path);
+        }
+        catch (Exception ex) { Log.Error(ex, "Delete file"); }
     }
 
     public static void Recycle(string path)

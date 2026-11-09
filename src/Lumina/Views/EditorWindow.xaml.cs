@@ -19,6 +19,8 @@ public partial class EditorWindow : ChromeWindow
     private readonly Dictionary<EditorTool, RadioButton> _toolButtons;
     private string? _path;
     private Task? _pendingSave;
+    // The file at _path holds what was captured or last saved (false while an auto-save is still being written).
+    private bool _onDisk;
     private bool _ready, _syncing;
 
     // Zoom eases toward a target, keeping the point under the cursor (or the view centre) still.
@@ -28,11 +30,13 @@ public partial class EditorWindow : ChromeWindow
     private bool _hasAnchor, _zoomTicking;
     private TimeSpan _zoomLast;
 
-    private EditorWindow(EditorDocument doc, string? path, Task? pendingSave)
+    private EditorWindow(EditorDocument doc, string? path, Task? pendingSave, Task<bool>? copied)
     {
         InitializeComponent();
         _path = path;
         _pendingSave = pendingSave;
+        _onDisk = path != null && pendingSave == null;
+        if (path != null && pendingSave != null) _ = TrackPendingSaveAsync(pendingSave);
 
         _toolButtons = new()
         {
@@ -62,28 +66,51 @@ public partial class EditorWindow : ChromeWindow
         {
             PickerPopup.IsOpen = false;
             Canvas.PickingColor = true;
-            Flash("Click the image to pick a color · Esc to cancel");
+            Toast.Show("Click the image to pick a color, or press Esc to cancel", seconds: 8);
         };
         PickerPopup.Opened += (_, _) => Fx.PlayEntrance(Picker, 0, offsetY: 8, fromScale: 0.96);
         _ready = true;
         ToolPen.IsChecked = true;
         UpdateSize(SizeSlider.Value);
 
-        Loaded += (_, _) => Fit(animate: false);
+        Loaded += async (_, _) =>
+        {
+            Fit(animate: false);
+            // Auto-copy happened as the capture came in; say so here, where the user is looking.
+            if (copied != null) Toast.Show(await copied ? "Copied to clipboard" : "Couldn't copy, the clipboard is busy");
+        };
         UpdateTitle();
         UpdateStatus();
         UpdateHistoryButtons();
     }
 
-    public static void Open(BitmapSource image, string? path, Task? pendingSave = null) =>
-        new EditorWindow(new EditorDocument(image), path, pendingSave).Show();
+    /// <param name="copied">The auto-copy of this capture, if one was made, so the editor can report it.</param>
+    public static void Open(BitmapSource image, string? path, Task? pendingSave = null, Task<bool>? copied = null) =>
+        new EditorWindow(new EditorDocument(image), path, pendingSave, copied).Show();
+
+    /// <summary>The file this editor saves to, if it has one yet.</summary>
+    public string? FilePath => _path;
+
+    private async Task TrackPendingSaveAsync(Task save)
+    {
+        try
+        {
+            await save;
+            if (_pendingSave == save) _onDisk = true;
+        }
+        catch
+        {
+            // Logged by whoever started it; Save writes it again.
+        }
+        UpdateSaveUi();
+    }
 
     public static void OpenFile(string path)
     {
         try
         {
             var doc = ProjectStore.TryLoad(path) ?? new EditorDocument(OutputService.LoadImage(path));
-            new EditorWindow(doc, path, null).Show();
+            new EditorWindow(doc, path, null, null).Show();
         }
         catch (Exception ex)
         {
@@ -271,8 +298,28 @@ public partial class EditorWindow : ChromeWindow
         RedoButton.IsEnabled = Canvas.CanRedo;
     }
 
-    private void UpdateTitle() =>
+    private void UpdateTitle()
+    {
         Title = (_path != null ? Path.GetFileName(_path) : "Untitled capture") + (Canvas.IsDirty ? " •" : "") + " — Lumina";
+        UpdateSaveUi();
+    }
+
+    private void UpdateSaveUi()
+    {
+        bool saved = _onDisk && !Canvas.IsDirty;
+        SaveButton.Visibility = saved ? Visibility.Collapsed : Visibility.Visible;
+        SavedLabel.Visibility = saved ? Visibility.Visible : Visibility.Collapsed;
+        SavedLabel.ToolTip = _path;
+    }
+
+    /// <summary>Lifts the color bar above the corner pills when the window is too narrow for all three in one row.</summary>
+    private void Root_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        double side = Math.Max(SizePill.ActualWidth, ZoomPill.ActualWidth) + 18 + 12;
+        bool fits = e.NewSize.Width >= ColorBar.ActualWidth + 2 * side;
+        ColorBar.Margin = new Thickness(0, 0, 0, fits ? 18 : 64);
+        Toast.Margin = new Thickness(24, 0, 24, fits ? 72 : 118);
+    }
 
     private void UpdateStatus()
     {
@@ -308,9 +355,10 @@ public partial class EditorWindow : ChromeWindow
             var image = Canvas.Doc.RenderFinal();
             await OutputService.SaveAsync(image, _path);
             ProjectStore.Save(_path, Canvas.Doc);
+            _onDisk = true;
             Canvas.MarkSaved();
             UpdateTitle();
-            Flash($"Saved to {Path.GetFileName(_path)}");
+            Flash($"Saved {Path.GetFileName(_path)}");
             App.Instance.Controller.NotifySaved();
             return true;
         }
@@ -340,10 +388,12 @@ public partial class EditorWindow : ChromeWindow
         {
             await OutputService.SaveAsync(Canvas.Doc.RenderFinal(), dialog.FileName);
             _path = dialog.FileName;
+            _pendingSave = null;
+            _onDisk = true;
             ProjectStore.Save(_path, Canvas.Doc);
             Canvas.MarkSaved();
             UpdateTitle();
-            Flash($"Saved to {Path.GetFileName(_path)}");
+            Flash($"Saved {Path.GetFileName(_path)}");
             App.Instance.Controller.NotifySaved();
         }
         catch (Exception ex)
@@ -353,13 +403,7 @@ public partial class EditorWindow : ChromeWindow
         }
     }
 
-    private async void Flash(string message)
-    {
-        StatusText.Text = message;
-        Fx.PlayEntrance(StatusText, 0, offsetY: 6);
-        await Task.Delay(2500);
-        UpdateStatus();
-    }
+    private void Flash(string message) => Toast.Show(message);
 
     protected override async void OnClosing(System.ComponentModel.CancelEventArgs e)
     {
@@ -552,7 +596,7 @@ public partial class EditorWindow : ChromeWindow
                 break;
             case Key.Escape when Canvas.PickingColor:
                 Canvas.PickingColor = false;
-                UpdateStatus();
+                Toast.Hide();
                 e.Handled = true;
                 break;
             case Key.Delete or Key.Back:

@@ -47,7 +47,7 @@ A lightweight, modern screenshot and screen recording tool for Windows - a repla
 ![The trim editor with a filmstrip timeline and trim handles](docs/screenshots/trim.png)
 
 ### Gallery
-- Recent captures on the home window, with multi-select (click the corner circle, or Ctrl / Shift + click), copy, reveal in Explorer and delete to the Recycle Bin.
+- Screenshots and recordings together on the home window, newest first, with multi-select (click the corner circle, or Ctrl / Shift + click), copy, rename (F2), reveal in Explorer and delete to the Recycle Bin (Shift + Delete deletes permanently).
 
 <p align="center"><img src="docs/screenshots/settings.png" width="520" alt="Settings: shortcuts, capture options and recording with audio devices"></p>
 
@@ -81,7 +81,12 @@ Lumina lives in the system tray. Settings are stored in `%AppData%\Lumina`. For 
 | Trim editor | `Space` | Play / pause |
 | Trim editor | `←` / `→` (`Shift` = 5 s) | Step a frame |
 | Trim editor | `I` / `O`, `Home` / `End` | Set trim start / end, jump to start / end |
-| Trim editor | `Ctrl + C`, `Ctrl + S` | Copy the video, save the trim |
+| Trim editor | `Ctrl + C`, `Ctrl + S`, `Ctrl + Shift + S` | Copy the video, save the trim, save as |
+| Trim editor | `Ctrl + G`, `Ctrl + E` | Export a GIF, show in folder |
+| Trim editor | `M`, `R`, `Delete` | Sound on / off, reset the trim, delete |
+| Home | `1` to `5` | Region / Window / Screen / Freeform / Record |
+| Home | `Ctrl + O`, `Ctrl + ,`, `Ctrl + E`, `F5` | Open an image, settings, open folder, refresh |
+| Home | `Enter`, `F2`, `Delete`, `Ctrl + C`, `Ctrl + A`, `Esc` | Open, rename, delete, copy, select all, clear selection |
 
 ## Building from source
 

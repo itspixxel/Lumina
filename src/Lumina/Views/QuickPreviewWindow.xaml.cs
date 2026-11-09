@@ -190,8 +190,11 @@ public partial class QuickPreviewWindow : Window
     {
         if (_path != null)
         {
+            bool permanent = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
+            if (permanent && !LuminaDialog.ConfirmPermanentDelete(null, Path.GetFileName(_path))) return;
             try { if (_saveTask != null) await _saveTask; } catch { /* nothing to delete */ }
-            OutputService.Recycle(_path);
+            if (permanent) OutputService.DeletePermanently(_path);
+            else OutputService.Recycle(_path);
             App.Instance.Controller.NotifySaved();
         }
         Close();

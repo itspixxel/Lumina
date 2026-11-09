@@ -14,7 +14,7 @@
     <AssemblyName>Lumina</AssemblyName>
     <RootNamespace>Lumina</RootNamespace>
     <Product>Lumina</Product>
-    <Version>0.2.1</Version>
+    <Version>0.3.0</Version>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <!-- WPF Fluent theme APIs (ThemeMode) are flagged experimental. -->
     <!-- WFO0003: WPF owns DPI awareness here (per-monitor v2 via app.manifest); WinForms is only used for the tray icon. -->

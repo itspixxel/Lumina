@@ -21,7 +21,7 @@ public partial class VideoEditorWindow : ChromeWindow
     private string _path;
     private double _duration;
     private bool _playing, _wasPlaying, _busy;
-    private string? _lastExport;
+    private double _playFrom;
     private readonly CancellationTokenSource _closing = new();
 
     private VideoEditorWindow(string path)
@@ -52,7 +52,8 @@ public partial class VideoEditorWindow : ChromeWindow
         Load();
     }
 
-    public static void Open(string path)
+    /// <param name="copied">Whether the recording was just auto-copied (null when no copy was attempted), to report it.</param>
+    public static void Open(string path, bool? copied = null)
     {
         var existing = Application.Current.Windows.OfType<VideoEditorWindow>()
             .FirstOrDefault(w => string.Equals(w._path, path, StringComparison.OrdinalIgnoreCase));
@@ -60,7 +61,13 @@ public partial class VideoEditorWindow : ChromeWindow
         window.Show();
         if (window.WindowState == WindowState.Minimized) window.WindowState = WindowState.Normal;
         window.Activate();
+        if (copied is bool ok)
+            window.Dispatcher.BeginInvoke(() => window.Toast.Show(ok ? "Copied to clipboard" : "Couldn't copy, the clipboard is busy"),
+                System.Windows.Threading.DispatcherPriority.Loaded);
     }
+
+    /// <summary>The recording this window is showing.</summary>
+    public string FilePath => _path;
 
     private void Load()
     {
@@ -68,7 +75,10 @@ public partial class VideoEditorWindow : ChromeWindow
         Player.IsMuted = true; // silent while it opens
         Player.Source = new Uri(_path);
         Player.Play(); // MediaOpened only fires once playback is requested
+        _ = CorrectLevelsAsync();
     }
+
+    private async Task CorrectLevelsAsync() => Player.Effect = await VideoLevels.CorrectionAsync();
 
     // ---------- Playback ----------
 
@@ -76,7 +86,7 @@ public partial class VideoEditorWindow : ChromeWindow
     {
         Player.Pause();
         Player.Position = TimeSpan.Zero;
-        Player.IsMuted = AudioToggle.IsChecked != true;
+        SyncMute();
         LoadingText.Visibility = Visibility.Collapsed;
         _duration = Player.NaturalDuration.HasTimeSpan ? Player.NaturalDuration.TimeSpan.TotalSeconds : 0;
         Timeline.Duration = _duration;
@@ -110,15 +120,24 @@ public partial class VideoEditorWindow : ChromeWindow
         if (pos < Timeline.Start || pos >= Timeline.End - 0.05) Seek(Timeline.Start);
         Player.Play();
         _playing = true;
+        _playFrom = Player.Position.TotalSeconds;
+        SyncMute();
         CompositionTarget.Rendering -= Tick;
         CompositionTarget.Rendering += Tick;
         SyncPlayUi();
     }
 
+    /// <summary>
+    /// Sound only while playing: seeking a paused MediaElement (scrubbing, arrow keys) plays a blip of audio
+    /// at every step otherwise.
+    /// </summary>
+    private void SyncMute() => Player.IsMuted = !_playing || AudioToggle.IsChecked != true;
+
     private void Pause()
     {
         Player.Pause();
         _playing = false;
+        SyncMute();
         CompositionTarget.Rendering -= Tick;
         SyncPlayUi();
     }
@@ -137,12 +156,15 @@ public partial class VideoEditorWindow : ChromeWindow
         PlayIcon.StrokeThickness = 3;
         PlayIcon.Margin = new Thickness(_playing ? 0 : 3, 0, 0, 0);
         PlayButton.ToolTip = _playing ? "Pause (Space)" : "Play (Space)";
-        Fx.SetShow(BigPlay, !_playing);
+        // The big play badge waits for the video to actually move before fading: fading it while the player is
+        // still seeking redraws that square over a frame that isn't there yet, which flashes black.
+        if (!_playing) Fx.SetShow(BigPlay, true);
     }
 
     private void Tick(object? sender, EventArgs e)
     {
         double pos = Player.Position.TotalSeconds;
+        if (Fx.GetShow(BigPlay) && pos > _playFrom + 0.05) Fx.SetShow(BigPlay, false);
         if (pos >= Timeline.End)
         {
             Pause();
@@ -183,7 +205,31 @@ public partial class VideoEditorWindow : ChromeWindow
         TrimBadge.Visibility = trimmed ? Visibility.Visible : Visibility.Collapsed;
         ResetTrim.Visibility = trimmed ? Visibility.Visible : Visibility.Collapsed;
         TrimText.Text = $"{Format(Timeline.Start)} – {Format(Timeline.End)} · {Format(Timeline.End - Timeline.Start)}";
-        SaveButton.IsEnabled = IsModified && !_busy;
+        bool modified = IsModified;
+        SaveButton.Visibility = modified ? Visibility.Visible : Visibility.Collapsed;
+        SaveButton.IsEnabled = !_busy;
+        SavedLabel.Visibility = modified ? Visibility.Collapsed : Visibility.Visible;
+        SavedLabel.ToolTip = _path;
+        Dispatcher.BeginInvoke(UpdateBarLayout, System.Windows.Threading.DispatcherPriority.Loaded);
+    }
+
+    private void BottomBar_SizeChanged(object sender, SizeChangedEventArgs e) => UpdateBarLayout();
+
+    /// <summary>Puts the actions under the times when one row can't fit both.</summary>
+    private void UpdateBarLayout()
+    {
+        double Natural(FrameworkElement el)
+        {
+            el.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            return el.DesiredSize.Width;
+        }
+        bool wrap = Natural(TimeGroup) + Natural(Actions) + 16 > BottomBar.ActualWidth;
+        Grid.SetRow(Actions, wrap ? 1 : 0);
+        Grid.SetColumn(Actions, wrap ? 0 : 1);
+        Grid.SetColumnSpan(Actions, wrap ? 2 : 1);
+        Actions.Margin = wrap ? new Thickness(0, 12, 0, 0) : new Thickness(16, 0, 0, 0);
+        TimeGroup.InvalidateMeasure();
+        Actions.InvalidateMeasure();
     }
 
     private async Task LoadThumbnailsAsync()
@@ -239,7 +285,7 @@ public partial class VideoEditorWindow : ChromeWindow
         string encoder = App.Settings.HardwareEncoding ? await Ffmpeg.PickEncoderAsync() : "libx264";
         string audio = KeepAudio ? "-c:a aac -b:a 192k" : "-an";
         await Ffmpeg.RunJobAsync(
-            $"-ss {Ffmpeg.Seconds(start)} -i {Ffmpeg.Quote(_path)} -t {Ffmpeg.Seconds(length)} {Ffmpeg.EncoderArgs(encoder)} -pix_fmt yuv420p {audio} -movflags +faststart {Ffmpeg.Quote(output)}",
+            $"-ss {Ffmpeg.Seconds(start)} -i {Ffmpeg.Quote(_path)} -t {Ffmpeg.Seconds(length)} {Ffmpeg.EncoderArgs(encoder)} {Ffmpeg.Yuv709Args} {audio} -movflags +faststart {Ffmpeg.Quote(output)}",
             length, new Progress<double>(ShowProgress), _closing.Token);
     }
 
@@ -267,11 +313,7 @@ public partial class VideoEditorWindow : ChromeWindow
         _busy = true;
         Pause();
         Actions.IsEnabled = false;
-        StatusPanel.Visibility = Visibility.Visible;
-        ProgressTrack.Visibility = Visibility.Visible;
-        StatusLink.Visibility = Visibility.Collapsed;
-        ProgressFill.Width = 0;
-        StatusText.Text = label;
+        Toast.ShowProgress(label);
         try
         {
             await work();
@@ -284,7 +326,7 @@ public partial class VideoEditorWindow : ChromeWindow
         catch (Exception ex)
         {
             Log.Error(ex, label);
-            StatusPanel.Visibility = Visibility.Collapsed;
+            Toast.Hide();
             LuminaDialog.Alert(this, "Export failed", ex.Message);
             return false;
         }
@@ -292,21 +334,23 @@ public partial class VideoEditorWindow : ChromeWindow
         {
             _busy = false;
             Actions.IsEnabled = true;
-            ProgressTrack.Visibility = Visibility.Collapsed;
             UpdateTrimUi();
         }
     }
 
-    private void ShowProgress(double p) => ProgressFill.Width = ProgressTrack.Width * Math.Clamp(p, 0, 1);
+    private void ShowProgress(double p) => Toast.SetProgress(p);
 
+    /// <summary>Reports a finished job; <paramref name="path"/> is the file it wrote, if any.</summary>
     private void Done(string text, string? path)
     {
-        _lastExport = path;
-        if (path != null && App.Settings.CopyToClipboard && ClipboardService.CopyFile(path)) text += " · copied";
-        StatusPanel.Visibility = Visibility.Visible;
-        StatusText.Text = text;
-        StatusLink.Visibility = path != null ? Visibility.Visible : Visibility.Collapsed;
-        Fx.PlayEntrance(StatusPanel, 0, offsetY: 4);
+        if (path == null)
+        {
+            Toast.Show(text);
+            return;
+        }
+        if (App.Settings.CopyToClipboard && ClipboardService.CopyFile(path)) text += ", copied";
+        Toast.Show(text, "Show in folder", () => OutputService.ShowInFolder(path));
+        App.Instance.Controller.NotifySaved(); // refresh the gallery
     }
 
     private static string Unique(string path)
@@ -417,29 +461,35 @@ public partial class VideoEditorWindow : ChromeWindow
         bool on = AudioToggle.IsChecked == true;
         AudioText.Text = on ? "Sound on" : "Sound off";
         AudioIcon.Data = (Geometry)FindResource(on ? "IconSpeaker" : "IconSpeakerOff");
-        Player.IsMuted = !on;
+        SyncMute();
         UpdateTrimUi();
-    }
-
-    private void StatusLink_Click(object sender, RoutedEventArgs e)
-    {
-        if (_lastExport != null) OutputService.ShowInFolder(_lastExport);
     }
 
     private void ShowInFolder_Click(object sender, RoutedEventArgs e) => OutputService.ShowInFolder(_path);
 
-    private void Delete_Click(object sender, RoutedEventArgs e)
+    private void Delete_Click(object sender, RoutedEventArgs e) => Delete();
+
+    /// <summary>Asks, then moves the recording to the Recycle Bin, or deletes it for good with Shift held.</summary>
+    private void Delete()
     {
-        var answer = LuminaDialog.Show(this, "Delete this recording?", "It goes to the Recycle Bin, so you can still restore it.",
-            DialogKind.Warning, null,
-            new DialogButton("Cancel", "cancel", Cancel: true),
-            new DialogButton("Delete", "delete", Danger: true));
-        if (answer != "delete") return;
+        bool permanent = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
+        bool sure = permanent
+            ? LuminaDialog.ConfirmPermanentDelete(this, Path.GetFileName(_path))
+            : LuminaDialog.Show(this, "Delete this recording?", "It goes to the Recycle Bin, so you can still restore it.",
+                DialogKind.Warning, null,
+                new DialogButton("Cancel", "cancel", Cancel: true),
+                new DialogButton("Delete", "delete", Danger: true)) == "delete";
+        if (!sure) return;
         Player.Close();
         Player.Source = null;
         string path = _path;
         Close();
-        Dispatcher.BeginInvoke(() => OutputService.Recycle(path), System.Windows.Threading.DispatcherPriority.Background);
+        Dispatcher.BeginInvoke(() =>
+        {
+            if (permanent) OutputService.DeletePermanently(path);
+            else OutputService.Recycle(path);
+            App.Instance.Controller.NotifySaved();
+        }, System.Windows.Threading.DispatcherPriority.Background);
     }
 
     private void SetInPoint()
@@ -492,6 +542,25 @@ public partial class VideoEditorWindow : ChromeWindow
                 e.Handled = true;
                 await CopyAsync();
                 return;
+            case Key.S when mods == (ModifierKeys.Control | ModifierKeys.Shift):
+                SaveAs_Click(this, e);
+                break;
+            case Key.G when mods == ModifierKeys.Control:
+                Gif_Click(this, e);
+                break;
+            case Key.E when mods == ModifierKeys.Control:
+                OutputService.ShowInFolder(_path);
+                break;
+            case Key.M when mods == ModifierKeys.None && AudioToggle.IsEnabled:
+                AudioToggle.IsChecked = AudioToggle.IsChecked != true;
+                AudioToggle_Click(this, e);
+                break;
+            case Key.R when mods == ModifierKeys.None && IsTrimmed:
+                ResetTrim_Click(this, e);
+                break;
+            case Key.Delete when mods is ModifierKeys.None or ModifierKeys.Shift:
+                Delete();
+                break;
             default:
                 return;
         }

@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using System.Windows.Threading;
 using Lumina.Recording;
 using Lumina.Services;
@@ -29,8 +30,9 @@ public partial class SettingsWindow : ChromeWindow
         HideWindows.IsChecked = _s.HideWindowsDuringCapture;
         CopyToClipboard.IsChecked = _s.CopyToClipboard;
         AutoSave.IsChecked = _s.AutoSave;
-        ShowQuickPreview.IsChecked = _s.ShowQuickPreview;
-        OpenEditor.IsChecked = _s.OpenEditorAfterCapture;
+        // Opening the editor always skipped the preview, so the two switches are really one choice.
+        AfterScreenshot.SelectedIndex = _s.OpenEditorAfterCapture ? 1 : _s.ShowQuickPreview ? 0 : 2;
+        PreviewSecondsRow.Visibility = AfterScreenshot.SelectedIndex == 0 ? Visibility.Visible : Visibility.Collapsed;
         PreviewSeconds.Value = _s.PreviewSeconds;
         OutputDirectory.Text = _s.OutputDirectory;
         FileNamePattern.Text = _s.FileNamePattern;
@@ -59,6 +61,14 @@ public partial class SettingsWindow : ChromeWindow
         _saveTimer.Tick += (_, _) => Commit();
         // The record overlay can switch audio devices while this window is open; pick that up when coming back.
         Activated += (_, _) => ReloadAudio();
+        PreviewKeyDown += (_, e) =>
+        {
+            if (e.Key == System.Windows.Input.Key.Escape && Keyboard.FocusedElement is not ComboBox and not ComboBoxItem)
+            {
+                e.Handled = true;
+                Close();
+            }
+        };
     }
 
     private void Changed(object sender, EventArgs e)
@@ -88,11 +98,11 @@ public partial class SettingsWindow : ChromeWindow
         _s.HideWindowsDuringCapture = HideWindows.IsChecked == true;
         _s.CopyToClipboard = CopyToClipboard.IsChecked == true;
         _s.AutoSave = AutoSave.IsChecked == true;
-        _s.ShowQuickPreview = ShowQuickPreview.IsChecked == true;
-        _s.OpenEditorAfterCapture = OpenEditor.IsChecked == true;
+        _s.OpenEditorAfterCapture = AfterScreenshot.SelectedIndex == 1;
+        _s.ShowQuickPreview = AfterScreenshot.SelectedIndex == 0;
         _s.PreviewSeconds = (int)PreviewSeconds.Value;
 
-        string before = _s.OutputDirectory;
+        string before = _s.OutputDirectory, beforeRecordings = _s.RecordingsDirectory;
         string dir = OutputDirectory.Text.Trim();
         if (dir.Length > 0)
         {
@@ -110,7 +120,8 @@ public partial class SettingsWindow : ChromeWindow
         _s.StartWithWindows = startup;
 
         SettingsService.Save(_s);
-        if (_s.OutputDirectory != before) App.Instance.Controller.NotifySaved(); // refresh the home list
+        if (_s.OutputDirectory != before || _s.RecordingsDirectory != beforeRecordings)
+            App.Instance.Controller.NotifySaved(); // refresh the home list
     }
 
     // ---------- Recording ----------
@@ -240,15 +251,7 @@ public partial class SettingsWindow : ChromeWindow
         if (dialog.ShowDialog(this) == true) RecordingsDirectory.Text = dialog.FolderName;
     }
 
-    private void OpenRecordingsFolder_Click(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            Directory.CreateDirectory(RecordingsDirectory.Text);
-            Process.Start(new ProcessStartInfo(RecordingsDirectory.Text) { UseShellExecute = true });
-        }
-        catch (Exception ex) { Log.Error(ex, "Open recordings folder"); }
-    }
+    private void OpenRecordingsFolder_Click(object sender, RoutedEventArgs e) => OutputService.OpenFolder(RecordingsDirectory.Text);
 
     private void UpdatePatternPreview()
     {
@@ -278,6 +281,11 @@ public partial class SettingsWindow : ChromeWindow
         if (QualityText != null) QualityText.Text = $"{(int)e.NewValue}";
     }
 
+    private void AfterScreenshot_Changed(object sender, SelectionChangedEventArgs e)
+    {
+        if (!_loading) Fx.Reveal(PreviewSecondsRow, AfterScreenshot.SelectedIndex == 0, offsetY: -4);
+    }
+
     private void PreviewSeconds_Changed(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
         if (PreviewSecondsText != null) PreviewSecondsText.Text = $"{(int)e.NewValue} s";
@@ -293,15 +301,7 @@ public partial class SettingsWindow : ChromeWindow
         if (dialog.ShowDialog(this) == true) OutputDirectory.Text = dialog.FolderName;
     }
 
-    private void OpenFolder_Click(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            Directory.CreateDirectory(OutputDirectory.Text);
-            Process.Start(new ProcessStartInfo(OutputDirectory.Text) { UseShellExecute = true });
-        }
-        catch (Exception ex) { Log.Error(ex, "Open folder from settings"); }
-    }
+    private void OpenFolder_Click(object sender, RoutedEventArgs e) => OutputService.OpenFolder(OutputDirectory.Text);
 
     private void DataFolder_Click(object sender, RoutedEventArgs e)
     {

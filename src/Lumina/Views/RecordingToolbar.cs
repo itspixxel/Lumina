@@ -330,20 +330,17 @@ public sealed class RecordingToolbar : RecordingSurfaceWindow
         _pause.Click += (_, _) => _controller.TogglePause();
         _buttons.Children.Add(_pause);
 
-        _stop = IconButton("IconStop", "Stop and save");
+        _stop = IconButton("IconStop", TrayIcon.ShortcutFor(Lumina.Capture.CaptureMode.Record) is { } stopKey
+            ? $"Stop and save ({stopKey})" : "Stop and save");
         _stop.Foreground = (Brush)Application.Current.Resources["DangerBrush"];
         ((Shapes.Path)_stop.Content).Fill = (Brush)Application.Current.Resources["DangerBrush"];
         _stop.Click += (_, _) => _controller.Stop();
         _buttons.Children.Add(_stop);
 
-        if (recorder.HasMicrophone || recorder.HasSystemAudio)
-        {
-            _buttons.Children.Add(Divider());
-            if (recorder.HasMicrophone)
-                _buttons.Children.Add(MuteButton("IconMic", "microphone", muted => recorder.MicMuted = muted));
-            if (recorder.HasSystemAudio)
-                _buttons.Children.Add(MuteButton("IconSpeaker", "system audio", muted => recorder.SystemMuted = muted));
-        }
+        // Both sources are always here, so one switched off beforehand can still be turned on mid-recording.
+        _buttons.Children.Add(Divider());
+        _buttons.Children.Add(MuteButton("IconMic", "microphone", recorder.MicMuted, recorder.SetMicMuted));
+        _buttons.Children.Add(MuteButton("IconSpeaker", "system audio", recorder.SystemMuted, recorder.SetSystemMuted));
 
         _buttons.Children.Add(Divider());
         _discard = IconButton("IconTrash", "Discard recording");
@@ -389,23 +386,26 @@ public sealed class RecordingToolbar : RecordingSurfaceWindow
         },
     };
 
-    /// <summary>Mutes a source mid-recording; the icon gets struck through while muted.</summary>
-    private static Button MuteButton(string icon, string what, Action<bool> apply)
+    /// <summary>Mutes or unmutes a source mid-recording; the icon gets struck through while muted.</summary>
+    /// <param name="apply">Asks for a state and returns the one that took (a source can fail to open).</param>
+    private static Button MuteButton(string icon, string what, bool muted, Func<bool, bool> apply)
     {
         var glyph = new StrikeIcon(icon);
+        glyph.SetStruck(muted, animate: false);
         var button = new Button
         {
             Style = (Style)Application.Current.Resources["IconButton"],
-            ToolTip = $"Mute {what}",
+            ToolTip = muted ? $"Unmute {what}" : $"Mute {what}",
             Focusable = false,
             Content = glyph,
         };
         button.Click += (_, _) =>
         {
-            bool muted = !glyph.Struck;
-            apply(muted);
-            glyph.SetStruck(muted);
-            button.ToolTip = muted ? $"Unmute {what}" : $"Mute {what}";
+            bool wanted = !glyph.Struck;
+            bool now = apply(wanted);
+            glyph.SetStruck(now);
+            button.ToolTip = now ? $"Unmute {what}" : $"Mute {what}";
+            if (now != wanted) StrikeIcon.Bump(button); // couldn't open the device
         };
         return button;
     }

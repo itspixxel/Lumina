@@ -104,16 +104,31 @@ public sealed class ScreenRecorder
     /// <summary>Audio sources that were asked for but couldn't be opened.</summary>
     public List<string> AudioProblems { get; } = new();
 
-    public bool SystemMuted
-    {
-        get => _system?.Muted ?? false;
-        set { if (_system != null) _system.Muted = value; }
-    }
+    /// <summary>Muted, or not being recorded at all (switched off before starting).</summary>
+    public bool SystemMuted => _system?.Muted ?? true;
+    public bool MicMuted => _mic?.Muted ?? true;
 
-    public bool MicMuted
+    /// <summary>Mutes or unmutes system audio. Returns whether it's muted afterwards.</summary>
+    public bool SetSystemMuted(bool muted) =>
+        SetMuted(ref _system, muted, AudioFlow.Output, _options.SystemDevice, "system.wav", "System audio");
+
+    public bool SetMicMuted(bool muted) =>
+        SetMuted(ref _mic, muted, AudioFlow.Input, _options.MicDevice, "mic.wav", "Microphone");
+
+    /// <summary>
+    /// A source that was off when recording started opens the first time it's unmuted; its track starts with
+    /// silence up to that moment so it stays in sync.
+    /// </summary>
+    private bool SetMuted(ref AudioCapture? capture, bool muted, AudioFlow flow, string? device, string file, string label)
     {
-        get => _mic?.Muted ?? false;
-        set { if (_mic != null) _mic.Muted = value; }
+        if (capture == null)
+        {
+            if (muted || _stopped) return true;
+            capture = OpenAudio(flow, device, file, label);
+            if (capture == null) return true;
+        }
+        capture.Muted = muted;
+        return muted;
     }
 
     public async Task StartAsync()
@@ -142,7 +157,7 @@ public sealed class ScreenRecorder
     {
         string args = "-hide_banner -loglevel error " +
                       $"-f rawvideo -pix_fmt bgr0 -video_size {_area.Width}x{_area.Height} -framerate {_options.Fps} -i - " +
-                      $"{Ffmpeg.EncoderArgs(encoder)} -pix_fmt yuv420p -g {_options.Fps * 2} -movflags +faststart -y {Ffmpeg.Quote(_videoPath)}";
+                      $"{Ffmpeg.EncoderArgs(encoder)} {Ffmpeg.Yuv709Args} -g {_options.Fps * 2} -movflags +faststart -y {Ffmpeg.Quote(_videoPath)}";
         var p = Ffmpeg.Start(args, redirectInput: true);
         _ffmpegErrors = p.StandardError.ReadToEndAsync();
         return p;

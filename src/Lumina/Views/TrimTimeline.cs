@@ -13,7 +13,7 @@ namespace Lumina.Views;
 /// </summary>
 public sealed class TrimTimeline : FrameworkElement
 {
-    private const double Handle = 14, Radius = 10, MinLength = 0.2;
+    private const double Handle = 14, Radius = 10, InnerRadius = 7, MinLength = 0.2;
 
     public static readonly DependencyProperty DurationProperty = Register(nameof(Duration), 0.0);
     public static readonly DependencyProperty StartProperty = Register(nameof(Start), 0.0);
@@ -113,10 +113,18 @@ public sealed class TrimTimeline : FrameworkElement
             ctx.ArcTo(new Point(frame.X, frame.Bottom - Radius), new Size(Radius, Radius), 0, false, SweepDirection.Clockwise, false, false);
             ctx.LineTo(new Point(frame.X, frame.Y + Radius), false, false);
             ctx.ArcTo(new Point(frame.X + Radius, frame.Y), new Size(Radius, Radius), 0, false, SweepDirection.Clockwise, false, false);
-            ctx.BeginFigure(new Point(s, frame.Y + 3), true, true);
-            ctx.LineTo(new Point(e, frame.Y + 3), false, false);
-            ctx.LineTo(new Point(e, frame.Bottom - 3), false, false);
-            ctx.LineTo(new Point(s, frame.Bottom - 3), false, false);
+            // Inner window, rounded like the filmstrip so the clip's corners sit flush inside it.
+            double top = frame.Y + 3, bottom = frame.Bottom - 3;
+            double r = Math.Min(InnerRadius, Math.Min((e - s) / 2, (bottom - top) / 2));
+            ctx.BeginFigure(new Point(s + r, top), true, true);
+            ctx.LineTo(new Point(e - r, top), false, false);
+            ctx.ArcTo(new Point(e, top + r), new Size(r, r), 0, false, SweepDirection.Clockwise, false, false);
+            ctx.LineTo(new Point(e, bottom - r), false, false);
+            ctx.ArcTo(new Point(e - r, bottom), new Size(r, r), 0, false, SweepDirection.Clockwise, false, false);
+            ctx.LineTo(new Point(s + r, bottom), false, false);
+            ctx.ArcTo(new Point(s, bottom - r), new Size(r, r), 0, false, SweepDirection.Clockwise, false, false);
+            ctx.LineTo(new Point(s, top + r), false, false);
+            ctx.ArcTo(new Point(s + r, top), new Size(r, r), 0, false, SweepDirection.Clockwise, false, false);
         }
         outline.FillRule = FillRule.EvenOdd;
         outline.Freeze();

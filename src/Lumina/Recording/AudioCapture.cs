@@ -173,6 +173,7 @@ internal sealed class AudioCapture : IDisposable
 
         var silence = new byte[_blockAlign * _sampleRate / 10];
         var copy = Array.Empty<byte>();
+        FillGap(silence); // opened mid-recording: start the track at the current time
         try
         {
             while (!_stop)
@@ -180,6 +181,7 @@ internal sealed class AudioCapture : IDisposable
                 while (Wasapi.GetNextPacketSize(capture, out uint packet) == 0 && packet > 0)
                 {
                     if (Wasapi.GetBuffer(capture, out IntPtr data, out uint frames, out uint bufferFlags) != 0) break;
+                    if (_written == 0) FillGap(silence); // opened while paused: catch up once the clock runs
                     if (Accept(frames))
                     {
                         int bytes = (int)frames * _blockAlign;

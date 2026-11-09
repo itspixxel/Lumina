@@ -270,6 +270,16 @@ public static class Ffmpeg
         _ => "-c:v libx264 -preset veryfast -crf 21 -tune zerolatency",
     };
 
+    /// <summary>
+    /// Converts to 4:2:0 with the BT.709 matrix and tags the stream to match. Left alone, FFmpeg converts with
+    /// BT.601 and writes no tags, while players decode HD as BT.709, so colours come out shifted and dull.
+    /// Untagged input (recordings made before this) is read as BT.601, so re-encoding those corrects them too.
+    /// The tags go on the frames (setparams) because encoders take them from there, not from -color_* options.
+    /// </summary>
+    public const string Yuv709Args =
+        "-vf \"scale=out_color_matrix=bt709:out_range=tv,format=yuv420p," +
+        "setparams=range=tv:colorspace=bt709:color_primaries=bt709:color_trc=bt709\"";
+
     // ---------- Running ----------
 
     public sealed record RunResult(int ExitCode, string Output, string Error);

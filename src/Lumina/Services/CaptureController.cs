@@ -81,10 +81,10 @@ public sealed class CaptureController
             }
         }
 
-        if (s.CopyToClipboard) _ = ClipboardService.CopyImageAsync(result.Image);
+        var copied = s.CopyToClipboard ? ClipboardService.CopyImageAsync(result.Image) : null;
 
         if (s.OpenEditorAfterCapture)
-            EditorWindow.Open(result.Image, path, save);
+            EditorWindow.Open(result.Image, path, save, copied);
         else if (s.ShowQuickPreview)
             QuickPreviewWindow.ShowCapture(result.Image, path, save, result.AppName);
     }

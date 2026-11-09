@@ -26,6 +26,17 @@
             <Setter Property="Margin" Value="0,0,0,8" />
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
+        <Style x:Key="FolderBox" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Padding" Value="30,7,10,7" />
+        </Style>
+        <Style x:Key="FolderBoxIcon" TargetType="Path" BasedOn="{StaticResource Icon}">
+            <Setter Property="Data" Value="{StaticResource IconFolder}" />
+            <Setter Property="Stroke" Value="{StaticResource Text2Brush}" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="10,0,0,0" />
+            <Setter Property="IsHitTestVisible" Value="False" />
+        </Style>
     </v:ChromeWindow.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -135,7 +146,10 @@
                     <DockPanel>
                         <Button DockPanel.Dock="Right" Content="Open" Margin="8,0,0,0" Click="OpenRecordingsFolder_Click" />
                         <Button DockPanel.Dock="Right" Content="Browse" Margin="8,0,0,0" Click="BrowseRecordings_Click" />
-                        <TextBox x:Name="RecordingsDirectory" />
+                        <Grid>
+                            <TextBox x:Name="RecordingsDirectory" Style="{StaticResource FolderBox}" />
+                            <Path Style="{StaticResource FolderBoxIcon}" />
+                        </Grid>
                     </DockPanel>
                 </StackPanel>
             </Border>
@@ -150,24 +164,35 @@
                         </StackPanel>
                     </CheckBox>
                     <Border Style="{StaticResource RowDivider}" />
-                    <CheckBox x:Name="AutoSave"><TextBlock Text="Save to the output folder" /></CheckBox>
-                    <Border Style="{StaticResource RowDivider}" />
-                    <CheckBox x:Name="ShowQuickPreview"><TextBlock Text="Show the floating preview" /></CheckBox>
-                    <Border Style="{StaticResource RowDivider}" />
-                    <CheckBox x:Name="OpenEditor">
+                    <CheckBox x:Name="AutoSave">
                         <StackPanel>
-                            <TextBlock Text="Open the editor right away" />
-                            <TextBlock Style="{StaticResource Hint}" Text="Skips the preview and goes straight to markup." />
+                            <TextBlock Text="Save screenshots to the output folder" />
+                            <TextBlock Style="{StaticResource Hint}" Text="Recordings are always saved, to the recordings folder." />
                         </StackPanel>
                     </CheckBox>
                     <Border Style="{StaticResource RowDivider}" />
                     <DockPanel Margin="0,12">
-                        <TextBlock Text="Preview stays for" VerticalAlignment="Center" Width="140" />
-                        <TextBlock x:Name="PreviewSecondsText" DockPanel.Dock="Right" Width="44" VerticalAlignment="Center" TextAlignment="Right"
-                                   Foreground="{StaticResource Text2Brush}" />
-                        <Slider x:Name="PreviewSeconds" Minimum="2" Maximum="30" IsSnapToTickEnabled="True" TickFrequency="1"
-                                VerticalAlignment="Center" ValueChanged="PreviewSeconds_Changed" />
+                        <ComboBox x:Name="AfterScreenshot" DockPanel.Dock="Right" Width="230" Margin="20,0,0,0" VerticalAlignment="Center"
+                                  SelectionChanged="AfterScreenshot_Changed">
+                            <ComboBoxItem Content="Show a floating preview" Tag="preview" />
+                            <ComboBoxItem Content="Open the markup editor" Tag="editor" />
+                            <ComboBoxItem Content="Nothing" Tag="none" />
+                        </ComboBox>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="After a screenshot" />
+                            <TextBlock Style="{StaticResource Hint}" Text="Recordings always open in the trim editor." />
+                        </StackPanel>
                     </DockPanel>
+                    <StackPanel x:Name="PreviewSecondsRow">
+                        <Border Style="{StaticResource RowDivider}" />
+                        <DockPanel Margin="0,12">
+                            <TextBlock Text="Preview stays for" VerticalAlignment="Center" Width="140" />
+                            <TextBlock x:Name="PreviewSecondsText" DockPanel.Dock="Right" Width="44" VerticalAlignment="Center" TextAlignment="Right"
+                                       Foreground="{StaticResource Text2Brush}" />
+                            <Slider x:Name="PreviewSeconds" Minimum="2" Maximum="30" IsSnapToTickEnabled="True" TickFrequency="1"
+                                    VerticalAlignment="Center" ValueChanged="PreviewSeconds_Changed" />
+                        </DockPanel>
+                    </StackPanel>
                 </StackPanel>
             </Border>
 
@@ -178,7 +203,10 @@
                     <DockPanel>
                         <Button DockPanel.Dock="Right" Content="Open" Margin="8,0,0,0" Click="OpenFolder_Click" />
                         <Button DockPanel.Dock="Right" Content="Browse" Margin="8,0,0,0" Click="Browse_Click" />
-                        <TextBox x:Name="OutputDirectory" />
+                        <Grid>
+                            <TextBox x:Name="OutputDirectory" Style="{StaticResource FolderBox}" />
+                            <Path Style="{StaticResource FolderBoxIcon}" />
+                        </Grid>
                     </DockPanel>
 
                     <TextBlock Text="File name" Style="{StaticResource FieldLabel}" Margin="0,18,0,8" />
