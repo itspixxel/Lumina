@@ -79,6 +79,7 @@ Lumina lives in the system tray. Settings are stored in `%AppData%\Lumina`. For 
 | Editor | `[` / `]` | Smaller / larger brush |
 | Editor | `Ctrl + Z` / `Ctrl + Y` | Undo / redo |
 | Editor | `Ctrl + C`, `Ctrl + S`, `Ctrl + Shift + S` | Copy, save, save as |
+| Editor | `Ctrl + E`, `Ctrl + Delete` | Show in folder, delete |
 | Editor | `Ctrl + 0` / `Ctrl + 1` / `Ctrl + scroll` | Fit, actual size, zoom |
 | Trim editor | `Space` | Play / pause |
 | Trim editor | `←` / `→` (`Shift` = 5 s) | Step a frame |

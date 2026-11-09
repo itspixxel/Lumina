@@ -69,6 +69,14 @@
 
     <v:ChromeWindow.TitleBarContent>
         <StackPanel Orientation="Horizontal">
+            <Button x:Name="FolderButton" Style="{StaticResource IconButton}" Click="ShowInFolder_Click" ToolTip="Show in folder (Ctrl+E)">
+                <Path Style="{StaticResource Icon}" Data="{StaticResource IconFolder}" />
+            </Button>
+            <Button x:Name="DeleteButton" Style="{StaticResource IconButton}" Click="Delete_Click" Margin="2,0,0,0"
+                    ToolTip="Move to Recycle Bin (Ctrl+Del), Ctrl+Shift+Del deletes permanently" Foreground="{StaticResource DangerBrush}">
+                <Path Style="{StaticResource Icon}" Data="{StaticResource IconTrash}" />
+            </Button>
+            <Rectangle Style="{StaticResource VDivider}" Margin="8,0" />
             <Button x:Name="UndoButton" Style="{StaticResource IconButton}" Click="Undo_Click" ToolTip="Undo (Ctrl+Z)">
                 <Path Style="{StaticResource Icon}" Data="{StaticResource IconUndo}" />
             </Button>
@@ -83,7 +91,7 @@
                 </StackPanel>
             </Button>
             <Button Style="{StaticResource GhostButton}" Click="SaveAs_Click" ToolTip="Save a copy somewhere else (Ctrl+Shift+S)" Padding="10,6" Margin="2,0">
-                <TextBlock Text="Save as..." VerticalAlignment="Center" />
+                <TextBlock Text="Save as…" VerticalAlignment="Center" />
             </Button>
             <!-- Save while there's something to write; a quiet "Saved" once the file on disk is up to date -->
             <Grid Margin="6,0,0,0" VerticalAlignment="Center">

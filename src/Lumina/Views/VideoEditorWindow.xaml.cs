@@ -28,7 +28,7 @@ public partial class VideoEditorWindow : ChromeWindow
     {
         InitializeComponent();
         _path = path;
-        Title = Path.GetFileName(path);
+        UpdateTitle();
         Timeline.SeekRequested += t => Seek(t);
         Timeline.TrimChanged += UpdateTrimUi;
         Timeline.Dragging += dragging =>
@@ -68,6 +68,8 @@ public partial class VideoEditorWindow : ChromeWindow
 
     /// <summary>The recording this window is showing.</summary>
     public string FilePath => _path;
+
+    private void UpdateTitle() => Title = Path.GetFileName(_path) + " — Lumina";
 
     private void Load()
     {
@@ -390,7 +392,7 @@ public partial class VideoEditorWindow : ChromeWindow
             string fallback = Unique(_path);
             File.Move(tmp, fallback);
             _path = fallback;
-            Title = Path.GetFileName(_path);
+            UpdateTitle();
         }
         _duration = 0;
         Timeline.SetThumbnails(Array.Empty<BitmapSource>());
@@ -558,7 +560,7 @@ public partial class VideoEditorWindow : ChromeWindow
             case Key.R when mods == ModifierKeys.None && IsTrimmed:
                 ResetTrim_Click(this, e);
                 break;
-            case Key.Delete when mods is ModifierKeys.None or ModifierKeys.Shift:
+            case Key.Delete when !mods.HasFlag(ModifierKeys.Alt):
                 Delete();
                 break;
             default:
