@@ -27,7 +27,8 @@
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
         <Style x:Key="FolderBox" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
-            <Setter Property="Padding" Value="30,7,10,7" />
+            <!-- The template applies padding twice, so 16 lands the text just past the 28 px icon -->
+            <Setter Property="Padding" Value="16,7,10,7" />
         </Style>
         <Style x:Key="FolderBoxIcon" TargetType="Path" BasedOn="{StaticResource Icon}">
             <Setter Property="Data" Value="{StaticResource IconFolder}" />
