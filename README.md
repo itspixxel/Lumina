@@ -1,6 +1,6 @@
 # Lumina
 
-A lightweight, modern screenshot and screen recording tool for Windows — a replacement for Snipping Tool with a fast capture overlay, a floating preview, a non-destructive markup editor, and screen recording with a trim editor.
+A lightweight, modern screenshot and screen recording tool for Windows - a replacement for Snipping Tool with a fast capture overlay, a floating preview, a non-destructive markup editor, and screen recording with a trim editor.
 
 > **Alpha.** Lumina is early and under active development. Expect rough edges, and please report anything that breaks.
 
@@ -9,13 +9,13 @@ A lightweight, modern screenshot and screen recording tool for Windows — a rep
 ## Features
 
 ### Capture
-- **Four modes** — Region, Window, Full screen and Freeform (lasso).
+- **Four modes**: Region, Window, Full screen and Freeform (lasso).
 - **Win + Shift + S** opens Lumina instead of Snipping Tool while it's running (toggle in Settings). Print Screen can be used too.
-- **Frozen-screen overlay** — the screen is captured up front, so menus and tooltips stay put while you select.
-- **Smart highlighting** — hover a window to capture it in one click; the highlight glides between targets.
-- **Precision tools** — magnifier with pixel grid, coordinates and color under the cursor; arrow-key nudging (Shift = 10px); live size readout.
+- **Frozen-screen overlay**: the screen is captured up front, so menus and tooltips stay put while you select.
+- **Smart highlighting**: hover a window to capture it in one click; the highlight glides between targets.
+- **Precision tools**: magnifier with pixel grid, coordinates and color under the cursor; arrow-key nudging (Shift = 10px); live size readout.
 - **Multi-monitor and per-monitor DPI aware.**
-- **Capture delay** — 3/5/10 second countdown from the home window.
+- **Capture delay**: 3/5/10 second countdown from the home window.
 
 ### After capture
 - Copies to the clipboard and saves to your output folder (both optional).
@@ -27,8 +27,8 @@ A lightweight, modern screenshot and screen recording tool for Windows — a rep
 - **Redact** with mosaic, blur or a solid cover, with adjustable strength.
 - **Spotlight** with rectangle or ellipse shapes, adjustable darkness and optional background blur.
 - **Crop** with aspect-ratio presets (Free, Original, 1:1, 4:3, 3:2, 16:9, 9:16).
-- **Color picker** — presets plus a full HSV picker, hex input, eyedropper and recent colors.
-- **Non-destructive** — markup stays editable after saving; reopen a capture to keep working on it.
+- **Color picker**: presets plus a full HSV picker, hex input, eyedropper and recent colors.
+- **Non-destructive**: markup stays editable after saving; reopen a capture to keep working on it.
 - Open any image file from the home window to mark it up.
 - Smooth zoom (Ctrl + scroll zooms around the cursor), fit-to-window and 1:1, full undo/redo.
 
@@ -36,12 +36,12 @@ A lightweight, modern screenshot and screen recording tool for Windows — a rep
 
 ### Screen recording
 - **Win + Shift + R** (or the Record card / tray menu) picks a region, window or screen with the same overlay, then counts down and records.
-- **Sound** — system audio and/or microphone, each with its own device. Pick devices and mute either source right from the overlay's toolbar.
-- **Recording bar** — timer, pause/resume, stop, per-source mute and discard. It never steals focus and never shows up in the video.
-- **Movable area** — drag the recording outline (or its tab) to follow what you're recording.
+- **Sound**: system audio and/or microphone, each with its own device. Pick devices and mute either source right from the overlay's toolbar.
+- **Recording bar**: timer, pause/resume, stop, per-source mute and discard. It never steals focus and never shows up in the video.
+- **Movable area**: drag the recording outline (or its tab) to follow what you're recording.
 - **GPU encoding** with NVIDIA, Intel or AMD when available, falling back to x264; 30 or 60 fps.
 - **Trim editor** opens when you stop: drag the handles on the filmstrip, then save, save as MP4 or GIF, export a GIF at a chosen width, or copy the file.
-- **Straight to the clipboard** — finished recordings and exported clips are copied as files, ready to paste into a chat or folder (follows the same *Copy to clipboard* setting as screenshots).
+- **Straight to the clipboard**: finished recordings and exported clips are copied as files, ready to paste into a chat or folder (follows the same *Copy to clipboard* setting as screenshots).
 - Uses **FFmpeg**: Lumina downloads it for you on first run (about 115 MB, one click), or point it at your own `ffmpeg.exe` in Settings.
 
 ![The trim editor with a filmstrip timeline and trim handles](docs/screenshots/trim.png)
@@ -55,8 +55,8 @@ A lightweight, modern screenshot and screen recording tool for Windows — a rep
 
 Download the latest build from the [Releases](../../releases) page:
 
-- **`Lumina-…-win-x64.zip`** — self-contained, no install or runtime needed. Unzip anywhere and run `Lumina.exe`.
-- **`Lumina-…-win-x64-framework.zip`** — much smaller, but needs the [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0).
+- **`Lumina-…-win-x64.zip`**: self-contained, no install or runtime needed. Unzip anywhere and run `Lumina.exe`.
+- **`Lumina-…-win-x64-framework.zip`**: much smaller, but needs the [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0).
 
 Lumina lives in the system tray. Settings are stored in `%AppData%\Lumina`. For a fully **portable** setup, create an empty file named `portable` next to `Lumina.exe` and everything will be kept in a `data` folder beside it.
 
