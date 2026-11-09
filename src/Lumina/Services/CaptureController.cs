@@ -13,6 +13,8 @@ public sealed class CaptureController
 {
     private bool _busy;
 
+    public bool IsBusy => _busy;
+
     /// <summary>Raised on the UI thread after a capture has been written to disk.</summary>
     public event Action? Captured;
 

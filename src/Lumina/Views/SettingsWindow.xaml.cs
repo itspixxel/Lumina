@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -39,12 +38,15 @@ public partial class SettingsWindow : ChromeWindow
         ImageFormat.SelectedIndex = _s.ImageFormat == ImageFormatKind.Jpeg ? 1 : 0;
         JpegQuality.Value = _s.JpegQuality;
         StartWithWindows.IsChecked = _s.StartWithWindows;
+        AutoUpdate.IsChecked = _s.AutoUpdate;
         LoadRecording();
 
         PatternHelp.Text = "Tokens: " + FileNameFormatter.TokenHelp;
-        var version = Assembly.GetExecutingAssembly().GetName().Version;
-        VersionText.Text = $"Lumina {version?.ToString(3)}" + (AppPaths.IsPortable ? " (portable)" : "");
+        VersionText.Text = $"Lumina {Updater.Current.ToString(3)}" + (AppPaths.IsPortable ? " (portable)" : "");
         DataFolderText.Text = AppPaths.DataDir;
+        SyncUpdate();
+        Updater.StateChanged += SyncUpdate;
+        Closed += (_, _) => Updater.StateChanged -= SyncUpdate;
 
         UpdatePatternPreview();
         UpdateQualityPanel();
@@ -118,6 +120,7 @@ public partial class SettingsWindow : ChromeWindow
         bool startup = StartWithWindows.IsChecked == true;
         if (startup != _s.StartWithWindows) StartupService.Apply(startup);
         _s.StartWithWindows = startup;
+        _s.AutoUpdate = AutoUpdate.IsChecked == true;
 
         SettingsService.Save(_s);
         if (_s.OutputDirectory != before || _s.RecordingsDirectory != beforeRecordings)
@@ -302,6 +305,45 @@ public partial class SettingsWindow : ChromeWindow
     }
 
     private void OpenFolder_Click(object sender, RoutedEventArgs e) => OutputService.OpenFolder(OutputDirectory.Text);
+
+    // ---------- Updates ----------
+
+    private bool _updateAvailable;
+
+    private void SyncUpdate()
+    {
+        var state = Updater.State;
+        UpdateStatus.Text = Updater.Status;
+        UpdateStatus.Visibility = Updater.Status.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+        UpdateButton.Content = state switch
+        {
+            UpdateState.Ready => "Restart now",
+            UpdateState.Failed when Updater.NeedsManualDownload => "Open GitHub",
+            _ when _updateAvailable => "Update now",
+            _ => "Check for updates",
+        };
+        UpdateButton.Style = (Style)FindResource(state == UpdateState.Ready || _updateAvailable ? "AccentButton" : typeof(Button));
+        UpdateButton.IsEnabled = state is not (UpdateState.Checking or UpdateState.Downloading);
+    }
+
+    private async void UpdateButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (Updater.State == UpdateState.Ready)
+        {
+            Commit();
+            Updater.Restart();
+        }
+        else if (Updater.State == UpdateState.Failed && Updater.NeedsManualDownload)
+        {
+            Updater.OpenPage(Updater.ReleasesPage);
+        }
+        else
+        {
+            // A check from here only installs when asked: the first click finds, the second downloads.
+            _updateAvailable = await Updater.CheckAsync(install: _updateAvailable) && Updater.State != UpdateState.Ready;
+            SyncUpdate();
+        }
+    }
 
     private void DataFolder_Click(object sender, RoutedEventArgs e)
     {

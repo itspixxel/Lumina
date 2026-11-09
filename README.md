@@ -58,6 +58,8 @@ Download the latest build from the [Releases](../../releases) page:
 - **`Lumina-…-win-x64.zip`**: self-contained, no install or runtime needed. Unzip anywhere and run `Lumina.exe`.
 - **`Lumina-…-win-x64-framework.zip`**: much smaller, but needs the [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0).
 
+From 0.3.2 on, Lumina keeps itself up to date: it downloads new releases in the background and restarts into them when it isn't in use (you can turn this off in Settings, under General).
+
 Lumina lives in the system tray. Settings are stored in `%AppData%\Lumina`. For a fully **portable** setup, create an empty file named `portable` next to `Lumina.exe` and everything will be kept in a `data` folder beside it.
 
 > Windows SmartScreen may warn about an unrecognised app because the builds aren't code-signed yet. Choose *More info → Run anyway*.
