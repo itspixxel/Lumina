@@ -61,6 +61,8 @@ public sealed class AppSettings
     public int SettingsVersion { get; set; }
     public string Theme { get; set; } = "System";
     public bool StartWithWindows { get; set; }
+    /// <summary>Download new releases in the background and restart into them when Lumina is idle.</summary>
+    public bool AutoUpdate { get; set; } = true;
 
     // Editor
     /// <summary>Custom colors picked in the editor, most recent first.</summary>

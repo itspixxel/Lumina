@@ -24,6 +24,8 @@ public sealed class RecordingController
     public event Action? StateChanged;
 
     public bool IsRecording => _recorder != null;
+    /// <summary>Starting, stopping or saving a recording.</summary>
+    public bool IsBusy => _busy;
     public bool IsPaused => _recorder?.IsPaused ?? false;
     public TimeSpan Elapsed => _recorder?.Elapsed ?? TimeSpan.Zero;
 

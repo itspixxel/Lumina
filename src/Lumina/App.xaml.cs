@@ -17,6 +17,7 @@ public partial class App : Application
     private KeyboardHook? _hook;
 
     public static KeyboardHook? Hook => Instance._hook;
+    internal static TrayIcon? Tray => Instance._tray;
 
     public static App Instance => (App)Current;
     public static AppSettings Settings { get; private set; } = new();
@@ -27,7 +28,9 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        bool updated = e.Args.Contains("--updated");
         _singleInstance = new Mutex(true, @"Local\Lumina.SingleInstance", out bool isFirst);
+        if (!isFirst && updated) isFirst = WaitForPreviousInstance(_singleInstance);
         _activateSignal = new EventWaitHandle(false, EventResetMode.AutoReset, @"Local\Lumina.Activate");
         if (!isFirst)
         {
@@ -75,6 +78,20 @@ public partial class App : Application
         else if (Ffmpeg.IsAvailable && Settings.HardwareEncoding)
         {
             _ = Ffmpeg.PickEncoderAsync(); // warm up so the first recording starts instantly
+        }
+        Updater.Start(updated);
+    }
+
+    /// <summary>After an update the old version may still be shutting down; take over once it has.</summary>
+    private static bool WaitForPreviousInstance(Mutex mutex)
+    {
+        try
+        {
+            return mutex.WaitOne(TimeSpan.FromSeconds(15));
+        }
+        catch (AbandonedMutexException)
+        {
+            return true; // it exited without releasing; ours now
         }
     }
 

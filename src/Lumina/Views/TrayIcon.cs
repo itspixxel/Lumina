@@ -19,6 +19,7 @@ namespace Lumina.Views;
 internal sealed class TrayIcon : IDisposable
 {
     private readonly Forms.NotifyIcon _icon;
+    private Action? _pendingClick;
 
     public TrayIcon()
     {
@@ -29,6 +30,8 @@ internal sealed class TrayIcon : IDisposable
             Visible = true,
         };
         UpdateTooltip();
+        _icon.BalloonTipClicked += (_, _) => _pendingClick?.Invoke();
+        _icon.BalloonTipClosed += (_, _) => _pendingClick = null;
         _icon.MouseClick += (_, e) =>
         {
             if (e.Button == Forms.MouseButtons.Left) App.ShowHome();
@@ -79,6 +82,8 @@ internal sealed class TrayIcon : IDisposable
         menu.Items.Add(Item("Open captures folder", null, "IconFolder", OutputService.OpenOutputFolder));
         menu.Items.Add(Item("Settings", null, "IconSettings", App.ShowSettings));
         menu.Items.Add(new Separator());
+        if (Updater.State == UpdateState.Ready)
+            menu.Items.Add(Item($"Restart to update to {Updater.ReadyVersion?.ToString(3)}", null, "IconDownload", Updater.Restart));
         menu.Items.Add(Item("Quit Lumina", null, "IconPower", App.Quit));
 
         menu.Placement = PlacementMode.MousePoint;
@@ -89,6 +94,13 @@ internal sealed class TrayIcon : IDisposable
                 NativeMethods.SetForegroundWindow(source.Handle);
         };
         menu.IsOpen = true;
+    }
+
+    /// <summary>A Windows notification from the tray icon; clicking it runs <paramref name="onClick"/>.</summary>
+    public void Notify(string title, string text, Action? onClick = null)
+    {
+        _pendingClick = onClick;
+        _icon.ShowBalloonTip(5000, title, text, Forms.ToolTipIcon.None);
     }
 
     private static MenuItem Item(string header, string? gesture, string? icon, Action? action)
