@@ -197,7 +197,7 @@ public sealed class ShortcutEditor : StackPanel
         KeycapRow.Fill(_recordingKeys, HotkeyBinding.Parts(mods, 0));
         _recordingKeys.Children.Add(new TextBlock
         {
-            Text = mods == HotkeyModifiers.None ? "Press keys…" : "…",
+            Text = mods == HotkeyModifiers.None ? "Press keys..." : "...",
             Foreground = (Brush)Application.Current.Resources["Text2Brush"],
             VerticalAlignment = VerticalAlignment.Center,
             Margin = new Thickness(4, 0, 0, 0),

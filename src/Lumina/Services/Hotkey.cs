@@ -76,10 +76,10 @@ public sealed class HotkeyBinding
             case System.Windows.Input.Key.Capital: return "Caps Lock";
             case System.Windows.Input.Key.Delete: return "Del";
             case System.Windows.Input.Key.Insert: return "Ins";
-            case System.Windows.Input.Key.Left: return "←";
-            case System.Windows.Input.Key.Right: return "→";
-            case System.Windows.Input.Key.Up: return "↑";
-            case System.Windows.Input.Key.Down: return "↓";
+            case System.Windows.Input.Key.Left: return "Left";
+            case System.Windows.Input.Key.Right: return "Right";
+            case System.Windows.Input.Key.Up: return "Up";
+            case System.Windows.Input.Key.Down: return "Down";
         }
         if (key is >= System.Windows.Input.Key.D0 and <= System.Windows.Input.Key.D9) return ((char)('0' + (key - System.Windows.Input.Key.D0))).ToString();
         if (key is >= System.Windows.Input.Key.NumPad0 and <= System.Windows.Input.Key.NumPad9) return "Num " + (key - System.Windows.Input.Key.NumPad0);

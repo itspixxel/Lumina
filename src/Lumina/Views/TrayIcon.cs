@@ -47,7 +47,7 @@ internal sealed class TrayIcon : IDisposable
     public void UpdateTooltip()
     {
         string? key = App.Settings.Hotkeys?.FirstOrDefault()?.ToString();
-        string text = key == null ? "Lumina" : $"Lumina · {key} to capture";
+        string text = key == null ? "Lumina" : $"Lumina - {key} to capture";
         _icon.Text = text.Length > 63 ? text[..63] : text;
     }
 

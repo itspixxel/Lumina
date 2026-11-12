@@ -548,7 +548,7 @@ public sealed class RecordingToolbar : RecordingSurfaceWindow
         _spinner.BeginAnimation(OpacityProperty, Anim(0, 1, 200));
         ((RotateTransform)_spinner.RenderTransform).BeginAnimation(RotateTransform.AngleProperty,
             new DoubleAnimation(0, 360, TimeSpan.FromMilliseconds(800)) { RepeatBehavior = RepeatBehavior.Forever });
-        _time.SetText("Saving…", animate: true);
+        _time.SetText("Saving...", animate: true);
 
         _buttons.IsEnabled = false;
         var ease = new CubicEase { EasingMode = EasingMode.EaseInOut };

@@ -20,7 +20,7 @@ A lightweight, modern screenshot and screen recording tool for Windows - a repla
 ### After capture
 - Copies to the clipboard and saves to your output folder (both optional).
 - A **floating preview** slides into the corner: drag it straight into another app, copy, save, edit or delete.
-- Customisable file names (`{yyyy}-{MM}-{dd}`, `{app}`, counters…), PNG or JPEG.
+- Customisable file names (`{yyyy}-{MM}-{dd}`, `{app}`, counters...), PNG or JPEG.
 
 ### Markup editor
 - **Tools:** select/move, pen (with stroke smoothing), highlighter, arrow, line, rectangle, ellipse, text, numbered steps, redact, spotlight and crop.
@@ -60,14 +60,14 @@ A lightweight, modern screenshot and screen recording tool for Windows - a repla
 
 Download the latest build from the [Releases](../../releases) page:
 
-- **`Lumina-…-win-x64.zip`**: self-contained, no install or runtime needed. Unzip anywhere and run `Lumina.exe`.
-- **`Lumina-…-win-x64-framework.zip`**: much smaller, but needs the [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0).
+- **`Lumina-<version>-win-x64.zip`**: self-contained, no install or runtime needed. Unzip anywhere and run `Lumina.exe`.
+- **`Lumina-<version>-win-x64-framework.zip`**: much smaller, but needs the [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0).
 
 From 0.3.2 on, Lumina keeps itself up to date: it downloads new releases in the background and restarts into them when it isn't in use (you can turn this off in Settings, under General).
 
 Lumina lives in the system tray. Settings are stored in `%AppData%\Lumina`. For a fully **portable** setup, create an empty file named `portable` next to `Lumina.exe` and everything will be kept in a `data` folder beside it.
 
-> Windows SmartScreen may warn about an unrecognised app because the builds aren't code-signed yet. Choose *More info → Run anyway*.
+> Windows SmartScreen may warn about an unrecognised app because the builds aren't code-signed yet. Choose *More info*, then *Run anyway*.
 
 ## Shortcuts
 
@@ -78,7 +78,7 @@ Lumina lives in the system tray. Settings are stored in `%AppData%\Lumina`. For 
 | Overlay | `1` `2` `3` `4` / `R` `W` `S` `L` | Region / Window / Screen / Freeform |
 | Overlay | `F` or `Enter` | Capture the screen under the cursor |
 | Overlay | Hold `Space` while dragging | Move the selection |
-| Overlay | Arrow keys (`Shift` = ×10) | Nudge the selection |
+| Overlay | Arrow keys (`Shift` = 10 px) | Nudge the selection |
 | Overlay | `Esc` / right-click | Cancel (right-click first clears a selection in progress) |
 | Editor | `V` `P` `H` `A` `L` `R` `E` `T` `N` `B` `S` `C` | Select, pen, highlighter, arrow, line, rectangle, ellipse, text, steps, redact, spotlight, crop |
 | Editor | `[` / `]` | Smaller / larger brush |
@@ -87,7 +87,7 @@ Lumina lives in the system tray. Settings are stored in `%AppData%\Lumina`. For 
 | Editor | `Ctrl + E`, `Ctrl + Delete` | Show in folder, delete |
 | Editor | `Ctrl + 0` / `Ctrl + 1` / `Ctrl + scroll` | Fit, actual size, zoom |
 | Trim editor | `Space` | Play / pause |
-| Trim editor | `←` / `→` (`Shift` = 5 s) | Step a frame |
+| Trim editor | `Left` / `Right` (`Shift` = 5 s) | Step a frame |
 | Trim editor | `I` / `O`, `Home` / `End` | Set trim start / end, jump to start / end |
 | Trim editor | `Ctrl + C`, `Ctrl + S`, `Ctrl + Shift + S` | Copy the video, save the trim, save as |
 | Trim editor | `Ctrl + G`, `Ctrl + E` | Export a GIF, show in folder |

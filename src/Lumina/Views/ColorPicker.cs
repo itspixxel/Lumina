@@ -42,7 +42,7 @@ public sealed class ColorPicker : Border
         Margin = new Thickness(14, 10, 14, 18); // room for the shadow inside the popup
         Effect = (Effect)FindResource("FloatShadow");
 
-        // Saturation (left → right) and brightness (top → bottom) over the current hue.
+        // Saturation (left to right) and brightness (top to bottom) over the current hue.
         _fieldHue = new Border { CornerRadius = new CornerRadius(9) };
         var whiteFade = new Border
         {

@@ -57,7 +57,7 @@
                         HorizontalAlignment="Center" VerticalAlignment="Center" v:Fx.Show="True">
                     <Path Data="{StaticResource IconPlay}" Fill="White" Stretch="Uniform" Width="20" Height="22" Margin="5,0,0,0" />
                 </Border>
-                <TextBlock x:Name="LoadingText" Text="Loading…" Foreground="{StaticResource Text2Brush}"
+                <TextBlock x:Name="LoadingText" Text="Loading..." Foreground="{StaticResource Text2Brush}"
                            HorizontalAlignment="Center" VerticalAlignment="Center" />
                 <!-- Messages and export progress -->
                 <v:Toast x:Name="Toast" VerticalAlignment="Bottom" Margin="16,0,16,16" />
@@ -116,10 +116,10 @@
                 </ToggleButton>
                 <Rectangle Style="{StaticResource VDivider}" Margin="10,0" />
                 <ComboBox x:Name="GifSize" Width="128" SelectedIndex="1" ToolTip="GIF width">
-                    <ComboBoxItem Content="GIF · 480 px" Tag="480" />
-                    <ComboBoxItem Content="GIF · 720 px" Tag="720" />
-                    <ComboBoxItem Content="GIF · 1080 px" Tag="1080" />
-                    <ComboBoxItem Content="GIF · Original" Tag="0" />
+                    <ComboBoxItem Content="GIF - 480 px" Tag="480" />
+                    <ComboBoxItem Content="GIF - 720 px" Tag="720" />
+                    <ComboBoxItem Content="GIF - 1080 px" Tag="1080" />
+                    <ComboBoxItem Content="GIF - Original" Tag="0" />
                 </ComboBox>
                 <Button Margin="6,0,0,0" Click="Gif_Click" ToolTip="Save the clip as an animated GIF next to the video (Ctrl+G)">
                     <StackPanel Orientation="Horizontal">
@@ -135,7 +135,7 @@
                     </StackPanel>
                 </Button>
                 <Button Margin="6,0,0,0" Click="SaveAs_Click" ToolTip="Save a copy as MP4 or GIF (Ctrl+Shift+S)">
-                    <TextBlock Text="Save as…" />
+                    <TextBlock Text="Save as..." />
                 </Button>
                 <!-- Save only once there's a trim (or sound change) to write; otherwise the recording is already saved -->
                 <Grid Margin="8,0,0,0" VerticalAlignment="Center">

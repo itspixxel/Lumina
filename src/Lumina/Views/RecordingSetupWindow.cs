@@ -133,7 +133,7 @@ public sealed class RecordingSetupWindow : Window
         {
             Style = (Style)FindResource("GhostButton"),
             Margin = new Thickness(-10, 0, 0, 0),
-            Content = new TextBlock { Text = "Use my own ffmpeg.exe…", Foreground = (Brush)FindResource("AccentTextBrush") },
+            Content = new TextBlock { Text = "Use my own ffmpeg.exe...", Foreground = (Brush)FindResource("AccentTextBrush") },
         };
         _custom.Click += (_, _) => PickCustom();
         DockPanel.SetDock(_custom, Dock.Left);
@@ -258,7 +258,7 @@ public sealed class RecordingSetupWindow : Window
         string stage = Ffmpeg.InstallStage;
         bool failed = !installing && !ready && stage.StartsWith("Download failed");
         _status.Visibility = installing || ready || failed ? Visibility.Visible : Visibility.Collapsed;
-        _status.Text = ready ? "✓  Screen recording is ready" : stage;
+        _status.Text = ready ? "Screen recording is ready" : stage;
         _status.Foreground = (Brush)FindResource(failed ? "DangerBrush" : ready ? "AccentTextBrush" : "Text2Brush");
         _status.FontWeight = ready ? FontWeights.SemiBold : FontWeights.Normal;
 

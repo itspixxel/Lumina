@@ -120,8 +120,8 @@ public partial class QuickPreviewWindow : Window
     private void UpdateLabels()
     {
         TitleText.Text = _path != null ? "Saved" : "Captured";
-        string size = $"{_image.PixelWidth} × {_image.PixelHeight}";
-        InfoText.Text = App.Settings.CopyToClipboard ? $"{size} · copied" : size;
+        string size = $"{_image.PixelWidth} x {_image.PixelHeight}";
+        InfoText.Text = App.Settings.CopyToClipboard ? $"{size} - copied" : size;
         SaveButton.ToolTip = _path != null ? "Show in folder" : "Save";
         SaveIcon.Data = (Geometry)FindResource(_path != null ? "IconFolder" : "IconSave");
     }
@@ -169,7 +169,7 @@ public partial class QuickPreviewWindow : Window
     private async void Copy_Click(object sender, RoutedEventArgs e)
     {
         await ClipboardService.CopyImageAsync(_image);
-        InfoText.Text = $"{_image.PixelWidth} × {_image.PixelHeight} · copied";
+        InfoText.Text = $"{_image.PixelWidth} x {_image.PixelHeight} - copied";
     }
 
     private async void Save_Click(object sender, RoutedEventArgs e)

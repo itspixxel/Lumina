@@ -58,7 +58,7 @@ public sealed class EditorCanvas : Canvas
     public double SpotlightDim { get; set; } = 0.6;
     public bool SpotlightBlur { get; set; }
 
-    /// <summary>Width ÷ height the crop is held to, or null for freeform.</summary>
+    /// <summary>Width / height the crop is held to, or null for freeform.</summary>
     public double? CropAspect { get; set; }
 
     /// <summary>While set, the next click samples a color from the image instead of drawing.</summary>
@@ -711,7 +711,7 @@ public sealed class EditorCanvas : Canvas
         }
         dc.DrawRectangle(null, new Pen(Brushes.White, 2 * px), rect);
 
-        var ft = new FormattedText($"{crop.Width} × {crop.Height}", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight,
+        var ft = new FormattedText($"{crop.Width} x {crop.Height}", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight,
             LabelFace, 12 * px, Brushes.White, 1.0);
         var labelRect = new Rect(rect.X + 6 * px, rect.Y + 6 * px, ft.Width + 12 * px, ft.Height + 6 * px);
         dc.DrawRoundedRectangle(new SolidColorBrush(Color.FromArgb(0xC0, 0, 0, 0)), null, labelRect, 4 * px, 4 * px);
