@@ -184,6 +184,7 @@ public partial class GalleryView : UserControl
             App.Instance.Controller.Captured += Refresh;
             App.Instance.Recorder.StateChanged += RecorderChanged;
             LibraryIndex.Changed += Refresh;
+            TextIndexer.TextRead += TextRead;
             Ffmpeg.StateChanged += FfmpegChanged;
             Refresh();
         }
@@ -192,8 +193,17 @@ public partial class GalleryView : UserControl
             App.Instance.Controller.Captured -= Refresh;
             App.Instance.Recorder.StateChanged -= RecorderChanged;
             LibraryIndex.Changed -= Refresh;
+            TextIndexer.TextRead -= TextRead;
             Ffmpeg.StateChanged -= FfmpegChanged;
         }
+    }
+
+    /// <summary>More screenshots have had their text read: a search may now match more of them.</summary>
+    private void TextRead()
+    {
+        if (_query.Length == 0 || !_loadedOnce) return;
+        if (IsVisible) ApplyView(scrollToTop: false);
+        else _stale = true;
     }
 
     /// <summary>Recordings get their thumbnails once FFmpeg is installed.</summary>
@@ -317,7 +327,8 @@ public partial class GalleryView : UserControl
     private static bool Matches(LibraryEntry e, string word) =>
         e.Name.Contains(word, StringComparison.CurrentCultureIgnoreCase)
         || (e.App?.Contains(word, StringComparison.CurrentCultureIgnoreCase) ?? false)
-        || (e.MarkupText?.Contains(word, StringComparison.CurrentCultureIgnoreCase) ?? false);
+        || (e.MarkupText?.Contains(word, StringComparison.CurrentCultureIgnoreCase) ?? false)
+        || (e.OcrText?.Contains(word, StringComparison.CurrentCultureIgnoreCase) ?? false);
 
     private void UpdateEmptyState()
     {

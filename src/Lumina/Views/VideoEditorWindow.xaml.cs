@@ -22,6 +22,17 @@ public partial class VideoEditorWindow : ChromeWindow
     private double _duration;
     private bool _playing, _wasPlaying, _busy;
     private double _playFrom;
+    /// <summary>The recording has its system audio and microphone on separate tracks, so each can be muted.</summary>
+    private bool _sourceTracks;
+    /// <summary>The sound switches: all sound (one-track recordings), or each source.</summary>
+    private bool _soundOn = true, _systemOn = true, _micOn = true;
+    /// <summary>
+    /// With one source muted, plays the other on its own in step with the video (which is muted then): a player
+    /// can't mute one track of a file. <see cref="_sourceTrack"/> is the track it has, 0 for none.
+    /// </summary>
+    private readonly MediaPlayer _sourceAudio = new();
+    private int _sourceTrack, _sourceVersion;
+    private string? _previewDir;
     private readonly CancellationTokenSource _closing = new();
 
     private VideoEditorWindow(string path)
@@ -43,11 +54,13 @@ public partial class VideoEditorWindow : ChromeWindow
                 Play();
             }
         };
+        _sourceAudio.MediaOpened += (_, _) => SyncSourceAudio(force: true);
         Closed += (_, _) =>
         {
             _closing.Cancel();
             CompositionTarget.Rendering -= Tick;
             Player.Close();
+            ClearPreviews();
         };
         Load();
     }
@@ -75,9 +88,26 @@ public partial class VideoEditorWindow : ChromeWindow
     {
         LoadingText.Visibility = Visibility.Visible;
         Player.IsMuted = true; // silent while it opens
+        _sourceTrack = 0;
+        _sourceVersion++;
+        ClearPreviews();
         Player.Source = new Uri(_path);
         Player.Play(); // MediaOpened only fires once playback is requested
         _ = CorrectLevelsAsync();
+        _ = FindSourceTracksAsync();
+    }
+
+    /// <summary>Shows a switch for each audio source when the recording has them on separate tracks.</summary>
+    private async Task FindSourceTracksAsync()
+    {
+        bool found = Ffmpeg.IsAvailable && await Ffmpeg.HasSourceTracksAsync(_path);
+        _sourceTracks = found;
+        _systemOn = _micOn = true;
+        UpdateSoundUi();
+        AudioButton.Visibility = found ? Visibility.Collapsed : Visibility.Visible;
+        SourceButtons.Visibility = found ? Visibility.Visible : Visibility.Collapsed;
+        SyncMute();
+        UpdateTrimUi();
     }
 
     private async Task CorrectLevelsAsync() => Player.Effect = await VideoLevels.CorrectionAsync();
@@ -95,13 +125,9 @@ public partial class VideoEditorWindow : ChromeWindow
         Timeline.Start = 0;
         Timeline.End = _duration;
         Timeline.Position = 0;
-        AudioToggle.IsEnabled = Player.HasAudio;
-        if (!Player.HasAudio)
-        {
-            AudioToggle.IsChecked = false;
-            AudioText.Text = "No sound";
-            AudioIcon.Data = (Geometry)FindResource("IconSpeakerOff");
-        }
+        AudioButton.IsEnabled = Player.HasAudio;
+        if (!Player.HasAudio) _soundOn = false;
+        UpdateSoundUi();
         UpdateTrimUi();
         UpdateTime();
         _ = LoadThumbnailsAsync();
@@ -124,6 +150,7 @@ public partial class VideoEditorWindow : ChromeWindow
         _playing = true;
         _playFrom = Player.Position.TotalSeconds;
         SyncMute();
+        SyncSourceAudio(force: true);
         CompositionTarget.Rendering -= Tick;
         CompositionTarget.Rendering += Tick;
         SyncPlayUi();
@@ -133,11 +160,32 @@ public partial class VideoEditorWindow : ChromeWindow
     /// Sound only while playing: seeking a paused MediaElement (scrubbing, arrow keys) plays a blip of audio
     /// at every step otherwise.
     /// </summary>
-    private void SyncMute() => Player.IsMuted = !_playing || AudioToggle.IsChecked != true;
+    private void SyncMute()
+    {
+        Player.IsMuted = !_playing || !SoundOn || _sourceTrack != 0;
+        _sourceAudio.IsMuted = !_playing;
+    }
+
+    private bool SoundOn => _sourceTracks ? _systemOn || _micOn : _soundOn;
+
+    /// <summary>Keeps the source audio playing in step with the video; <paramref name="force"/> lines it up now.</summary>
+    private void SyncSourceAudio(bool force)
+    {
+        if (_sourceTrack == 0) return;
+        if (!_playing)
+        {
+            _sourceAudio.Pause();
+            return;
+        }
+        if (force || (_sourceAudio.Position - Player.Position).Duration() > TimeSpan.FromMilliseconds(200))
+            _sourceAudio.Position = Player.Position;
+        if (force) _sourceAudio.Play();
+    }
 
     private void Pause()
     {
         Player.Pause();
+        _sourceAudio.Pause();
         _playing = false;
         SyncMute();
         CompositionTarget.Rendering -= Tick;
@@ -175,12 +223,14 @@ public partial class VideoEditorWindow : ChromeWindow
         }
         Timeline.Position = pos;
         UpdateTime();
+        SyncSourceAudio(force: false);
     }
 
     private void Seek(double seconds)
     {
         seconds = Math.Clamp(seconds, 0, _duration);
         Player.Position = TimeSpan.FromSeconds(seconds);
+        if (_playing) SyncSourceAudio(force: true);
         Timeline.Position = seconds;
         UpdateTime();
     }
@@ -198,8 +248,8 @@ public partial class VideoEditorWindow : ChromeWindow
     }
 
     private bool IsTrimmed => _duration > 0 && (Timeline.Start > 0.05 || Timeline.End < _duration - 0.05);
-    private bool KeepAudio => AudioToggle.IsChecked == true && Player.HasAudio;
-    private bool IsModified => IsTrimmed || (Player.HasAudio && !KeepAudio);
+    private bool KeepAudio => _soundOn && Player.HasAudio;
+    private bool IsModified => IsTrimmed || (Player.HasAudio && (_sourceTracks ? !(_systemOn && _micOn) : !KeepAudio));
 
     private void UpdateTrimUi()
     {
@@ -285,10 +335,20 @@ public partial class VideoEditorWindow : ChromeWindow
         }
         double start = Timeline.Start, length = Timeline.End - Timeline.Start;
         string encoder = App.Settings.HardwareEncoding ? await Ffmpeg.PickEncoderAsync() : "libx264";
-        string audio = KeepAudio ? "-c:a aac -b:a 192k" : "-an";
+        string audio = AudioArgs();
         await Ffmpeg.RunJobAsync(
             $"-ss {Ffmpeg.Seconds(start)} -i {Ffmpeg.Quote(_path)} -t {Ffmpeg.Seconds(length)} {Ffmpeg.EncoderArgs(encoder)} {Ffmpeg.Yuv709Args} {audio} -movflags +faststart {Ffmpeg.Quote(output)}",
             length, new Progress<double>(ShowProgress), _closing.Token);
+    }
+
+    /// <summary>FFmpeg options for the sound the MP4 keeps.</summary>
+    private string AudioArgs()
+    {
+        if (!_sourceTracks) return KeepAudio ? "-c:a aac -b:a 192k" : "-an";
+        if (_systemOn && _micOn) return $"-map 0:v -map 0:a -c:a aac -b:a 192k {Ffmpeg.SourceTrackArgs}"; // keep all three tracks
+        if (!_systemOn && !_micOn) return "-an";
+        // One source left: it becomes the only track.
+        return $"-map 0:v -map 0:a:{(_systemOn ? 1 : 2)} -c:a aac -b:a 192k -metadata:s:a:0 handler_name=SoundHandler";
     }
 
     private async Task ExportGifAsync(string output)
@@ -374,23 +434,39 @@ public partial class VideoEditorWindow : ChromeWindow
         // The player holds the file open; let go, swap in the trimmed version, and reload.
         Player.Close();
         Player.Source = null;
+        // Either file can stay busy for a moment: the player lets go of the recording in the background, and antivirus
+        // scans the new file. Windows reports some of that as "access denied" rather than a sharing violation.
         bool replaced = false;
-        for (int attempt = 0; attempt < 20 && !replaced; attempt++)
+        Exception? last = null;
+        for (int attempt = 0; attempt < 40 && !replaced; attempt++)
         {
             try
             {
                 File.Move(tmp, _path, true);
                 replaced = true;
+                if (attempt > 0) Log.Info($"Saved the recording on try {attempt + 1}");
             }
-            catch (IOException)
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
+                last = ex;
                 await Task.Delay(100);
             }
         }
         if (!replaced)
         {
+            Log.Error(last!, "Replacing the recording");
             string fallback = Unique(_path);
-            File.Move(tmp, fallback);
+            try
+            {
+                File.Move(tmp, fallback);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                Log.Error(ex, "Saving the recording under a new name");
+                Load();
+                Toast.Show("Couldn't save, the file is in use. Try again in a moment");
+                return;
+            }
             _path = fallback;
             UpdateTitle();
         }
@@ -458,13 +534,102 @@ public partial class VideoEditorWindow : ChromeWindow
         UpdateTrimUi();
     }
 
-    private void AudioToggle_Click(object sender, RoutedEventArgs e)
+    private void AudioButton_Click(object sender, RoutedEventArgs e)
     {
-        bool on = AudioToggle.IsChecked == true;
-        AudioText.Text = on ? "Sound on" : "Sound off";
-        AudioIcon.Data = (Geometry)FindResource(on ? "IconSpeaker" : "IconSpeakerOff");
+        _soundOn = !_soundOn;
+        UpdateSoundUi();
         SyncMute();
         UpdateTrimUi();
+    }
+
+    private void SystemButton_Click(object sender, RoutedEventArgs e)
+    {
+        _systemOn = !_systemOn;
+        SourcesChanged();
+    }
+
+    private void MicButton_Click(object sender, RoutedEventArgs e)
+    {
+        _micOn = !_micOn;
+        SourcesChanged();
+    }
+
+    private async void SourcesChanged()
+    {
+        UpdateSoundUi();
+        UpdateTrimUi();
+        SyncMute();
+        await PreviewSourcesAsync();
+        SyncMute();
+    }
+
+    /// <summary>Icons and tooltips for the sound switches: crossed out and dimmed when muted.</summary>
+    private void UpdateSoundUi()
+    {
+        void Show(Button button, System.Windows.Shapes.Path icon, bool on, string onIcon, string offIcon, string tip)
+        {
+            icon.Data = (Geometry)FindResource(on ? onIcon : offIcon);
+            button.Foreground = (Brush)FindResource(on ? "TextBrush" : "Text2Brush");
+            button.ToolTip = tip;
+        }
+        Show(AudioButton, AudioIcon, _soundOn, "IconSpeaker", "IconSpeakerOff",
+            !Player.HasAudio ? "This recording has no sound" : _soundOn ? "Sound on, click to leave it out of saved MP4s (M)" : "Sound off, click to keep it (M)");
+        Show(SystemButton, SystemIcon, _systemOn, "IconSpeaker", "IconSpeakerOff",
+            _systemOn ? "System audio on, click to mute it" : "System audio muted, click to keep it");
+        Show(MicButton, MicIcon, _micOn, "IconMic", "IconMicOff",
+            _micOn ? "Microphone on, click to mute it (M)" : "Microphone muted, click to keep it (M)");
+    }
+
+    /// <summary>
+    /// With just one source on, gets its track ready to play alongside the video: copied out of the recording, not
+    /// re-encoded, so it only takes a moment.
+    /// </summary>
+    private async Task PreviewSourcesAsync()
+    {
+        int track = _systemOn == _micOn ? 0 : _systemOn ? 1 : 2; // both on (or both off): the video's own sound
+        if (track == _sourceTrack) return;
+        int version = ++_sourceVersion;
+        if (track == 0)
+        {
+            _sourceTrack = 0;
+            _sourceAudio.Close();
+            return;
+        }
+        _previewDir ??= Path.Combine(AppPaths.TempDir, "preview-" + Guid.NewGuid().ToString("N")[..8]);
+        Directory.CreateDirectory(_previewDir);
+        string source = Path.Combine(_previewDir, $"track{track}.m4a");
+        if (!File.Exists(source))
+        {
+            string tmp = Path.Combine(_previewDir, $"track{track}-{version}.m4a");
+            try
+            {
+                await Ffmpeg.RunJobAsync($"-i {Ffmpeg.Quote(_path)} -map 0:a:{track} -c copy {Ffmpeg.Quote(tmp)}", 0, null, _closing.Token);
+                File.Move(tmp, source, true);
+            }
+            catch (Exception ex)
+            {
+                if (ex is not OperationCanceledException) Log.Error(ex, "Preparing the audio preview");
+                return;
+            }
+        }
+        if (version != _sourceVersion) return; // switched again meanwhile
+        _sourceTrack = track;
+        _sourceAudio.Open(new Uri(source)); // lined up with the video once it opens
+    }
+
+    private void ClearPreviews()
+    {
+        _sourceAudio.Close();
+        if (_previewDir == null) return;
+        try
+        {
+            Directory.Delete(_previewDir, true);
+        }
+        catch
+        {
+            // Still open in the player; it's in the temp folder either way.
+        }
+        _previewDir = null;
     }
 
     private void ShowInFolder_Click(object sender, RoutedEventArgs e) => OutputService.ShowInFolder(_path);
@@ -553,9 +718,11 @@ public partial class VideoEditorWindow : ChromeWindow
             case Key.E when mods == ModifierKeys.Control:
                 OutputService.ShowInFolder(_path);
                 break;
-            case Key.M when mods == ModifierKeys.None && AudioToggle.IsEnabled:
-                AudioToggle.IsChecked = AudioToggle.IsChecked != true;
-                AudioToggle_Click(this, e);
+            case Key.M when mods == ModifierKeys.None && _sourceTracks:
+                MicButton_Click(this, e);
+                break;
+            case Key.M when mods == ModifierKeys.None && AudioButton.IsEnabled:
+                AudioButton_Click(this, e);
                 break;
             case Key.R when mods == ModifierKeys.None && IsTrimmed:
                 ResetTrim_Click(this, e);

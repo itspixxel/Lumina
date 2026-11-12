@@ -30,6 +30,8 @@ public sealed class LibraryEntry
     public string? App { get; set; }
     /// <summary>Text typed into the capture's markup, so it can be searched.</summary>
     public string? MarkupText { get; set; }
+    /// <summary>Text read from the screenshot's pixels by <see cref="TextIndexer"/>: null until it's been read, "" when there is none.</summary>
+    public string? OcrText { get; set; }
 
     [JsonIgnore] public string Name => System.IO.Path.GetFileName(Path);
     [JsonIgnore] public DateTime Modified => ModifiedUtc.ToLocalTime();
@@ -231,6 +233,20 @@ public static class LibraryIndex
             if (_entries!.TryGetValue(path, out var entry)) entry.Size = -1;
         }
     }
+
+    /// <summary>Stores the text read from a screenshot, unless the file changed while it was being read.</summary>
+    public static void SetText(LibraryEntry entry, string text)
+    {
+        lock (Gate)
+        {
+            if (_entries == null || !_entries.TryGetValue(entry.Path, out var current) || !ReferenceEquals(current, entry)) return;
+            entry.OcrText = text;
+            _dirty = true;
+        }
+    }
+
+    /// <summary>Writes pending changes to library.json.</summary>
+    public static void Save() => SaveCache();
 
     // ---------- Cache file ----------
 

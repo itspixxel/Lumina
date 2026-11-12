@@ -63,7 +63,7 @@ public sealed class RecordingController
             else await Task.Delay(150); // let the overlay fade out of the first frame
 
             var recorder = new ScreenRecorder(area.Bounds, new RecordingOptions(
-                Math.Clamp(s.RecordingFps, 5, 60), s.RecordCursor,
+                Math.Clamp(s.RecordingFps, 5, 144), s.RecordCursor,
                 s.RecordSystemAudio, s.SystemAudioDevice, s.RecordMicrophone, s.MicrophoneDevice, s.HardwareEncoding));
             recorder.Failed += ex => Application.Current.Dispatcher.BeginInvoke(() => OnFailed(recorder, ex));
             await recorder.StartAsync();

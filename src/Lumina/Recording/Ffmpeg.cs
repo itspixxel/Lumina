@@ -355,6 +355,52 @@ public static class Ffmpeg
         return lines.Length == 0 ? "FFmpeg stopped unexpectedly." : string.Join("\n", lines.TakeLast(3));
     }
 
+    // ---------- Audio tracks ----------
+
+    /// <summary>Names (MP4 handler names) of the two source tracks a recording with both system audio and microphone carries after its mix.</summary>
+    public const string SystemTrackTitle = "System audio", MicTrackTitle = "Microphone";
+
+    /// <summary>Output options that label audio tracks 0 to 2 as the mix and its two sources, with only the mix played by default.</summary>
+    public static string SourceTrackArgs =>
+        $"-metadata:s:a:0 handler_name=\"System audio + microphone\" -metadata:s:a:1 handler_name=\"{SystemTrackTitle}\" -metadata:s:a:2 handler_name=\"{MicTrackTitle}\"" +
+        " -disposition:a:0 default -disposition:a:1 0 -disposition:a:2 0";
+
+    /// <summary>
+    /// Whether a recording carries its system audio and microphone as separate tracks (after the mix), so each can be
+    /// muted on its own. Recordings from before 0.5, or with only one source, have just one track.
+    /// </summary>
+    public static async Task<bool> HasSourceTracksAsync(string path)
+    {
+        var titles = new List<string?>();
+        try
+        {
+            // With no output, ffmpeg just describes the input (on stderr) and exits.
+            using var p = Start($"-hide_banner -i {Quote(path)}");
+            string info = await p.StandardError.ReadToEndAsync();
+            await p.WaitForExitAsync();
+            bool inAudio = false;
+            foreach (var raw in info.Split('\n'))
+            {
+                string line = raw.Trim();
+                if (line.StartsWith("Stream #"))
+                {
+                    inAudio = line.Contains(": Audio:");
+                    if (inAudio) titles.Add(null);
+                }
+                else if (inAudio && line.StartsWith("handler_name") && line.IndexOf(':') is int colon and > 0)
+                {
+                    titles[^1] = line[(colon + 1)..].Trim();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Reading a recording's audio tracks");
+            return false;
+        }
+        return titles.Count == 3 && titles[1] == SystemTrackTitle && titles[2] == MicTrackTitle;
+    }
+
     public static string Seconds(double s) => s.ToString("0.###", CultureInfo.InvariantCulture);
 
     public static string Quote(string path) => "\"" + path + "\"";

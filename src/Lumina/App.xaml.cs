@@ -81,6 +81,7 @@ public partial class App : Application
         }
         Updater.Start(updated);
         ThumbnailCache.PruneInBackground();
+        TextIndexer.Start();
     }
 
     /// <summary>After an update the old version may still be shutting down; take over once it has.</summary>
