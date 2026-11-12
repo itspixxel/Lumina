@@ -68,6 +68,7 @@ public sealed class CaptureController
             try
             {
                 path = OutputService.ReservePath(result.AppName);
+                LibraryIndex.SetApp(path, result.AppName);
                 save = OutputService.SaveAsync(result.Image, path);
                 save.ContinueWith(t =>
                 {

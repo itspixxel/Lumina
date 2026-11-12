@@ -247,6 +247,7 @@ public static class ProjectStore
             var crop = doc.Crop is Int32Rect c ? new[] { c.X, c.Y, c.Width, c.Height } : null;
             var project = new Project { OutputPath = outputPath, Annotations = doc.Annotations, Crop = crop, Modified = DateTime.Now };
             File.WriteAllText(JsonPath(outputPath), JsonSerializer.Serialize(project, Options));
+            LibraryIndex.Invalidate(outputPath);
         }
         catch (Exception ex)
         {
@@ -274,6 +275,32 @@ public static class ProjectStore
         }
     }
 
+    /// <summary>
+    /// The text in a capture's markup, joined with spaces: "" when it has markup but no text, null when it has
+    /// no markup at all. Reads the JSON without building the annotations.
+    /// </summary>
+    public static string? ReadText(string outputPath)
+    {
+        try
+        {
+            string json = JsonPath(outputPath);
+            if (!File.Exists(json)) return null;
+            using var doc = JsonDocument.Parse(File.ReadAllText(json));
+            if (!doc.RootElement.TryGetProperty("Annotations", out var annotations) || annotations.ValueKind != JsonValueKind.Array)
+                return "";
+            var texts = annotations.EnumerateArray()
+                .Where(a => a.ValueKind == JsonValueKind.Object && a.TryGetProperty("Text", out var t) && t.ValueKind == JsonValueKind.String)
+                .Select(a => a.GetProperty("Text").GetString()!.Trim())
+                .Where(t => t.Length > 0);
+            return string.Join(" ", texts);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Reading markup text");
+            return null;
+        }
+    }
+
     /// <summary>Keeps a capture's markup attached to it when the file is renamed.</summary>
     public static void Move(string fromPath, string toPath)
     {
@@ -294,6 +321,7 @@ public static class ProjectStore
         {
             File.Delete(JsonPath(outputPath));
             File.Delete(OriginalPath(outputPath));
+            LibraryIndex.Invalidate(outputPath);
         }
         catch (Exception ex)
         {

@@ -114,6 +114,7 @@ public sealed class RecordingController
         try
         {
             path = OutputService.ReserveVideoPath(_appName);
+            LibraryIndex.SetApp(path, _appName);
             await recorder.FinishAsync(path);
         }
         catch (Exception ex)
