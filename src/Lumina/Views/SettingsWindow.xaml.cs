@@ -218,7 +218,7 @@ public partial class SettingsWindow : ChromeWindow
     {
         bool installing = Ffmpeg.IsInstalling;
         bool available = Ffmpeg.IsAvailable;
-        FfmpegStatus.Text = installing ? Ffmpeg.InstallStage : available ? Ffmpeg.Describe() : "Needed for recording · free, " + Ffmpeg.DownloadSizeText;
+        FfmpegStatus.Text = installing ? Ffmpeg.InstallStage : available ? Ffmpeg.Describe() : "Needed for recording - free, " + Ffmpeg.DownloadSizeText;
         FfmpegStatus.ToolTip = FfmpegStatus.Text;
         FfmpegStatus.Foreground = (System.Windows.Media.Brush)FindResource(available || installing ? "Text2Brush" : "DangerBrush");
         FfmpegDownload.Visibility = available ? Visibility.Collapsed : Visibility.Visible;

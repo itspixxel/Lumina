@@ -101,7 +101,7 @@
                             <TextBlock Text="Frame rate" Style="{StaticResource FieldLabel}" />
                             <ComboBox x:Name="RecordingFps" Width="160">
                                 <ComboBoxItem Content="30 fps" Tag="30" />
-                                <ComboBoxItem Content="60 fps · smoother" Tag="60" />
+                                <ComboBoxItem Content="60 fps - smoother" Tag="60" />
                             </ComboBox>
                         </StackPanel>
                         <StackPanel Grid.Column="1">
@@ -223,8 +223,8 @@
                         <StackPanel Grid.Column="0" Margin="0,0,28,0">
                             <TextBlock Text="Format" Style="{StaticResource FieldLabel}" />
                             <ComboBox x:Name="ImageFormat" Width="160" SelectionChanged="Format_Changed">
-                                <ComboBoxItem Content="PNG · lossless" />
-                                <ComboBoxItem Content="JPEG · smaller" />
+                                <ComboBoxItem Content="PNG - lossless" />
+                                <ComboBoxItem Content="JPEG - smaller" />
                             </ComboBox>
                         </StackPanel>
                         <StackPanel Grid.Column="1" x:Name="QualityPanel">

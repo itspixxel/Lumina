@@ -215,7 +215,7 @@ public sealed class StrokeAnnotation : Annotation
     private static readonly double[] Kernel = { 1, 4, 6, 4, 1 };
 
     /// <summary>
-    /// Binomial smoothing (two passes ≈ a Gaussian) that irons out mouse jitter and pixel stepping.
+    /// Binomial smoothing (two passes approximate a Gaussian) that irons out mouse jitter and pixel stepping.
     /// The window shrinks near the ends so the stroke still starts and stops exactly where the user did.
     /// </summary>
     private static List<Point> Smooth(List<Point> input)
@@ -394,7 +394,7 @@ public sealed class SpotlightAnnotation : RegionAnnotation
 {
     public bool Ellipse { get; set; }
 
-    /// <summary>How dark the surroundings get, 0–1. Shared by all spotlights in a document.</summary>
+    /// <summary>How dark the surroundings get, 0 to 1. Shared by all spotlights in a document.</summary>
     public double Dim { get; set; } = 0.6;
 
     /// <summary>Also blur everything outside the spotlights.</summary>

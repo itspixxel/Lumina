@@ -39,7 +39,7 @@ public static class Ffmpeg
     public static event Action? StateChanged;
 
     public static bool IsInstalling => _install != null;
-    /// <summary>0–1 while downloading, null when the size isn't known yet.</summary>
+    /// <summary>0 to 1 while downloading, null when the size isn't known yet.</summary>
     public static double? InstallProgress { get; private set; }
     public static string InstallStage { get; private set; } = "";
 
@@ -75,7 +75,7 @@ public static class Ffmpeg
         if (path == null) return "Not installed";
         if (string.Equals(path, InstalledPath, StringComparison.OrdinalIgnoreCase)) return "Installed by Lumina";
         if (string.Equals(path, App.Settings.FfmpegPath, StringComparison.OrdinalIgnoreCase)) return path;
-        return "Found on this PC · " + path;
+        return "Found on this PC - " + path;
     }
 
     /// <summary>Checks that a file really is a working ffmpeg.exe. Returns its version line, or null.</summary>
@@ -120,7 +120,7 @@ public static class Ffmpeg
         if (_install != null) return false;
         var cts = _install = new CancellationTokenSource();
         InstallProgress = null;
-        InstallStage = "Connecting…";
+        InstallStage = "Connecting...";
         Raise();
         Exception? last = null;
         try
@@ -184,15 +184,15 @@ public static class Ffmpeg
                         tick.Restart();
                         InstallProgress = total > 0 ? (double)done / total.Value : null;
                         InstallStage = total > 0
-                            ? $"Downloading… {done / 1048576} of {total.Value / 1048576} MB"
-                            : $"Downloading… {done / 1048576} MB";
+                            ? $"Downloading... {done / 1048576} of {total.Value / 1048576} MB"
+                            : $"Downloading... {done / 1048576} MB";
                         Raise();
                     }
                 }
             }
 
             InstallProgress = 1;
-            InstallStage = "Unpacking…";
+            InstallStage = "Unpacking...";
             Raise();
             await Task.Run(() =>
             {
@@ -325,7 +325,7 @@ public static class Ffmpeg
     }
 
     /// <summary>
-    /// Runs a job (trim, export…) reporting progress as a 0–1 fraction of <paramref name="duration"/>.
+    /// Runs a job (trim, export...) reporting progress as a 0 to 1 fraction of <paramref name="duration"/>.
     /// Throws with FFmpeg's own error text if it fails.
     /// </summary>
     public static async Task RunJobAsync(string args, double duration, IProgress<double>? progress, CancellationToken ct = default)

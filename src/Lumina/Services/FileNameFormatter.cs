@@ -11,7 +11,7 @@ namespace Lumina.Services;
 /// </summary>
 public static partial class FileNameFormatter
 {
-    public const string TokenHelp = "{yyyy} {MM} {dd} {HH} {mm} {ss}  ·  {app} = captured app  ·  {n} = counter";
+    public const string TokenHelp = "{yyyy} {MM} {dd} {HH} {mm} {ss}  |  {app} = captured app  |  {n} = counter";
 
     [GeneratedRegex(@"\{(\w+)\}")]
     private static partial Regex TokenRegex();

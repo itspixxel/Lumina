@@ -290,14 +290,14 @@ internal sealed class OverlayWindow : Window
         {
             if (!IsOn())
             {
-                toggle.ToolTip = $"{kind} is off · click to turn on";
+                toggle.ToolTip = $"{kind} is off - click to turn on";
                 return;
             }
             string? id = output ? App.Settings.SystemAudioDevice : App.Settings.MicrophoneDevice;
             string device = id == null
                 ? AudioDevices.Default(flow)?.Name ?? "default device"
                 : AudioDevices.List(flow).Find(d => d.Id == id)?.Name ?? "unplugged device";
-            toggle.ToolTip = $"{kind}: {device} · click to turn off";
+            toggle.ToolTip = $"{kind}: {device} - click to turn off";
         };
         toggle.Click += (_, _) =>
         {
@@ -479,12 +479,12 @@ internal sealed class OverlayWindow : Window
 
     private static string HintFor(CaptureMode mode, bool record) => (mode, record) switch
     {
-        (CaptureMode.Region, true) => "Drag an area to record · click a window",
+        (CaptureMode.Region, true) => "Drag an area to record - click a window",
         (CaptureMode.Window, true) => "Click a window to record it",
-        (CaptureMode.Screen, true) => "Click a screen to record · F for this one",
-        (CaptureMode.Region, _) => "Drag to select · click a window",
+        (CaptureMode.Screen, true) => "Click a screen to record - F for this one",
+        (CaptureMode.Region, _) => "Drag to select - click a window",
         (CaptureMode.Window, _) => "Click a window to capture it",
-        (CaptureMode.Screen, _) => "Click a screen · F for this one",
+        (CaptureMode.Screen, _) => "Click a screen - F for this one",
         (CaptureMode.Freeform, _) => "Draw around anything",
         _ => "",
     };
@@ -517,10 +517,10 @@ internal sealed class OverlaySurface : FrameworkElement
     private static readonly Typeface LabelFace = new(new FontFamily("Segoe UI Variable Text, Segoe UI"), FontStyles.Normal, FontWeights.SemiBold, FontStretches.Normal);
     private static readonly Typeface MonoFace = new(new FontFamily("Cascadia Mono, Consolas"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
 
-    /// <summary>0 → 1 as the overlay settles in on open.</summary>
+    /// <summary>0 to 1 as the overlay settles in on open.</summary>
     public static readonly DependencyProperty IntroProperty = DependencyProperty.Register(
         nameof(Intro), typeof(double), typeof(OverlaySurface), new FrameworkPropertyMetadata(0.0, FrameworkPropertyMetadataOptions.AffectsRender));
-    /// <summary>0 → 1 as everything lifts away after a capture.</summary>
+    /// <summary>0 to 1 as everything lifts away after a capture.</summary>
     public static readonly DependencyProperty OutroProperty = DependencyProperty.Register(
         nameof(Outro), typeof(double), typeof(OverlaySurface), new FrameworkPropertyMetadata(0.0, FrameworkPropertyMetadataOptions.AffectsRender));
     /// <summary>Strength of the white shutter flash over the captured area.</summary>
@@ -543,7 +543,7 @@ internal sealed class OverlaySurface : FrameworkElement
     private Rect? _shown, _target;
     private bool _ticking;
     private TimeSpan _lastTick;
-    // 0 → 1 as a highlight first appears (fades in while settling onto its target).
+    // 0 to 1 as a highlight first appears (fades in while settling onto its target).
     private double _appear = 1;
     private const double AppearSeconds = 0.32;
 
@@ -712,18 +712,18 @@ internal sealed class OverlaySurface : FrameworkElement
         {
             var r = _session.SelectionRect;
             target = ToLocal(r);
-            label = $"{r.Width} × {r.Height}";
+            label = $"{r.Width} x {r.Height}";
             solid = true;
         }
         else if (_session.Mode is CaptureMode.Region or CaptureMode.Window && _session.HoverWindow is { } w)
         {
             target = ToLocal(w.Bounds);
-            label = string.IsNullOrWhiteSpace(w.Title) ? $"{w.Bounds.Width} × {w.Bounds.Height}" : Truncate(w.Title, 60);
+            label = string.IsNullOrWhiteSpace(w.Title) ? $"{w.Bounds.Width} x {w.Bounds.Height}" : Truncate(w.Title, 60);
         }
         else if (_session.Mode == CaptureMode.Screen && _session.HoverMonitor == _monitor)
         {
             target = full;
-            label = $"{_monitor.Bounds.Width} × {_monitor.Bounds.Height}";
+            label = $"{_monitor.Bounds.Width} x {_monitor.Bounds.Height}";
         }
 
         SetTarget(target, snap: solid);
@@ -905,7 +905,7 @@ internal sealed class OverlaySurface : FrameworkElement
         new(text, CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, face, size, brush,
             VisualTreeHelper.GetDpi(this).PixelsPerDip);
 
-    private static string Truncate(string s, int max) => s.Length <= max ? s : s[..(max - 1)] + "…";
+    private static string Truncate(string s, int max) => s.Length <= max ? s : s[..(max - 3)] + "...";
 
     private static T Freeze<T>(T f) where T : Freezable
     {

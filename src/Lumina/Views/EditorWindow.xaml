@@ -86,7 +86,7 @@
                 </StackPanel>
             </Button>
             <Button Style="{StaticResource GhostButton}" Click="SaveAs_Click" ToolTip="Save a copy somewhere else (Ctrl+Shift+S)" Padding="10,6" Margin="2,0">
-                <TextBlock Text="Save as…" VerticalAlignment="Center" />
+                <TextBlock Text="Save as..." VerticalAlignment="Center" />
             </Button>
             <!-- Save while there's something to write; a quiet "Saved" once the file on disk is up to date -->
             <Grid Margin="6,0,0,0" VerticalAlignment="Center">
@@ -120,7 +120,7 @@
             </Border>
         </ScrollViewer>
 
-        <!-- Tools: select · draw · shapes · labels · effects · crop -->
+        <!-- Tools: select, draw, shapes, labels, effects, crop -->
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,14,0,0">
             <Border Style="{StaticResource Pill}" HorizontalAlignment="Center"
                     v:Fx.Entrance="True" v:Fx.EntranceOffset="-16" v:Fx.EntranceDelay="90">
@@ -129,41 +129,41 @@
                         <Path Style="{StaticResource Icon}" Data="{StaticResource IconSelect}" />
                     </RadioButton>
                     <Rectangle Style="{StaticResource VDivider}" />
-                    <RadioButton x:Name="ToolPen" Style="{StaticResource Tool}" Tag="Pen" ToolTip="Pen (P) · Shift for a straight line" Checked="Tool_Checked">
+                    <RadioButton x:Name="ToolPen" Style="{StaticResource Tool}" Tag="Pen" ToolTip="Pen (P) - Shift for a straight line" Checked="Tool_Checked">
                         <Path Style="{StaticResource Icon}" Data="{StaticResource IconPen}" />
                     </RadioButton>
                     <RadioButton x:Name="ToolHighlighter" Style="{StaticResource Tool}" Tag="Highlighter" ToolTip="Highlighter (H)" Checked="Tool_Checked">
                         <Path Style="{StaticResource Icon}" Data="{StaticResource IconHighlighter}" />
                     </RadioButton>
                     <Rectangle Style="{StaticResource VDivider}" />
-                    <RadioButton x:Name="ToolArrow" Style="{StaticResource Tool}" Tag="Arrow" ToolTip="Arrow (A) · Shift snaps to 45°" Checked="Tool_Checked">
+                    <RadioButton x:Name="ToolArrow" Style="{StaticResource Tool}" Tag="Arrow" ToolTip="Arrow (A) - Shift snaps to 45 degrees" Checked="Tool_Checked">
                         <Path Style="{StaticResource Icon}" Data="{StaticResource IconArrow}" />
                     </RadioButton>
-                    <RadioButton x:Name="ToolLine" Style="{StaticResource Tool}" Tag="Line" ToolTip="Line (L) · Shift snaps to 45°" Checked="Tool_Checked">
+                    <RadioButton x:Name="ToolLine" Style="{StaticResource Tool}" Tag="Line" ToolTip="Line (L) - Shift snaps to 45 degrees" Checked="Tool_Checked">
                         <Path Style="{StaticResource Icon}" Data="{StaticResource IconLine}" />
                     </RadioButton>
-                    <RadioButton x:Name="ToolRectangle" Style="{StaticResource Tool}" Tag="Rectangle" ToolTip="Rectangle (R) · Shift for square" Checked="Tool_Checked">
+                    <RadioButton x:Name="ToolRectangle" Style="{StaticResource Tool}" Tag="Rectangle" ToolTip="Rectangle (R) - Shift for square" Checked="Tool_Checked">
                         <Path Style="{StaticResource Icon}" Data="{StaticResource IconRect}" />
                     </RadioButton>
-                    <RadioButton x:Name="ToolEllipse" Style="{StaticResource Tool}" Tag="Ellipse" ToolTip="Ellipse (E) · Shift for circle" Checked="Tool_Checked">
+                    <RadioButton x:Name="ToolEllipse" Style="{StaticResource Tool}" Tag="Ellipse" ToolTip="Ellipse (E) - Shift for circle" Checked="Tool_Checked">
                         <Path Style="{StaticResource Icon}" Data="{StaticResource IconEllipse}" />
                     </RadioButton>
                     <Rectangle Style="{StaticResource VDivider}" />
-                    <RadioButton x:Name="ToolText" Style="{StaticResource Tool}" Tag="Text" ToolTip="Text (T) · Enter to finish, Shift+Enter for a new line" Checked="Tool_Checked">
+                    <RadioButton x:Name="ToolText" Style="{StaticResource Tool}" Tag="Text" ToolTip="Text (T) - Enter to finish, Shift+Enter for a new line" Checked="Tool_Checked">
                         <Path Style="{StaticResource Icon}" Data="{StaticResource IconText}" />
                     </RadioButton>
                     <RadioButton x:Name="ToolStep" Style="{StaticResource Tool}" Tag="Step" ToolTip="Numbered steps (N)" Checked="Tool_Checked">
                         <Path Style="{StaticResource Icon}" Data="{StaticResource IconStep}" />
                     </RadioButton>
                     <Rectangle Style="{StaticResource VDivider}" />
-                    <RadioButton x:Name="ToolPixelate" Style="{StaticResource Tool}" Tag="Pixelate" ToolTip="Redact (B) · pixelate, blur or cover" Checked="Tool_Checked">
+                    <RadioButton x:Name="ToolPixelate" Style="{StaticResource Tool}" Tag="Pixelate" ToolTip="Redact (B) - pixelate, blur or cover" Checked="Tool_Checked">
                         <Path Style="{StaticResource Icon}" Data="{StaticResource IconPixelate}" />
                     </RadioButton>
-                    <RadioButton x:Name="ToolSpotlight" Style="{StaticResource Tool}" Tag="Spotlight" ToolTip="Spotlight (S) · dims everything else" Checked="Tool_Checked">
+                    <RadioButton x:Name="ToolSpotlight" Style="{StaticResource Tool}" Tag="Spotlight" ToolTip="Spotlight (S) - dims everything else" Checked="Tool_Checked">
                         <Path Style="{StaticResource Icon}" Data="{StaticResource IconSpotlight}" />
                     </RadioButton>
                     <Rectangle Style="{StaticResource VDivider}" />
-                    <RadioButton x:Name="ToolCrop" Style="{StaticResource Tool}" Tag="Crop" ToolTip="Crop (C) · double-click to reset" Checked="Tool_Checked">
+                    <RadioButton x:Name="ToolCrop" Style="{StaticResource Tool}" Tag="Crop" ToolTip="Crop (C) - double-click to reset" Checked="Tool_Checked">
                         <Path Style="{StaticResource Icon}" Data="{StaticResource IconCrop}" />
                     </RadioButton>
                 </StackPanel>
@@ -280,7 +280,7 @@
         <Border x:Name="ZoomPill" Style="{StaticResource Pill}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,18,18" Padding="4"
                 v:Fx.Entrance="True" v:Fx.EntranceOffset="16" v:Fx.EntranceDelay="170">
             <StackPanel Orientation="Horizontal">
-                <Button Style="{StaticResource IconButton}" Click="ZoomOut_Click" ToolTip="Zoom out (Ctrl+-)" Content="−" FontSize="15" Padding="10,3" />
+                <Button Style="{StaticResource IconButton}" Click="ZoomOut_Click" ToolTip="Zoom out (Ctrl+-)" Content="-" FontSize="15" Padding="10,3" />
                 <TextBlock x:Name="ZoomText" Width="48" TextAlignment="Center" VerticalAlignment="Center" FontSize="12" />
                 <Button Style="{StaticResource IconButton}" Click="ZoomIn_Click" ToolTip="Zoom in (Ctrl++)" Content="+" FontSize="15" Padding="10,3" />
                 <Rectangle Style="{StaticResource VDivider}" Margin="2,0" />

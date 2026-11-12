@@ -85,7 +85,7 @@ public sealed class RenderContext
         small.CopyPixels(px, w * 4, 0);
         int r = Math.Max(1, (int)Math.Round(radius / down));
         var tmp = new byte[px.Length];
-        for (int pass = 0; pass < 3; pass++) // three box blurs ≈ Gaussian
+        for (int pass = 0; pass < 3; pass++) // three box blurs approximate a Gaussian
         {
             BoxBlur(px, tmp, w, h, r, horizontal: true);
             BoxBlur(tmp, px, w, h, r, horizontal: false);

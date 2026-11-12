@@ -39,10 +39,10 @@ public sealed class GalleryItem : INotifyPropertyChanged
         get
         {
             var parts = new List<string>();
-            if (Entry.Width > 0) parts.Add($"{Entry.Width} × {Entry.Height}");
+            if (Entry.Width > 0) parts.Add($"{Entry.Width} x {Entry.Height}");
             parts.Add(FriendlySize(Entry.Size));
             if (!string.IsNullOrEmpty(Entry.App)) parts.Add(Entry.App!);
-            return $"{Name}\n{string.Join("  ·  ", parts)}\n{Entry.Modified:d MMM yyyy, HH:mm}";
+            return $"{Name}\n{string.Join("  |  ", parts)}\n{Entry.Modified:d MMM yyyy, HH:mm}";
         }
     }
 

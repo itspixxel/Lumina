@@ -81,7 +81,7 @@
                             <Path Data="{StaticResource IconPlay}" Fill="White" Stretch="Uniform" Width="11" Height="12" Margin="3,0,0,0" />
                         </Border>
                         <Border Style="{StaticResource SelectDot}" PreviewMouseLeftButtonDown="SelectDot_MouseDown"
-                                ToolTip="Select · Ctrl+click to add, Shift+click for a range">
+                                ToolTip="Select - Ctrl+click to add, Shift+click for a range">
                             <Path Data="M5.5,10.2 L8.6,13.3 L14.5,7.2" Stroke="White" StrokeThickness="2.2"
                                   StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
                                   Opacity="0" v:Fx.ShowPop="True" v:Fx.Show="{Binding IsSelected}" />

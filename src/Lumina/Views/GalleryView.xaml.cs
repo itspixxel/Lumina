@@ -325,7 +325,7 @@ public partial class GalleryView : UserControl
         EmptyText.Visibility = none || noMatches ? Visibility.Visible : Visibility.Collapsed;
         if (noMatches)
         {
-            EmptyTitle.Text = _query.Length > 0 ? $"Nothing matches “{_query}”" : "Nothing here yet";
+            EmptyTitle.Text = _query.Length > 0 ? $"Nothing matches '{_query}'" : "Nothing here yet";
             EmptyHintText.Text = _query.Length > 0
                 ? "Search looks at file names, the app something was captured from, and text in your markup."
                 : "Nothing fits this filter yet.";

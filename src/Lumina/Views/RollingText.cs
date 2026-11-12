@@ -35,7 +35,7 @@ public sealed class RollingText : StackPanel
         string old = _text;
         _text = text;
 
-        // Slots line up from the right, so 9:59 → 10:00 rolls the existing digits and adds one on the left.
+        // Slots line up from the right, so 9:59 to 10:00 rolls the existing digits and adds one on the left.
         while (_slots.Count < text.Length)
         {
             var slot = new Grid { ClipToBounds = true };

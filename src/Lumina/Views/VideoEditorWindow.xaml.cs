@@ -69,7 +69,7 @@ public partial class VideoEditorWindow : ChromeWindow
     /// <summary>The recording this window is showing.</summary>
     public string FilePath => _path;
 
-    private void UpdateTitle() => Title = Path.GetFileName(_path) + " — Lumina";
+    private void UpdateTitle() => Title = Path.GetFileName(_path) + " - Lumina";
 
     private void Load()
     {
@@ -206,7 +206,7 @@ public partial class VideoEditorWindow : ChromeWindow
         bool trimmed = IsTrimmed;
         TrimBadge.Visibility = trimmed ? Visibility.Visible : Visibility.Collapsed;
         ResetTrim.Visibility = trimmed ? Visibility.Visible : Visibility.Collapsed;
-        TrimText.Text = $"{Format(Timeline.Start)} – {Format(Timeline.End)} · {Format(Timeline.End - Timeline.Start)}";
+        TrimText.Text = $"{Format(Timeline.Start)} to {Format(Timeline.End)} ({Format(Timeline.End - Timeline.Start)})";
         bool modified = IsModified;
         SaveButton.Visibility = modified ? Visibility.Visible : Visibility.Collapsed;
         SaveButton.IsEnabled = !_busy;
@@ -369,7 +369,7 @@ public partial class VideoEditorWindow : ChromeWindow
     {
         if (!IsModified || _busy) return;
         string tmp = Path.Combine(AppPaths.TempDir, $"save-{Guid.NewGuid():N}.mp4");
-        if (!await RunAsync("Saving…", () => ExportMp4Async(tmp))) return;
+        if (!await RunAsync("Saving...", () => ExportMp4Async(tmp))) return;
 
         // The player holds the file open; let go, swap in the trimmed version, and reload.
         Player.Close();
@@ -418,14 +418,14 @@ public partial class VideoEditorWindow : ChromeWindow
             await SaveAsync();
             return;
         }
-        if (await RunAsync(gif ? "Making GIF…" : "Saving…", () => gif ? ExportGifAsync(output) : ExportMp4Async(output)))
+        if (await RunAsync(gif ? "Making GIF..." : "Saving...", () => gif ? ExportGifAsync(output) : ExportMp4Async(output)))
             Done($"Saved {Path.GetFileName(output)}", output);
     }
 
     private async void Gif_Click(object sender, RoutedEventArgs e)
     {
         string output = Unique(Path.ChangeExtension(_path, ".gif"));
-        if (await RunAsync("Making GIF…", () => ExportGifAsync(output)))
+        if (await RunAsync("Making GIF...", () => ExportGifAsync(output)))
             Done($"Saved {Path.GetFileName(output)}", output);
     }
 
@@ -440,7 +440,7 @@ public partial class VideoEditorWindow : ChromeWindow
             string dir = Path.Combine(AppPaths.TempDir, "clips");
             Directory.CreateDirectory(dir);
             file = Path.Combine(dir, Path.GetFileNameWithoutExtension(_path) + "_clip.mp4");
-            if (!await RunAsync("Preparing clip…", () => ExportMp4Async(file))) return;
+            if (!await RunAsync("Preparing clip...", () => ExportMp4Async(file))) return;
         }
         Done(ClipboardService.CopyFile(file) ? "Copied to clipboard" : "Clipboard is busy, try again", null);
     }

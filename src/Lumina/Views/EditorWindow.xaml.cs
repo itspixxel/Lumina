@@ -159,7 +159,7 @@ public partial class EditorWindow : ChromeWindow
     private void UseCustomColor(Color color)
     {
         CustomSwatch.Background = new SolidColorBrush(color);
-        CustomSwatch.ToolTip = $"Custom color {ColorPicker.Hex(color)} · click to change";
+        CustomSwatch.ToolTip = $"Custom color {ColorPicker.Hex(color)} - click to change";
         if (CustomSwatch.IsChecked != true) CustomSwatch.IsChecked = true; // Color_Checked applies it
         else
         {
@@ -300,7 +300,7 @@ public partial class EditorWindow : ChromeWindow
 
     private void UpdateTitle()
     {
-        Title = (_path != null ? Path.GetFileName(_path) : "Untitled capture") + (Canvas.IsDirty ? " •" : "") + " — Lumina";
+        Title = (_path != null ? Path.GetFileName(_path) : "Untitled capture") + (Canvas.IsDirty ? " *" : "") + " - Lumina";
         UpdateSaveUi();
     }
 
@@ -325,7 +325,7 @@ public partial class EditorWindow : ChromeWindow
     private void UpdateStatus()
     {
         var crop = Canvas.Doc.EffectiveCrop;
-        StatusText.Text = $"{crop.Width} × {crop.Height} px";
+        StatusText.Text = $"{crop.Width} x {crop.Height} px";
         UpdateTitle();
     }
 
@@ -455,7 +455,7 @@ public partial class EditorWindow : ChromeWindow
             return;
         }
 
-        string name = _path != null ? $"“{Path.GetFileName(_path)}”" : "This capture";
+        string name = _path != null ? $"'{Path.GetFileName(_path)}'" : "This capture";
         var answer = LuminaDialog.Show(this, "Save your changes?", $"{name} has markup that hasn't been saved yet.",
             DialogKind.Question, (Geometry)FindResource("IconSave"),
             new DialogButton("Don't save", "discard", Danger: true),
