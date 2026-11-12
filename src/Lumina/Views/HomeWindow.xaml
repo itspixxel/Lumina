@@ -184,6 +184,6 @@
         </StackPanel>
 
         <!-- Gallery -->
-        <v:GalleryView x:Name="Gallery" Grid.Row="3" Margin="0,30,0,0" Limit="60" />
+        <v:GalleryView x:Name="Gallery" Grid.Row="3" Margin="0,30,0,0" Limit="60" ShowViewAll="True" Title="Recent" />
     </Grid>
 </v:ChromeWindow>

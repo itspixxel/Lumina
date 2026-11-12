@@ -12,6 +12,10 @@ using Lumina.Editor;
 
 namespace Lumina.Services;
 
+public enum GalleryFilter { All, Screenshots, Recordings, Edited }
+
+public enum GallerySort { Newest, Oldest, Name, Largest }
+
 /// <summary>What the gallery knows about one screenshot or recording.</summary>
 public sealed class LibraryEntry
 {

@@ -64,6 +64,9 @@ public sealed class AppSettings
     /// <summary>Download new releases in the background and restart into them when Lumina is idle.</summary>
     public bool AutoUpdate { get; set; } = true;
 
+    // Gallery
+    public GallerySort GallerySort { get; set; } = GallerySort.Newest;
+
     // Editor
     /// <summary>Custom colors picked in the editor, most recent first.</summary>
     public List<string> RecentColors { get; set; } = new();

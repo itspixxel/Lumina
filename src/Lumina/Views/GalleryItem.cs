@@ -10,7 +10,7 @@ namespace Lumina.Views;
 /// <summary>One tile in the gallery: a library entry plus its thumbnail and selection state.</summary>
 public sealed class GalleryItem : INotifyPropertyChanged
 {
-    private bool _isSelected, _isRenaming, _thumbRequested;
+    private bool _isSelected, _isRenaming, _isCurrent, _thumbRequested;
     private BitmapSource? _thumb;
     private string _info;
 
@@ -57,6 +57,16 @@ public sealed class GalleryItem : INotifyPropertyChanged
         get => _isSelected;
         set => Set(ref _isSelected, value);
     }
+
+    /// <summary>The keyboard cursor is on this tile (shown only while navigating with the arrow keys).</summary>
+    public bool IsCurrent
+    {
+        get => _isCurrent;
+        set => Set(ref _isCurrent, value);
+    }
+
+    /// <summary>Set when the tile should cascade in the next time it's shown: (delay in ms, starting scale).</summary>
+    internal (int Delay, double Scale)? PendingEntrance { get; set; }
 
     /// <summary>The tile's name is an edit box.</summary>
     public bool IsRenaming

@@ -178,7 +178,7 @@ public sealed class RecordingController
         _hidden.Clear();
         if (!App.Settings.HideWindowsDuringCapture) return;
         foreach (var w in Application.Current.Windows.OfType<Window>()
-                     .Where(w => w.IsVisible && w is HomeWindow or SettingsWindow or EditorWindow or VideoEditorWindow).ToList())
+                     .Where(w => w.IsVisible && w is HomeWindow or GalleryWindow or SettingsWindow or EditorWindow or VideoEditorWindow).ToList())
         {
             w.Hide();
             _hidden.Add(w);

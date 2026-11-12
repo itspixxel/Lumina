@@ -79,6 +79,7 @@ internal sealed class TrayIcon : IDisposable
 
         menu.Items.Add(new Separator());
         menu.Items.Add(Item("Open Lumina", null, "IconHome", App.ShowHome));
+        menu.Items.Add(Item("Gallery", null, "IconGallery", () => GalleryWindow.ShowGallery()));
         menu.Items.Add(Item("Open captures folder", null, "IconFolder", OutputService.OpenOutputFolder));
         menu.Items.Add(Item("Settings", null, "IconSettings", App.ShowSettings));
         menu.Items.Add(new Separator());
