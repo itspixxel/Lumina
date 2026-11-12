@@ -30,7 +30,7 @@ public sealed class CaptureController
             if (App.Settings.HideWindowsDuringCapture)
             {
                 foreach (var w in Application.Current.Windows.OfType<Window>()
-                             .Where(w => w.IsVisible && w is HomeWindow or SettingsWindow or EditorWindow).ToList())
+                             .Where(w => w.IsVisible && w is HomeWindow or GalleryWindow or SettingsWindow or EditorWindow).ToList())
                 {
                     w.Hide();
                     hidden.Add(w);

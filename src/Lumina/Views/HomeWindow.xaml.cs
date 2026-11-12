@@ -32,6 +32,7 @@ public partial class HomeWindow : ChromeWindow
             UpdateRecordCard();
         };
         Loaded += (_, _) => UpdateRecordCard();
+        Gallery.ViewAllRequested += () => GalleryWindow.ShowGallery();
     }
 
     /// <summary>Each mode card's tooltip names its key here (1 to 5) and its shortcut from anywhere, if set.</summary>
@@ -99,19 +100,7 @@ public partial class HomeWindow : ChromeWindow
     }
 
     /// <summary>The gallery shows two folders; when they differ, ask which one.</summary>
-    private void OpenFolder_Click(object sender, RoutedEventArgs e)
-    {
-        string shots = App.Settings.OutputDirectory, videos = App.Settings.RecordingsDirectory;
-        if (GalleryView.SamePath(shots, videos))
-        {
-            OutputService.OpenFolder(shots);
-            return;
-        }
-        var menu = new ContextMenu { PlacementTarget = (UIElement)sender, Placement = PlacementMode.Bottom };
-        menu.Items.Add(Menus.Entry("Screenshots", "IconRegion", () => OutputService.OpenFolder(shots)));
-        menu.Items.Add(Menus.Entry("Recordings", "IconRecord", () => OutputService.OpenFolder(videos)));
-        menu.IsOpen = true;
-    }
+    private void OpenFolder_Click(object sender, RoutedEventArgs e) => Menus.ShowOutputFolders((UIElement)sender);
 
     private void Settings_Click(object sender, RoutedEventArgs e) => App.ShowSettings();
 
@@ -163,7 +152,12 @@ public partial class HomeWindow : ChromeWindow
         }
         else if (mods == ModifierKeys.Control && e.Key == Key.E)
         {
-            OpenFolder_Click(this, e);
+            Menus.ShowOutputFolders(this);
+            e.Handled = true;
+        }
+        else if (mods == ModifierKeys.Control && e.Key == Key.F)
+        {
+            GalleryWindow.ShowGallery(focusSearch: true);
             e.Handled = true;
         }
         else if (mods == ModifierKeys.None && e.Key == Key.F5)

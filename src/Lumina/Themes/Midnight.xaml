@@ -192,6 +192,12 @@
     </Style>
     <Style TargetType="ToggleButton" BasedOn="{StaticResource ToolToggle}" />
     <Style x:Key="ToolRadio" TargetType="RadioButton" BasedOn="{StaticResource ToolToggle}" />
+    <!-- Small pill choices (editor options, gallery filters) -->
+    <Style x:Key="Chip" TargetType="RadioButton" BasedOn="{StaticResource ToolRadio}">
+        <Setter Property="Padding" Value="10,5" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="v:Fx.PressScale" Value="0.94" />
+    </Style>
 
     <!-- ============ CheckBox as a switch ============ -->
     <Style TargetType="CheckBox">

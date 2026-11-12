@@ -47,7 +47,12 @@ A lightweight, modern screenshot and screen recording tool for Windows - a repla
 ![The trim editor with a filmstrip timeline and trim handles](docs/screenshots/trim.png)
 
 ### Gallery
-- Screenshots and recordings together on the home window, newest first, with multi-select (click the corner circle, or Ctrl / Shift + click), copy, rename (F2), reveal in Explorer and delete to the Recycle Bin (Shift + Delete deletes permanently).
+- **Recent** on the home window shows your latest screenshots and recordings; *View all* (or `Ctrl + F`) opens the full gallery.
+- **Search** file names, the app something was captured from, and the text in your markup. Just start typing.
+- **Filters and sorting**: all, screenshots, recordings or edited screenshots; newest, oldest, name or largest first. Captures are grouped by date (Today, Yesterday, this week, by month).
+- **Fast with thousands of files**: Lumina keeps an index and a thumbnail cache, picks up files added or changed outside it, and only loads what's on screen.
+- **Keyboard friendly**: arrow keys, Home / End and Page Up / Down move around (`Shift` to select a range), Space selects, Enter opens.
+- Multi-select (click the corner circle, or Ctrl / Shift + click), copy, rename (F2), reveal in Explorer and delete to the Recycle Bin (Shift + Delete deletes permanently).
 
 <p align="center"><img src="docs/screenshots/settings.png" width="520" alt="Settings: shortcuts, capture options and recording with audio devices"></p>
 
@@ -89,7 +94,11 @@ Lumina lives in the system tray. Settings are stored in `%AppData%\Lumina`. For 
 | Trim editor | `M`, `R`, `Delete` | Sound on / off, reset the trim, delete |
 | Home | `1` to `5` | Region / Window / Screen / Freeform / Record |
 | Home | `Ctrl + O`, `Ctrl + ,`, `Ctrl + E`, `F5` | Open an image, settings, open folder, refresh |
-| Home | `Enter`, `F2`, `Delete`, `Ctrl + C`, `Ctrl + A`, `Esc` | Open, rename, delete, copy, select all, clear selection |
+| Home | `Ctrl + F` | Open the gallery, ready to search |
+| Home, gallery | Arrow keys, `Home` / `End`, `Page Up` / `Page Down` | Move between captures (`Shift` selects a range) |
+| Home, gallery | `Enter`, `Space`, `F2`, `Delete`, `Ctrl + C`, `Ctrl + A`, `Esc` | Open, select, rename, delete, copy, select all, clear selection |
+| Gallery | Type, or `Ctrl + F` | Search |
+| Gallery | `Esc` | Clear the search, then the filters |
 
 ## Building from source
 
@@ -114,8 +123,8 @@ src/Lumina/
   Capture/    screen capture, the selection overlay and capture animations
   Editor/     markup document, annotations and the editing canvas
   Recording/  screen recorder, WASAPI audio capture, FFmpeg setup and the recording flow
-  Services/   settings, output, clipboard, global hotkey hook, startup
-  Views/      home, editor, settings, preview, dialogs and the motion helpers (Fx)
+  Services/   settings, output, clipboard, hotkeys, startup, updates, the library index and thumbnails
+  Views/      home, gallery, editor, settings, preview, dialogs and the motion helpers (Fx)
   Themes/     the "Midnight" design system
 tools/        icon generator
 ```
@@ -125,9 +134,11 @@ tools/        icon generator
 - [x] Capture overlay, quick preview, markup editor, settings
 - [x] Gallery with multi-select
 - [x] Screen recording (video and GIF) with a trimming editor
-- [ ] Full gallery view with search
+- [x] Full gallery view with search
+- [x] Auto-update
+- [ ] Search the text inside screenshots (OCR)
 - [ ] Optional short-link uploads (temporary, self-hosted storage)
-- [ ] Installer and auto-update
+- [ ] Installer
 
 ## Status
 

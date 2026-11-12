@@ -1,0 +1,70 @@
+<v:ChromeWindow x:Class="Lumina.Views.GalleryWindow"
+                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:v="clr-namespace:Lumina.Views"
+                Title="Gallery" Width="1150" Height="780" MinWidth="720" MinHeight="480" PreviewKeyDown="Window_PreviewKeyDown"
+                WindowStartupLocation="CenterScreen" Icon="/Assets/lumina.ico">
+    <v:ChromeWindow.TitleBarContent>
+        <StackPanel Orientation="Horizontal">
+            <Button Style="{StaticResource IconButton}" Click="OpenFolder_Click" ToolTip="Open folder (Ctrl+E)">
+                <Path Style="{StaticResource Icon}" Data="{StaticResource IconFolder}" />
+            </Button>
+            <Button Style="{StaticResource IconButton}" Click="Settings_Click" ToolTip="Settings (Ctrl+,)" Margin="2,0,0,0">
+                <Path Style="{StaticResource Icon}" Data="{StaticResource IconSettings}" />
+            </Button>
+        </StackPanel>
+    </v:ChromeWindow.TitleBarContent>
+
+    <Grid Margin="32,8,32,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Search, filters and sort -->
+        <DockPanel Grid.Row="0" LastChildFill="False" v:Fx.Entrance="True" v:Fx.EntranceOffset="8">
+            <Grid DockPanel.Dock="Left" Width="340">
+                <!-- The theme applies Padding twice (template margin and text view), so these are half the real insets. -->
+                <TextBox x:Name="SearchBox" Padding="18,4,17,4" TextChanged="SearchBox_TextChanged" />
+                <Path Style="{StaticResource Icon}" Data="{StaticResource IconSearch}" Stroke="{StaticResource Text3Brush}"
+                      HorizontalAlignment="Left" VerticalAlignment="Center" Margin="12,0,0,0" IsHitTestVisible="False">
+                    <Path.LayoutTransform>
+                        <ScaleTransform ScaleX="0.7" ScaleY="0.7" />
+                    </Path.LayoutTransform>
+                </Path>
+                <TextBlock x:Name="SearchPlaceholder" Text="Search names, apps and markup text" Foreground="{StaticResource Text3Brush}"
+                           VerticalAlignment="Center" Margin="37,0,34,0" IsHitTestVisible="False" TextTrimming="CharacterEllipsis" />
+                <Button x:Name="ClearSearchButton" Style="{StaticResource IconButton}" Padding="5" Margin="0,0,4,0"
+                        HorizontalAlignment="Right" VerticalAlignment="Center" Click="ClearSearch_Click" ToolTip="Clear search (Esc)"
+                        Visibility="Collapsed" Focusable="False">
+                    <Path Style="{StaticResource Icon}" Data="{StaticResource IconClose}">
+                        <Path.LayoutTransform>
+                            <ScaleTransform ScaleX="0.6" ScaleY="0.6" />
+                        </Path.LayoutTransform>
+                    </Path>
+                </Button>
+            </Grid>
+
+            <Border DockPanel.Dock="Left" Margin="14,0,0,0" CornerRadius="11" Padding="3" VerticalAlignment="Center"
+                    Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource StrokeBrush}" BorderThickness="1">
+                <StackPanel x:Name="FilterChips" Orientation="Horizontal">
+                    <RadioButton Style="{StaticResource Chip}" GroupName="filter" Tag="All" Content="All" IsChecked="True" Checked="Filter_Checked" />
+                    <RadioButton Style="{StaticResource Chip}" GroupName="filter" Tag="Screenshots" Content="Screenshots" Checked="Filter_Checked" />
+                    <RadioButton Style="{StaticResource Chip}" GroupName="filter" Tag="Recordings" Content="Recordings" Checked="Filter_Checked" />
+                    <RadioButton Style="{StaticResource Chip}" GroupName="filter" Tag="Edited" Content="Edited" Checked="Filter_Checked"
+                                 ToolTip="Screenshots with markup you can still change" />
+                </StackPanel>
+            </Border>
+
+            <ComboBox x:Name="SortBox" DockPanel.Dock="Right" Width="150" VerticalAlignment="Center" SelectionChanged="SortBox_SelectionChanged">
+                <ComboBoxItem Content="Newest first" Tag="Newest" />
+                <ComboBoxItem Content="Oldest first" Tag="Oldest" />
+                <ComboBoxItem Content="Name" Tag="Name" />
+                <ComboBoxItem Content="Largest first" Tag="Largest" />
+            </ComboBox>
+        </DockPanel>
+
+        <v:GalleryView x:Name="Gallery" Grid.Row="1" Margin="0,18,0,0" GroupByDate="True" Title="All captures"
+                       EmptyHint="Use your capture shortcut, or start one from the home window." />
+    </Grid>
+</v:ChromeWindow>
