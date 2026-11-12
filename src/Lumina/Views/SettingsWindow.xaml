@@ -101,8 +101,12 @@
                             <TextBlock Text="Frame rate" Style="{StaticResource FieldLabel}" />
                             <ComboBox x:Name="RecordingFps" Width="160">
                                 <ComboBoxItem Content="30 fps" Tag="30" />
-                                <ComboBoxItem Content="60 fps - smoother" Tag="60" />
+                                <ComboBoxItem Content="60 fps" Tag="60" />
+                                <ComboBoxItem Content="120 fps" Tag="120" />
+                                <ComboBoxItem Content="144 fps" Tag="144" />
                             </ComboBox>
+                            <TextBlock Style="{StaticResource Hint}" Width="160" TextWrapping="Wrap" HorizontalAlignment="Left"
+                                       Text="Never more than the monitor's refresh rate." />
                         </StackPanel>
                         <StackPanel Grid.Column="1">
                             <TextBlock Text="Countdown" Style="{StaticResource FieldLabel}" />

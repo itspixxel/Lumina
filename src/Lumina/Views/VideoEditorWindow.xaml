@@ -11,10 +11,17 @@
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="Foreground" Value="{StaticResource Text2Brush}" />
         </Style>
-        <Style x:Key="ChipToggle" TargetType="ToggleButton" BasedOn="{StaticResource ToolToggle}">
-            <Setter Property="Padding" Value="10,5" />
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="v:Fx.PressScale" Value="0.94" />
+        <!-- Icon-only buttons, as tall as the text buttons beside them. -->
+        <Style x:Key="SoundButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Padding" Value="9,0" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="SoundIcon" TargetType="Path" BasedOn="{StaticResource Icon}">
+            <Setter Property="LayoutTransform">
+                <Setter.Value>
+                    <ScaleTransform ScaleX="0.7" ScaleY="0.7" />
+                </Setter.Value>
+            </Setter>
         </Style>
         <Style x:Key="ChipIcon" TargetType="Path" BasedOn="{StaticResource Icon}">
             <Setter Property="Margin" Value="0,0,6,0" />
@@ -107,15 +114,21 @@
 
             <StackPanel x:Name="Actions" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right"
                         Margin="16,0,0,0">
-                <ToggleButton x:Name="AudioToggle" Style="{StaticResource ChipToggle}" IsChecked="True" Click="AudioToggle_Click"
-                              ToolTip="Keep the sound in saved MP4s (M)">
-                    <StackPanel Orientation="Horizontal">
-                        <Path x:Name="AudioIcon" Style="{StaticResource ChipIcon}" Data="{StaticResource IconSpeaker}" />
-                        <TextBlock x:Name="AudioText" Text="Sound on" />
-                    </StackPanel>
-                </ToggleButton>
+                <!-- Sound switches: the icon shows the state (crossed out and dimmed when muted). -->
+                <Button x:Name="AudioButton" Style="{StaticResource SoundButton}" Click="AudioButton_Click">
+                    <Path x:Name="AudioIcon" Style="{StaticResource SoundIcon}" Data="{StaticResource IconSpeaker}" />
+                </Button>
+                <!-- Recordings with system audio and microphone on separate tracks get one switch for each instead. -->
+                <StackPanel x:Name="SourceButtons" Orientation="Horizontal" Visibility="Collapsed">
+                    <Button x:Name="SystemButton" Style="{StaticResource SoundButton}" Click="SystemButton_Click">
+                        <Path x:Name="SystemIcon" Style="{StaticResource SoundIcon}" Data="{StaticResource IconSpeaker}" />
+                    </Button>
+                    <Button x:Name="MicButton" Style="{StaticResource SoundButton}" Click="MicButton_Click" Margin="6,0,0,0">
+                        <Path x:Name="MicIcon" Style="{StaticResource SoundIcon}" Data="{StaticResource IconMic}" />
+                    </Button>
+                </StackPanel>
                 <Rectangle Style="{StaticResource VDivider}" Margin="10,0" />
-                <ComboBox x:Name="GifSize" Width="128" SelectedIndex="1" ToolTip="GIF width">
+                <ComboBox x:Name="GifSize" Width="128" SelectedIndex="3" ToolTip="GIF width">
                     <ComboBoxItem Content="GIF - 480 px" Tag="480" />
                     <ComboBoxItem Content="GIF - 720 px" Tag="720" />
                     <ComboBoxItem Content="GIF - 1080 px" Tag="1080" />

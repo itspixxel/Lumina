@@ -43,9 +43,10 @@ public sealed record RecordingOptions(
     bool HardwareEncoding);
 
 /// <summary>
-/// Records part of the screen to MP4. Lumina grabs the frames itself (GDI, physical pixels, so mixed-DPI
-/// monitors line up with the selection) and pipes them into FFmpeg; audio goes to WAV files on the side and
-/// is mixed in when recording stops. Pausing simply stops feeding frames, so there's nothing to stitch.
+/// Records part of the screen to MP4. Lumina grabs the frames itself (Desktop Duplication, or GDI when that isn't
+/// available; physical pixels either way, so mixed-DPI monitors line up with the selection) and pipes them into
+/// FFmpeg; audio goes to WAV files on the side and is mixed in when recording stops. Pausing simply stops feeding
+/// frames, so there's nothing to stitch.
 /// </summary>
 public sealed class ScreenRecorder
 {
@@ -65,6 +66,9 @@ public sealed class ScreenRecorder
     private AudioCapture? _system, _mic;
     private Exception? _failure;
     private long _frames, _repeats;
+    private DesktopDuplication? _grabber;
+    /// <summary>The frame rate actually recorded: the one asked for, capped at what the capture can deliver.</summary>
+    private int _fps;
     private readonly System.Collections.Concurrent.BlockingCollection<FrameBuffer> _queue = new(2);
     private readonly System.Collections.Concurrent.BlockingCollection<FrameBuffer> _free = new();
 
@@ -131,8 +135,26 @@ public sealed class ScreenRecorder
         return muted;
     }
 
+    /// <summary>Frames per second being recorded.</summary>
+    public int Fps => _fps;
+
     public async Task StartAsync()
     {
+        _grabber = DesktopDuplication.TryCreate(_area);
+        _fps = _options.Fps;
+        if (_grabber == null)
+        {
+            // GDI can't grab much more than 50 frames a second, so asking for more only records repeats.
+            _fps = Math.Min(_fps, 60);
+            Log.Info("Recording with GDI capture");
+        }
+        else if (_grabber.RefreshRate > 0)
+        {
+            // Frames beyond the monitor's refresh rate would all be repeats.
+            _fps = Math.Min(_fps, (int)Math.Round(_grabber.RefreshRate));
+            Log.Info($"Recording with Desktop Duplication ({_grabber.RefreshRate:0.##} Hz monitor)");
+        }
+
         string encoder = _options.HardwareEncoding ? await Ffmpeg.PickEncoderAsync() : "libx264";
         _ffmpeg = StartEncoder(encoder);
         await Task.Delay(150);
@@ -156,8 +178,9 @@ public sealed class ScreenRecorder
     private Process StartEncoder(string encoder)
     {
         string args = "-hide_banner -loglevel error " +
-                      $"-f rawvideo -pix_fmt bgr0 -video_size {_area.Width}x{_area.Height} -framerate {_options.Fps} -i - " +
-                      $"{Ffmpeg.EncoderArgs(encoder)} {Ffmpeg.Yuv709Args} -g {_options.Fps * 2} -movflags +faststart -y {Ffmpeg.Quote(_videoPath)}";
+                      $"-f rawvideo -pix_fmt bgr0 -video_size {_area.Width}x{_area.Height} -framerate {_fps} -i - " +
+                      // The colour conversion runs on the CPU; spread it out so it keeps up at high frame rates.
+                      $"{Ffmpeg.EncoderArgs(encoder)} -filter_threads 4 {Ffmpeg.Yuv709Args} -g {_fps * 2} -movflags +faststart -y {Ffmpeg.Quote(_videoPath)}";
         var p = Ffmpeg.Start(args, redirectInput: true);
         _ffmpegErrors = p.StandardError.ReadToEndAsync();
         return p;
@@ -208,7 +231,7 @@ public sealed class ScreenRecorder
     /// </summary>
     private void CaptureLoop()
     {
-        int w = _area.Width, h = _area.Height, fps = _options.Fps;
+        int w = _area.Width, h = _area.Height, fps = _fps;
         IntPtr screenDc = GetDC(IntPtr.Zero);
         var header = new BITMAPINFOHEADER
         {
@@ -250,7 +273,10 @@ public sealed class ScreenRecorder
                 if (!_free.TryTake(out var buffer, 50)) continue; // the writer is behind
 
                 var src = Source;
-                BitBlt(buffer.Dc, 0, 0, w, h, screenDc, src.X, src.Y, SRCCOPY);
+                // Desktop Duplication when it has the frame; GDI when the recording frame has moved to another
+                // monitor or duplication is briefly unavailable (display mode change, secure desktop).
+                if (_grabber == null || !_grabber.Covers(src) || !_grabber.TryGrab(src, buffer.Bits, w * 4))
+                    BitBlt(buffer.Dc, 0, 0, w, h, screenDc, src.X, src.Y, SRCCOPY);
                 if (_options.Cursor) ScreenCapture.DrawCursor(buffer.Dc, src.X, src.Y);
                 GdiFlush();
 
@@ -271,6 +297,8 @@ public sealed class ScreenRecorder
             writer.Join();
             foreach (var b in buffers) FreeBuffer(b);
             ReleaseDC(IntPtr.Zero, screenDc);
+            _grabber?.Dispose();
+            _grabber = null;
         }
     }
 
@@ -323,7 +351,7 @@ public sealed class ScreenRecorder
     public async Task FinishAsync(string outputPath)
     {
         StopCapturing();
-        Log.Info($"Recorded {_area.Width}x{_area.Height} @ {_options.Fps} fps: {_frames} frames, {_repeats} repeated");
+        Log.Info($"Recorded {_area.Width}x{_area.Height} @ {_fps} fps: {_frames} frames, {_repeats} repeated");
         try
         {
             if (_ffmpeg == null) throw new InvalidOperationException("Recording never started.");
@@ -349,7 +377,10 @@ public sealed class ScreenRecorder
             if (tracks.Count == 1)
                 args.Append(" -map 0:v -map 1:a");
             else
-                args.Append(" -filter_complex \"[1:a][2:a]amix=inputs=2:duration=longest:normalize=0[a]\" -map 0:v -map \"[a]\"");
+                // The mix comes first, so every player and upload hears both. Each source also goes in on its own
+                // (not played by default) so the video editor can mute one later.
+                args.Append(" -filter_complex \"[1:a][2:a]amix=inputs=2:duration=longest:normalize=0[a]\" -map 0:v -map \"[a]\" -map 1:a -map 2:a" +
+                            $" {Ffmpeg.SourceTrackArgs}");
             args.Append($" -c:v copy -c:a aac -b:a 192k -shortest -movflags +faststart {Ffmpeg.Quote(outputPath)}");
             await Ffmpeg.RunJobAsync(args.ToString(), 0, null);
         }

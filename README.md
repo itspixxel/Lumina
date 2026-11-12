@@ -39,8 +39,9 @@ A lightweight, modern screenshot and screen recording tool for Windows - a repla
 - **Sound**: system audio and/or microphone, each with its own device. Pick devices and mute either source right from the overlay's toolbar.
 - **Recording bar**: timer, pause/resume, stop, per-source mute and discard. It never steals focus and never shows up in the video.
 - **Movable area**: drag the recording outline (or its tab) to follow what you're recording.
-- **GPU encoding** with NVIDIA, Intel or AMD when available, falling back to x264; 30 or 60 fps.
+- **Smooth capture** with Desktop Duplication at 30, 60, 120 or 144 fps (never more than the monitor's refresh rate), and **GPU encoding** with NVIDIA, Intel or AMD when available, falling back to x264.
 - **Trim editor** opens when you stop: drag the handles on the filmstrip, then save, save as MP4 or GIF, export a GIF at a chosen width, or copy the file.
+- **Separate sound tracks**: recordings with both system audio and the microphone keep each source on its own track, so the trim editor can mute either one before saving.
 - **Straight to the clipboard**: finished recordings and exported clips are copied as files, ready to paste into a chat or folder (follows the same *Copy to clipboard* setting as screenshots).
 - Uses **FFmpeg**: Lumina downloads it for you on first run (about 115 MB, one click), or point it at your own `ffmpeg.exe` in Settings.
 
@@ -48,7 +49,8 @@ A lightweight, modern screenshot and screen recording tool for Windows - a repla
 
 ### Gallery
 - **Recent** on the home window shows your latest screenshots and recordings; *View all* (or `Ctrl + F`) opens the full gallery.
-- **Search** file names, the app something was captured from, and the text in your markup. Just start typing.
+- **Search** file names, the app something was captured from, the text in your markup and the text inside your screenshots. Just start typing.
+- **Text in screenshots** is read in the background with the OCR built into Windows, using your Windows display languages. It all happens on your PC; nothing is uploaded.
 - **Filters and sorting**: all, screenshots, recordings or edited screenshots; newest, oldest, name or largest first. Captures are grouped by date (Today, Yesterday, this week, by month).
 - **Fast with thousands of files**: Lumina keeps an index and a thumbnail cache, picks up files added or changed outside it, and only loads what's on screen.
 - **Keyboard friendly**: arrow keys, Home / End and Page Up / Down move around (`Shift` to select a range), Space selects, Enter opens.
@@ -91,7 +93,7 @@ Lumina lives in the system tray. Settings are stored in `%AppData%\Lumina`. For 
 | Trim editor | `I` / `O`, `Home` / `End` | Set trim start / end, jump to start / end |
 | Trim editor | `Ctrl + C`, `Ctrl + S`, `Ctrl + Shift + S` | Copy the video, save the trim, save as |
 | Trim editor | `Ctrl + G`, `Ctrl + E` | Export a GIF, show in folder |
-| Trim editor | `M`, `R`, `Delete` | Sound on / off, reset the trim, delete |
+| Trim editor | `M`, `R`, `Delete` | Sound on / off (the microphone, when it has its own track), reset the trim, delete |
 | Home | `1` to `5` | Region / Window / Screen / Freeform / Record |
 | Home | `Ctrl + O`, `Ctrl + ,`, `Ctrl + E`, `F5` | Open an image, settings, open folder, refresh |
 | Home | `Ctrl + F` | Open the gallery, ready to search |
@@ -136,7 +138,7 @@ tools/        icon generator
 - [x] Screen recording (video and GIF) with a trimming editor
 - [x] Full gallery view with search
 - [x] Auto-update
-- [ ] Search the text inside screenshots (OCR)
+- [x] Search the text inside screenshots (OCR)
 - [ ] Optional short-link uploads (temporary, self-hosted storage)
 - [ ] Installer
 

@@ -14,7 +14,7 @@
     <AssemblyName>Lumina</AssemblyName>
     <RootNamespace>Lumina</RootNamespace>
     <Product>Lumina</Product>
-    <Version>0.4.1</Version>
+    <Version>0.5.0</Version>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <!-- WPF Fluent theme APIs (ThemeMode) are flagged experimental. -->
     <!-- WFO0003: WPF owns DPI awareness here (per-monitor v2 via app.manifest); WinForms is only used for the tray icon. -->
@@ -25,6 +25,23 @@
     <Resource Include="Assets\lumina.ico" />
     <!-- The updater picks the matching release zip (self-contained or framework-dependent) from this. -->
     <AssemblyMetadata Include="SelfContained" Value="$(SelfContained)" />
+  </ItemGroup>
+
+  <!-- Windows OCR (Windows.Media.Ocr) through a projection of just the APIs it needs, so the app keeps its
+       plain net10.0-windows target instead of pulling in the full Windows SDK projection (about 25 MB). -->
+  <PropertyGroup>
+    <CsWinRTIncludes>Windows.Media.Ocr;Windows.Graphics.Imaging;Windows.Graphics.DirectX;Windows.Storage.Streams;Windows.Foundation;Windows.Globalization.Language;Windows.Globalization.ILanguage;Windows.Globalization.LanguageLayoutDirection</CsWinRTIncludes>
+    <CsWinRTExcludes>Windows.Foundation.Diagnostics;Windows.Storage.Streams.FileRandomAccessStream;Windows.Storage.Streams.IFileRandomAccessStreamStatics;Windows.Storage.Streams.RandomAccessStreamReference;Windows.Storage.Streams.IRandomAccessStreamReferenceStatics;Windows.Storage.Streams.RandomAccessStream;Windows.Storage.Streams.IRandomAccessStreamStatics</CsWinRTExcludes>
+    <!-- Windows metadata comes from a NuGet package, so building needs only the .NET SDK. -->
+    <CsWinRTWindowsMetadata>$(PkgMicrosoft_Windows_SDK_Contracts)\ref\netstandard2.0</CsWinRTWindowsMetadata>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.2.0" />
+    <!-- Direct3D 11 / DXGI for Desktop Duplication screen capture. -->
+    <PackageReference Include="Vortice.Direct3D11" Version="3.8.3" />
+    <PackageReference Include="Vortice.DXGI" Version="3.8.3" />
+    <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.22621.3233" ExcludeAssets="all" PrivateAssets="all" GeneratePathProperty="true" />
   </ItemGroup>
 
 </Project>
