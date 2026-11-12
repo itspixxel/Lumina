@@ -148,6 +148,7 @@ public partial class QuickPreviewWindow : Window
         if (_path == null)
         {
             _path = OutputService.ReservePath(_appName);
+            LibraryIndex.SetApp(_path, _appName);
             _saveTask = OutputService.SaveAsync(_image, _path);
             UpdateLabels();
         }

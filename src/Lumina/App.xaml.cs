@@ -80,6 +80,7 @@ public partial class App : Application
             _ = Ffmpeg.PickEncoderAsync(); // warm up so the first recording starts instantly
         }
         Updater.Start(updated);
+        ThumbnailCache.PruneInBackground();
     }
 
     /// <summary>After an update the old version may still be shutting down; take over once it has.</summary>
