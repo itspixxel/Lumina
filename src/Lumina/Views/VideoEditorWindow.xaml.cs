@@ -27,11 +27,13 @@ public partial class VideoEditorWindow : ChromeWindow
     /// <summary>The sound switches: all sound (one-track recordings), or each source.</summary>
     private bool _soundOn = true, _systemOn = true, _micOn = true;
     /// <summary>
-    /// With one source muted, plays the other on its own in step with the video (which is muted then): a player
-    /// can't mute one track of a file. <see cref="_sourceTrack"/> is the track it has, 0 for none.
+    /// For recordings with source tracks, plays the sound on its own in step with the video (which is muted then):
+    /// the mix, or the one source left on, since a player can't mute one track of a file. Windows' player also
+    /// plays a file with several audio tracks silently, so the video's own sound can't be used for these at all.
+    /// <see cref="_sourceTrack"/> is the audio track it has, -1 for none.
     /// </summary>
     private readonly MediaPlayer _sourceAudio = new();
-    private int _sourceTrack, _sourceVersion;
+    private int _sourceTrack = -1, _sourceVersion;
     private string? _previewDir;
     private readonly CancellationTokenSource _closing = new();
 
@@ -88,7 +90,7 @@ public partial class VideoEditorWindow : ChromeWindow
     {
         LoadingText.Visibility = Visibility.Visible;
         Player.IsMuted = true; // silent while it opens
-        _sourceTrack = 0;
+        _sourceTrack = -1;
         _sourceVersion++;
         ClearPreviews();
         Player.Source = new Uri(_path);
@@ -108,6 +110,9 @@ public partial class VideoEditorWindow : ChromeWindow
         SourceButtons.Visibility = found ? Visibility.Visible : Visibility.Collapsed;
         SyncMute();
         UpdateTrimUi();
+        if (!found) return;
+        await PreviewSourcesAsync(); // the mix, played alongside the silent video
+        SyncMute();
     }
 
     private async Task CorrectLevelsAsync() => Player.Effect = await VideoLevels.CorrectionAsync();
@@ -162,7 +167,7 @@ public partial class VideoEditorWindow : ChromeWindow
     /// </summary>
     private void SyncMute()
     {
-        Player.IsMuted = !_playing || !SoundOn || _sourceTrack != 0;
+        Player.IsMuted = !_playing || !SoundOn || _sourceTrack >= 0;
         _sourceAudio.IsMuted = !_playing;
     }
 
@@ -171,7 +176,7 @@ public partial class VideoEditorWindow : ChromeWindow
     /// <summary>Keeps the source audio playing in step with the video; <paramref name="force"/> lines it up now.</summary>
     private void SyncSourceAudio(bool force)
     {
-        if (_sourceTrack == 0) return;
+        if (_sourceTrack < 0) return;
         if (!_playing)
         {
             _sourceAudio.Pause();
@@ -581,17 +586,17 @@ public partial class VideoEditorWindow : ChromeWindow
     }
 
     /// <summary>
-    /// With just one source on, gets its track ready to play alongside the video: copied out of the recording, not
-    /// re-encoded, so it only takes a moment.
+    /// Gets the track for the sources that are on (the mix for both, nothing for neither) ready to play alongside the
+    /// video: copied out of the recording, not re-encoded, so it only takes a moment.
     /// </summary>
     private async Task PreviewSourcesAsync()
     {
-        int track = _systemOn == _micOn ? 0 : _systemOn ? 1 : 2; // both on (or both off): the video's own sound
+        int track = !_sourceTracks || !(_systemOn || _micOn) ? -1 : _systemOn && _micOn ? 0 : _systemOn ? 1 : 2;
         if (track == _sourceTrack) return;
         int version = ++_sourceVersion;
-        if (track == 0)
+        if (track < 0)
         {
-            _sourceTrack = 0;
+            _sourceTrack = -1;
             _sourceAudio.Close();
             return;
         }
