@@ -26,14 +26,15 @@
             <Grid DockPanel.Dock="Left" Width="340">
                 <!-- The theme applies Padding twice (template margin and text view), so these are half the real insets. -->
                 <TextBox x:Name="SearchBox" Padding="18,4,17,4" TextChanged="SearchBox_TextChanged" />
-                <Path Style="{StaticResource Icon}" Data="{StaticResource IconSearch}" Stroke="{StaticResource Text3Brush}"
+                <Path Style="{StaticResource Icon}" Data="{StaticResource IconSearch}" Stroke="{DynamicResource Text3Brush}"
                       HorizontalAlignment="Left" VerticalAlignment="Center" Margin="12,0,0,0" IsHitTestVisible="False">
                     <Path.LayoutTransform>
                         <ScaleTransform ScaleX="0.7" ScaleY="0.7" />
                     </Path.LayoutTransform>
                 </Path>
-                <TextBlock x:Name="SearchPlaceholder" Text="Search names, apps and markup text" Foreground="{StaticResource Text3Brush}"
-                           VerticalAlignment="Center" Margin="37,0,34,0" IsHitTestVisible="False" TextTrimming="CharacterEllipsis" />
+                <!-- Starts a few px past where typed text (and the caret) begins, so the blinking caret never sits on the first letter. -->
+                <TextBlock x:Name="SearchPlaceholder" Text="Search names, apps and markup text" Foreground="{DynamicResource Text3Brush}"
+                           VerticalAlignment="Center" Margin="42,0,34,0" IsHitTestVisible="False" TextTrimming="CharacterEllipsis" />
                 <Button x:Name="ClearSearchButton" Style="{StaticResource IconButton}" Padding="5" Margin="0,0,4,0"
                         HorizontalAlignment="Right" VerticalAlignment="Center" Click="ClearSearch_Click" ToolTip="Clear search (Esc)"
                         Visibility="Collapsed" Focusable="False">
@@ -45,8 +46,8 @@
                 </Button>
             </Grid>
 
-            <Border DockPanel.Dock="Left" Margin="14,0,0,0" CornerRadius="11" Padding="3" VerticalAlignment="Center"
-                    Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource StrokeBrush}" BorderThickness="1">
+            <Border DockPanel.Dock="Left" Margin="14,0,0,0" CornerRadius="{DynamicResource RadiusCard}" Padding="3" VerticalAlignment="Center"
+                    Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource StrokeBrush}" BorderThickness="1">
                 <StackPanel x:Name="FilterChips" Orientation="Horizontal">
                     <RadioButton Style="{StaticResource Chip}" GroupName="filter" Tag="All" Content="All" IsChecked="True" Checked="Filter_Checked" />
                     <RadioButton Style="{StaticResource Chip}" GroupName="filter" Tag="Screenshots" Content="Screenshots" Checked="Filter_Checked" />

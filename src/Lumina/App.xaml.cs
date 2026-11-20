@@ -67,6 +67,7 @@ public partial class App : Application
         };
 
         Settings = SettingsService.Load();
+        Theme.Apply(Settings.Appearance);
         if (StartupService.Sync(Settings)) SettingsService.Save(Settings);
         Installation.Sync();
 

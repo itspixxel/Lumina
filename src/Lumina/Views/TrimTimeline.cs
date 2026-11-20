@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Lumina.Services;
 
 namespace Lumina.Views;
 
@@ -48,10 +49,13 @@ public sealed class TrimTimeline : FrameworkElement
         Cursor = Cursors.Hand;
         Focusable = false;
         _track = (Brush)Application.Current.Resources["PanelBrush"];
-        _dim = Frozen(new SolidColorBrush(Color.FromArgb(0xB4, 0x0E, 0x0D, 0x15)));
+        var window = Theme.Current["Window"];
+        var text = Theme.Current["Text"];
+        _dim = Frozen(new SolidColorBrush(Color.FromArgb(0xB4, window.R, window.G, window.B)));
         _accent = (Brush)Application.Current.Resources["AccentBrush"];
-        _grip = Frozen(new SolidColorBrush(Color.FromArgb(0xE6, 0xFF, 0xFF, 0xFF)));
-        _playhead = Brushes.White;
+        var onAccent = Theme.Current["OnAccent"];
+        _grip = Frozen(new SolidColorBrush(Color.FromArgb(0xE6, onAccent.R, onAccent.G, onAccent.B)));
+        _playhead = Frozen(new SolidColorBrush(text));
         _framePen = Frozen(new Pen(_accent, 3));
         _playheadPen = Frozen(new Pen(_playhead, 2));
         RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.HighQuality);

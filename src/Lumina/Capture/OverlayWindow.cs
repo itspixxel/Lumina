@@ -511,8 +511,8 @@ internal sealed class OverlayWindow : Window
 /// <summary>Draws the dimming, selection, hover highlight and magnifier on top of the frozen screen.</summary>
 internal sealed class OverlaySurface : FrameworkElement
 {
-    private static readonly Brush DimBrush = Freeze(new SolidColorBrush(Color.FromArgb(0x9A, 0x07, 0x06, 0x10)));
-    private static readonly Brush LabelBrush = Freeze(new SolidColorBrush(Color.FromArgb(0xEE, 0x1C, 0x1B, 0x29)));
+    private static readonly Brush DimBrush = Freeze(new SolidColorBrush(Color.FromArgb(0x9A, 0x08, 0x08, 0x0A)));
+    private static readonly Brush LabelBrush = Freeze(new SolidColorBrush(Color.FromArgb(0xEE, 0x1C, 0x1C, 0x1F)));
     private static readonly Brush FlashBrush = Freeze(new SolidColorBrush(Colors.White));
     private static readonly Typeface LabelFace = new(new FontFamily("Segoe UI Variable Text, Segoe UI"), FontStyles.Normal, FontWeights.SemiBold, FontStretches.Normal);
     private static readonly Typeface MonoFace = new(new FontFamily("Cascadia Mono, Consolas"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);

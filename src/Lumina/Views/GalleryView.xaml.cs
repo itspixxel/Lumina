@@ -38,8 +38,8 @@ public sealed class GalleryHeaderRow(string title, int count, bool first)
 public partial class GalleryView : UserControl
 {
     private static readonly Geometry IconSelectCircle = Frozen(Geometry.Parse("M12,3 A9,9 0 1 1 11.99,3 Z M8,12.5 L11,15.5 L16.5,9.5"));
-    /// <summary>A tile's width plus the gap after it.</summary>
-    private const double TileStride = 214;
+    /// <summary>The smallest a tile gets, plus the gap after it.</summary>
+    private const double TileStride = 214, TileGap = 14;
 
     public static readonly DependencyProperty IsSelectingProperty = DependencyProperty.Register(
         nameof(IsSelecting), typeof(bool), typeof(GalleryView));
@@ -284,9 +284,9 @@ public partial class GalleryView : UserControl
             else
             {
                 item = new GalleryItem(entry) { IsSelected = old?.IsSelected ?? false };
-                // New files cascade in; on the first load only the first screenful does.
-                if (entering < 24 && (firstLoad || old == null))
-                    item.PendingEntrance = (firstLoad ? 180 + Math.Min(entering, 12) * 35 : entering * 35, firstLoad ? 1 : 0.92);
+                // New files slide in as they arrive. The first load just appears with the window, no cascade.
+                if (entering < 24 && !firstLoad && old == null)
+                    item.PendingEntrance = (entering * 35, 0.92);
                 entering++;
             }
             tiles[entry.Path] = item;
@@ -354,14 +354,54 @@ public partial class GalleryView : UserControl
 
     private ScrollViewer? Scroller => RecentList.Template?.FindName("Scroller", RecentList) as ScrollViewer;
 
-    /// <summary>Re-flows the rows when the list gets wide enough for one more (or one fewer) column.</summary>
+    /// <summary>
+    /// Tiles share the row's width, so the grid ends on the same line as everything above it. A new column
+    /// joins once each tile could still be at least the minimum width.
+    /// </summary>
     private void UpdateColumns()
     {
         double width = Scroller is { ViewportWidth: > 0 } s ? s.ViewportWidth : RecentList.ActualWidth;
-        int columns = Math.Max(1, (int)((width + 14) / TileStride));
+        int columns = Math.Max(1, (int)((width + TileGap) / TileStride));
+        double tile = (width + TileGap) / columns - TileGap;
+        if (tile > 0) ThumbHeight = Math.Round(tile * 0.6);
         if (columns == _columns) return;
         _columns = columns;
         if (_items.Count > 0) BuildRows(FirstVisibleItem());
+    }
+
+    /// <summary>Columns in each row of tiles.</summary>
+    public int Columns => _columns;
+
+    public static readonly DependencyProperty ThumbHeightProperty = DependencyProperty.Register(
+        nameof(ThumbHeight), typeof(double), typeof(GalleryView), new PropertyMetadata(120.0));
+
+    /// <summary>Height of the picture in each tile; follows the tile width so pictures keep their shape.</summary>
+    public double ThumbHeight
+    {
+        get => (double)GetValue(ThumbHeightProperty);
+        set => SetValue(ThumbHeightProperty, value);
+    }
+
+    /// <summary>A line under the title (Home puts its shortcut hint there).</summary>
+    public object? Subtitle
+    {
+        get => SubtitleHost.Content;
+        set
+        {
+            SubtitleHost.Content = value;
+            SubtitleHost.Visibility = value != null ? Visibility.Visible : Visibility.Collapsed;
+        }
+    }
+
+    /// <summary>Controls on the right of the header (Home puts its search box there); hidden while selecting.</summary>
+    public object? HeaderContent
+    {
+        get => HeaderHost.Content;
+        set
+        {
+            HeaderHost.Content = value;
+            RecentHint.Visibility = value == null ? Visibility.Visible : Visibility.Collapsed;
+        }
     }
 
     private static string GroupOf(DateTime time, DateTime now)
@@ -558,7 +598,7 @@ public partial class GalleryView : UserControl
     {
         int count = _items.Count(i => i.IsSelected);
         Fx.Reveal(SelectionBar, count > 0);
-        Fx.Reveal(RecentHint, count == 0, offsetY: -4);
+        Fx.Reveal(HeaderHost.Content != null ? HeaderHost : RecentHint, count == 0, offsetY: -4);
         SelectionText.Text = $"{count:N0} selected";
         IsSelecting = count > 0;
     }

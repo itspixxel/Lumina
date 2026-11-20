@@ -9,7 +9,7 @@
         <Style x:Key="BarLabel" TargetType="TextBlock">
             <Setter Property="FontSize" Value="12" />
             <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="Foreground" Value="{StaticResource Text2Brush}" />
+            <Setter Property="Foreground" Value="{DynamicResource Text2Brush}" />
         </Style>
         <!-- Icon-only buttons, as tall as the text buttons beside them. -->
         <Style x:Key="SoundButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
@@ -39,7 +39,7 @@
                 <Path Style="{StaticResource Icon}" Data="{StaticResource IconFolder}" />
             </Button>
             <Button Style="{StaticResource IconButton}" Click="Delete_Click" ToolTip="Move to Recycle Bin (Del), Shift+Del deletes permanently" Margin="2,0,0,0"
-                    Foreground="{StaticResource DangerBrush}">
+                    Foreground="{DynamicResource DangerBrush}">
                 <Path Style="{StaticResource Icon}" Data="{StaticResource IconTrash}" />
             </Button>
         </StackPanel>
@@ -53,18 +53,18 @@
         </Grid.RowDefinitions>
 
         <!-- Video -->
-        <Border Grid.Row="0" CornerRadius="12" Background="#07060C" BorderBrush="{StaticResource StrokeBrush}" BorderThickness="1"
+        <Border Grid.Row="0" CornerRadius="{DynamicResource RadiusCard}" Background="#07060C" BorderBrush="{DynamicResource StrokeBrush}" BorderThickness="1"
                 ClipToBounds="True" MouseLeftButtonDown="Video_MouseDown" Cursor="Hand">
             <Grid>
                 <MediaElement x:Name="Player" LoadedBehavior="Manual" UnloadedBehavior="Close" ScrubbingEnabled="True"
                               Stretch="Uniform" Margin="1" MediaOpened="Player_MediaOpened" MediaFailed="Player_MediaFailed"
                               MediaEnded="Player_MediaEnded" />
-                <Border x:Name="BigPlay" Width="64" Height="64" CornerRadius="32" Background="#A61C1B29"
+                <Border x:Name="BigPlay" Width="64" Height="64" CornerRadius="32" Background="#A6161616"
                         BorderBrush="#40FFFFFF" BorderThickness="1" IsHitTestVisible="False"
                         HorizontalAlignment="Center" VerticalAlignment="Center" v:Fx.Show="True">
                     <Path Data="{StaticResource IconPlay}" Fill="White" Stretch="Uniform" Width="20" Height="22" Margin="5,0,0,0" />
                 </Border>
-                <TextBlock x:Name="LoadingText" Text="Loading..." Foreground="{StaticResource Text2Brush}"
+                <TextBlock x:Name="LoadingText" Text="Loading..." Foreground="{DynamicResource Text2Brush}"
                            HorizontalAlignment="Center" VerticalAlignment="Center" />
                 <!-- Messages and export progress -->
                 <v:Toast x:Name="Toast" VerticalAlignment="Bottom" Margin="16,0,16,16" />
@@ -79,7 +79,7 @@
             </Grid.ColumnDefinitions>
             <Button x:Name="PlayButton" Grid.Column="0" Style="{StaticResource AccentButton}" Width="48" Height="48" Padding="0"
                     VerticalAlignment="Center" Click="Play_Click" ToolTip="Play (Space)" Margin="0,0,14,0">
-                <Path x:Name="PlayIcon" Data="{StaticResource IconPlay}" Fill="White" Stretch="Uniform" Width="14" Height="16" Margin="3,0,0,0" />
+                <Path x:Name="PlayIcon" Data="{StaticResource IconPlay}" Fill="{DynamicResource OnAccentBrush}" Stretch="Uniform" Width="14" Height="16" Margin="3,0,0,0" />
             </Button>
             <v:TrimTimeline x:Name="Timeline" Grid.Column="1" VerticalAlignment="Center"
                             ToolTip="Drag the ends to trim. I and O set them at the playhead. Left and Right step, Shift for 5 s" />
@@ -98,17 +98,17 @@
             <StackPanel x:Name="TimeGroup" Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock x:Name="TimeText" Text="0:00.0" FontFamily="Cascadia Mono, Consolas" FontSize="13" VerticalAlignment="Center" />
                 <TextBlock x:Name="DurationText" Text=" / 0:00.0" FontFamily="Cascadia Mono, Consolas" FontSize="13"
-                           Foreground="{StaticResource Text3Brush}" VerticalAlignment="Center" />
-                <Border x:Name="TrimBadge" Margin="12,0,0,0" CornerRadius="7" Padding="9,3" Background="{StaticResource AccentSoftBrush}"
+                           Foreground="{DynamicResource Text3Brush}" VerticalAlignment="Center" />
+                <Border x:Name="TrimBadge" Margin="12,0,0,0" CornerRadius="{DynamicResource RadiusItem}" Padding="9,3" Background="{DynamicResource AccentSoftBrush}"
                         Visibility="Collapsed" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal">
-                        <Path Style="{StaticResource ChipIcon}" Data="{StaticResource IconScissors}" Stroke="{StaticResource AccentTextBrush}" />
-                        <TextBlock x:Name="TrimText" FontSize="12" Foreground="{StaticResource AccentTextBrush}" VerticalAlignment="Center" />
+                        <Path Style="{StaticResource ChipIcon}" Data="{StaticResource IconScissors}" Stroke="{DynamicResource AccentTextBrush}" />
+                        <TextBlock x:Name="TrimText" FontSize="12" Foreground="{DynamicResource AccentTextBrush}" VerticalAlignment="Center" />
                     </StackPanel>
                 </Border>
                 <Button x:Name="ResetTrim" Style="{StaticResource GhostButton}" Padding="8,4" Margin="4,0,0,0" FontSize="12"
                         Click="ResetTrim_Click" Visibility="Collapsed" ToolTip="Undo the trim (R)">
-                    <TextBlock Text="Reset" Foreground="{StaticResource Text2Brush}" />
+                    <TextBlock Text="Reset" Foreground="{DynamicResource Text2Brush}" />
                 </Button>
             </StackPanel>
 
@@ -161,13 +161,13 @@
                     <Button x:Name="SaveButton" Style="{StaticResource AccentButton}" Click="Save_Click"
                             ToolTip="Apply the trim to the recording (Ctrl+S)" Visibility="Collapsed">
                         <StackPanel Orientation="Horizontal">
-                            <Path Style="{StaticResource ChipIcon}" Data="{StaticResource IconSave}" Stroke="White" />
+                            <Path Style="{StaticResource ChipIcon}" Data="{StaticResource IconSave}" Stroke="{DynamicResource OnAccentBrush}" />
                             <TextBlock Text="Save" />
                         </StackPanel>
                     </Button>
                     <StackPanel x:Name="SavedLabel" Orientation="Horizontal" Margin="6,0,4,0" VerticalAlignment="Center" Background="Transparent">
-                        <Path Style="{StaticResource Icon}" Data="{StaticResource IconCheck}" Stroke="{StaticResource AccentTextBrush}" />
-                        <TextBlock Text="Saved" Margin="6,0,0,0" VerticalAlignment="Center" Foreground="{StaticResource Text2Brush}" />
+                        <Path Style="{StaticResource Icon}" Data="{StaticResource IconCheck}" Stroke="{DynamicResource AccentTextBrush}" />
+                        <TextBlock Text="Saved" Margin="6,0,0,0" VerticalAlignment="Center" Foreground="{DynamicResource Text2Brush}" />
                     </StackPanel>
                 </Grid>
             </StackPanel>

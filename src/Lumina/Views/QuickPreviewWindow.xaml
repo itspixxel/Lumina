@@ -12,19 +12,16 @@
         </Style>
     </Window.Resources>
 
-    <Border x:Name="Card" Margin="18" CornerRadius="16" Padding="8" BorderThickness="1"
-            Background="{StaticResource RaisedBrush}" BorderBrush="{StaticResource StrokeStrongBrush}"
-            TextElement.Foreground="{StaticResource TextBrush}" TextElement.FontFamily="{StaticResource UiFont}">
-        <Border.Effect>
-            <DropShadowEffect BlurRadius="26" ShadowDepth="4" Opacity="0.5" Direction="270" />
-        </Border.Effect>
+    <Border x:Name="Card" Margin="18" CornerRadius="{DynamicResource RadiusLarge}" Padding="8" BorderThickness="1" Effect="{DynamicResource FloatShadow}"
+            Background="{DynamicResource RaisedBrush}" BorderBrush="{DynamicResource StrokeStrongBrush}"
+            TextElement.Foreground="{DynamicResource TextBrush}" TextElement.FontFamily="{DynamicResource UiFont}">
         <Border.RenderTransform>
             <TranslateTransform x:Name="Slide" Y="8" />
         </Border.RenderTransform>
 
         <StackPanel>
             <Grid>
-                <Border CornerRadius="10" Cursor="Hand" Background="{StaticResource WindowBrush}" Padding="3"
+                <Border CornerRadius="{DynamicResource RadiusControl}" Cursor="Hand" Background="{DynamicResource WindowBrush}" Padding="3"
                         ToolTip="Click to edit - drag into any app to share">
                     <Image x:Name="Thumb" MaxWidth="300" MaxHeight="190" MinWidth="120" Stretch="Uniform"
                            RenderOptions.BitmapScalingMode="HighQuality"
@@ -33,7 +30,7 @@
                            PreviewMouseLeftButtonUp="Thumb_MouseUp" />
                 </Border>
                 <Button HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,6,6,0" Padding="4" Focusable="False"
-                        Background="#B0101018" BorderBrush="Transparent" Foreground="White" Click="Close_Click" ToolTip="Dismiss">
+                        Background="#B0141414" BorderBrush="Transparent" Foreground="White" Click="Close_Click" ToolTip="Dismiss">
                     <Path Style="{StaticResource Icon}" Data="{StaticResource IconClose}" />
                 </Button>
             </Grid>
@@ -41,7 +38,7 @@
             <DockPanel Margin="2,8,0,0" LastChildFill="False">
                 <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,0,12,0">
                     <TextBlock x:Name="TitleText" FontWeight="SemiBold" FontSize="12" />
-                    <TextBlock x:Name="InfoText" FontSize="11" Foreground="{StaticResource Text2Brush}" />
+                    <TextBlock x:Name="InfoText" FontSize="11" Foreground="{DynamicResource Text2Brush}" />
                 </StackPanel>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                     <Button Style="{StaticResource PreviewButton}" Click="Copy_Click" ToolTip="Copy to clipboard">

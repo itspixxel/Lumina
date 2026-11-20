@@ -19,11 +19,11 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
                         <Grid Width="26" Height="26" Background="Transparent">
-                            <Ellipse Stroke="{StaticResource TextBrush}" StrokeThickness="2" Opacity="0" v:Fx.ShowOpacity="0.35"
+                            <Ellipse Stroke="{DynamicResource TextBrush}" StrokeThickness="2" Opacity="0" v:Fx.ShowOpacity="0.35"
                                      v:Fx.Show="{Binding IsMouseOver, RelativeSource={RelativeSource TemplatedParent}}" />
-                            <Ellipse Stroke="{StaticResource TextBrush}" StrokeThickness="2" Opacity="0" v:Fx.ShowPop="True"
+                            <Ellipse Stroke="{DynamicResource TextBrush}" StrokeThickness="2" Opacity="0" v:Fx.ShowPop="True"
                                      v:Fx.Show="{Binding IsChecked, RelativeSource={RelativeSource TemplatedParent}}" />
-                            <Ellipse x:Name="Dot" Margin="5" Fill="{TemplateBinding Background}" Stroke="#40FFFFFF" StrokeThickness="1" />
+                            <Ellipse x:Name="Dot" Margin="5" Fill="{TemplateBinding Background}" Stroke="{DynamicResource StrokeStrongBrush}" StrokeThickness="1" />
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="True">
@@ -58,7 +58,7 @@
             <Setter Property="FontSize" Value="12" />
             <Setter Property="Margin" Value="4,0,0,0" />
             <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="Foreground" Value="{StaticResource Text2Brush}" />
+            <Setter Property="Foreground" Value="{DynamicResource Text2Brush}" />
         </Style>
     </v:ChromeWindow.Resources>
 
@@ -68,7 +68,7 @@
                 <Path Style="{StaticResource Icon}" Data="{StaticResource IconFolder}" />
             </Button>
             <Button x:Name="DeleteButton" Style="{StaticResource IconButton}" Click="Delete_Click" Margin="2,0,0,0"
-                    ToolTip="Move to Recycle Bin (Ctrl+Del), Ctrl+Shift+Del deletes permanently" Foreground="{StaticResource DangerBrush}">
+                    ToolTip="Move to Recycle Bin (Ctrl+Del), Ctrl+Shift+Del deletes permanently" Foreground="{DynamicResource DangerBrush}">
                 <Path Style="{StaticResource Icon}" Data="{StaticResource IconTrash}" />
             </Button>
             <Rectangle Style="{StaticResource VDivider}" Margin="8,0" />
@@ -104,8 +104,8 @@
                 </Button>
                 <StackPanel x:Name="SavedLabel" Orientation="Horizontal" Margin="10,0,6,0" VerticalAlignment="Center" Visibility="Collapsed"
                             Background="Transparent">
-                    <Path Style="{StaticResource Icon}" Data="{StaticResource IconCheck}" Stroke="{StaticResource AccentTextBrush}" />
-                    <TextBlock Text="Saved" Margin="6,0,0,0" VerticalAlignment="Center" Foreground="{StaticResource Text2Brush}" />
+                    <Path Style="{StaticResource Icon}" Data="{StaticResource IconCheck}" Stroke="{DynamicResource AccentTextBrush}" />
+                    <TextBlock Text="Saved" Margin="6,0,0,0" VerticalAlignment="Center" Foreground="{DynamicResource Text2Brush}" />
                 </StackPanel>
             </Grid>
         </StackPanel>
@@ -114,11 +114,11 @@
     <Grid SizeChanged="Root_SizeChanged">
         <!-- Canvas -->
         <ScrollViewer x:Name="Scroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
-                      Background="{StaticResource DotGridBrush}" Focusable="False"
+                      Background="{DynamicResource DotGridBrush}" Focusable="False"
                       PreviewMouseWheel="Scroller_PreviewMouseWheel" SizeChanged="Scroller_SizeChanged">
             <Border x:Name="Stage" Margin="72,84,72,96" HorizontalAlignment="Center" VerticalAlignment="Center"
                     v:Fx.Entrance="True" v:Fx.EntranceOffset="0" v:Fx.EntranceScale="0.96" v:Fx.EntranceDelay="40"
-                    Effect="{StaticResource FloatShadow}">
+                    Effect="{DynamicResource FloatShadow}">
                 <Border.LayoutTransform>
                     <ScaleTransform x:Name="ZoomTransform" />
                 </Border.LayoutTransform>
@@ -264,19 +264,19 @@
                 </Popup>
                 <Rectangle Style="{StaticResource VDivider}" Margin="10,0" />
                 <Grid Width="26" Height="26" VerticalAlignment="Center" ToolTip="Size">
-                    <Ellipse x:Name="SizePreview" Width="6" Height="6" Fill="{StaticResource TextBrush}" />
+                    <Ellipse x:Name="SizePreview" Width="6" Height="6" Fill="{DynamicResource TextBrush}" />
                 </Grid>
                 <Slider x:Name="SizeSlider" Width="120" Margin="6,0,4,0" Minimum="1" Maximum="16" Value="4" VerticalAlignment="Center"
                         SmallChange="0.5" LargeChange="2" ValueChanged="Size_Changed" ToolTip="Size" />
                 <TextBlock x:Name="SizeText" Width="26" TextAlignment="Right" VerticalAlignment="Center" FontSize="12"
-                           Foreground="{StaticResource Text2Brush}" Text="4" />
+                           Foreground="{DynamicResource Text2Brush}" Text="4" />
             </StackPanel>
         </Border>
 
         <!-- Image size -->
-        <Border x:Name="SizePill" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="18,0,0,24" CornerRadius="8" Padding="10,5"
-                Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource StrokeBrush}" BorderThickness="1">
-            <TextBlock x:Name="StatusText" FontSize="12" Foreground="{StaticResource Text2Brush}" />
+        <Border x:Name="SizePill" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="18,0,0,24" CornerRadius="{DynamicResource RadiusControl}" Padding="10,5"
+                Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource StrokeBrush}" BorderThickness="1">
+            <TextBlock x:Name="StatusText" FontSize="12" Foreground="{DynamicResource Text2Brush}" />
         </Border>
 
         <!-- Messages (copied, saved, and so on), above the color bar -->

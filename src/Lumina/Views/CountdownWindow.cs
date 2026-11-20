@@ -10,6 +10,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Effects;
 using Lumina.Capture;
 using Lumina.Native;
+using Lumina.Services;
 using Shapes = System.Windows.Shapes;
 
 namespace Lumina.Views;
@@ -22,6 +23,8 @@ namespace Lumina.Views;
 internal sealed class CountdownWindow : RecordingSurfaceWindow
 {
     private const double Dial = 172;
+
+    internal static Color WithAlpha(Color c, byte a) => Color.FromArgb(a, c.R, c.G, c.B);
 
     private readonly MonitorInfo _monitor;
     private readonly Int32Rect? _area;
@@ -45,7 +48,8 @@ internal sealed class CountdownWindow : RecordingSurfaceWindow
         _monitor = monitors.FirstOrDefault(m => RectUtil.Contains(m.Bounds, anchor)) ?? monitors.First(m => m.IsPrimary);
 
         var accent = (Color)Application.Current.Resources["AccentColor"];
-        _scrim = new Shapes.Path { Fill = new SolidColorBrush(Color.FromArgb(0x70, 0x07, 0x06, 0x10)), Opacity = 0 };
+        var bg = Theme.Current["Window"];
+        _scrim = new Shapes.Path { Fill = new SolidColorBrush(Color.FromArgb(0x70, bg.R, bg.G, bg.B)), Opacity = 0 };
         _outline = new Shapes.Rectangle
         {
             Stroke = new SolidColorBrush(accent),
@@ -75,7 +79,7 @@ internal sealed class CountdownWindow : RecordingSurfaceWindow
         _card = new Grid { Width = Dial, Height = Dial, RenderTransform = _cardScale, RenderTransformOrigin = new Point(0.5, 0.5), Opacity = 0 };
         _card.Children.Add(new Shapes.Ellipse
         {
-            Fill = new SolidColorBrush(Color.FromArgb(0xF0, 0x1C, 0x1B, 0x29)),
+            Fill = new SolidColorBrush(WithAlpha(Theme.Current["Raised"], 0xF0)),
             Stroke = (Brush)Application.Current.Resources["StrokeStrongBrush"],
             StrokeThickness = 1,
             Effect = (Effect)Application.Current.Resources["FloatShadow"],
@@ -206,9 +210,9 @@ internal sealed class CountdownWindow : RecordingSurfaceWindow
         {
             Text = n.ToString(),
             FontFamily = (FontFamily)Application.Current.Resources["DisplayFont"],
-            FontSize = 76,
+            FontSize = Theme.TitleSize(76),
             FontWeight = FontWeights.SemiBold,
-            Foreground = Brushes.White,
+            Foreground = (Brush)Application.Current.Resources["TextBrush"],
             TextAlignment = TextAlignment.Center,
             RenderTransformOrigin = new Point(0.5, 0.5),
             RenderTransform = new TransformGroup { Children = { scale, move } },
@@ -280,9 +284,9 @@ internal sealed class CountdownRing : FrameworkElement
     public CountdownRing()
     {
         IsHitTestVisible = false;
-        _track = new Pen(new SolidColorBrush(Color.FromArgb(0x30, 0xFF, 0xFF, 0xFF)), 4);
+        _track = new Pen(new SolidColorBrush(CountdownWindow.WithAlpha(Theme.Current["Text"], 0x30)), 4);
         _track.Freeze();
-        _arc = new Pen((Brush)Application.Current.Resources["AccentGradient"], 5)
+        _arc = new Pen((Brush)Application.Current.Resources["AccentFill"], 5)
         {
             StartLineCap = PenLineCap.Round,
             EndLineCap = PenLineCap.Round,

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
@@ -31,7 +33,7 @@ public partial class SettingsWindow : ChromeWindow
         AutoSave.IsChecked = _s.AutoSave;
         // Opening the editor always skipped the preview, so the two switches are really one choice.
         AfterScreenshot.SelectedIndex = _s.OpenEditorAfterCapture ? 1 : _s.ShowQuickPreview ? 0 : 2;
-        PreviewSecondsRow.Visibility = AfterScreenshot.SelectedIndex == 0 ? Visibility.Visible : Visibility.Collapsed;
+        SetRowShown(PreviewSecondsRow, AfterScreenshot.SelectedIndex == 0, animate: false);
         PreviewSeconds.Value = _s.PreviewSeconds;
         OutputDirectory.Text = _s.OutputDirectory;
         FileNamePattern.Text = _s.FileNamePattern;
@@ -53,6 +55,10 @@ public partial class SettingsWindow : ChromeWindow
         UpdateQualityPanel();
         PreviewSecondsText.Text = $"{_s.PreviewSeconds} s";
         QualityText.Text = $"{_s.JpegQuality}";
+        foreach (var page in PageList) page.Margin = new Thickness(0, 0, 0, 28); // room between sections in search results
+        ShowPage(_lastPage);
+        Appearance.Changed += () => Changed(this, EventArgs.Empty);
+        Loaded += (_, _) => RowLines.Update(Pages);
         _loading = false;
 
         // Any edit anywhere in the window counts as a change.
@@ -66,12 +72,139 @@ public partial class SettingsWindow : ChromeWindow
         Activated += (_, _) => ReloadAudio();
         PreviewKeyDown += (_, e) =>
         {
-            if (e.Key == System.Windows.Input.Key.Escape && Keyboard.FocusedElement is not ComboBox and not ComboBoxItem)
-            {
-                e.Handled = true;
-                Close();
-            }
+            if (e.Key != Key.Escape || Keyboard.FocusedElement is ComboBox or ComboBoxItem) return;
+            e.Handled = true;
+            if (SearchBox.Text.Length > 0) SearchBox.Clear();
+            else Close();
         };
+    }
+
+    // ---------- Pages and search ----------
+
+    /// <summary>The page shown last, so Settings reopens where it was left (for this run of Lumina).</summary>
+    private static string _lastPage = "Shortcuts";
+    private string _page = _lastPage;
+    /// <summary>Rows hidden because of another setting (the device list while that sound is off); search leaves them hidden.</summary>
+    private readonly HashSet<FrameworkElement> _stateHidden = new();
+
+    private IEnumerable<StackPanel> PageList => Pages.Children.OfType<StackPanel>().Where(p => p.Tag is string);
+
+    /// <summary>Opens a page by its tag (Shortcuts, Capture, Recording, AfterCapture, Output, Sharing, Appearance, General, About).</summary>
+    public void ShowPage(string tag)
+    {
+        if (PageList.All(p => (string)p.Tag != tag)) tag = "Shortcuts";
+        _page = _lastPage = tag;
+        foreach (var nav in Nav.Children.OfType<RadioButton>())
+            if ((string)nav.Tag == tag && nav.IsChecked != true) nav.IsChecked = true;
+        if (SearchBox.Text.Length == 0)
+            foreach (var page in PageList) page.Visibility = (string)page.Tag == tag ? Visibility.Visible : Visibility.Collapsed;
+        PageScroller.ScrollToTop();
+    }
+
+    private void Nav_Checked(object sender, RoutedEventArgs e)
+    {
+        if (sender is not RadioButton { Tag: string tag }) return;
+        if (SearchBox.Text.Length > 0) SearchBox.Clear(); // picking a section ends the search
+        ShowPage(tag);
+    }
+
+    private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        SearchPlaceholder.Visibility = SearchBox.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+        ApplySearch();
+    }
+
+    /// <summary>
+    /// Shows every row, on any page, whose words (with its page and group names) contain all the search words.
+    /// An empty search goes back to the selected page.
+    /// </summary>
+    private void ApplySearch()
+    {
+        var words = SearchBox.Text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        bool searching = words.Length > 0;
+        bool Matches(string text) => words.All(w => text.Contains(w, StringComparison.OrdinalIgnoreCase));
+        var rowStyle = (Style)FindResource("SettingsRow");
+        int found = 0;
+
+        foreach (var page in PageList)
+        {
+            string pageTitle = page.Children.OfType<TextBlock>().FirstOrDefault()?.Text ?? "";
+            bool pageHas = false;
+            foreach (var group in RowLines.Descendants(page).OfType<StackPanel>().Where(g => g.Tag as string == "group").ToList())
+            {
+                string groupTitle = group.Children.OfType<TextBlock>().FirstOrDefault()?.Text ?? "";
+                var rows = RowLines.Descendants(group).OfType<Border>().Where(b => b.Style == rowStyle).ToList();
+                bool groupHas;
+                if (rows.Count == 0)
+                {
+                    groupHas = !searching || Matches($"{pageTitle} {groupTitle} {TextOf(group)}");
+                }
+                else
+                {
+                    groupHas = false;
+                    foreach (var row in rows)
+                    {
+                        bool shown = !_stateHidden.Contains(row) && (!searching || Matches($"{pageTitle} {groupTitle} {TextOf(row)}"));
+                        row.Visibility = shown ? Visibility.Visible : Visibility.Collapsed;
+                        if (shown && !InsideCollapsed(row, group)) groupHas = true;
+                    }
+                }
+                group.Visibility = groupHas ? Visibility.Visible : Visibility.Collapsed;
+                if (groupHas)
+                {
+                    pageHas = true;
+                    found++;
+                }
+            }
+            page.Visibility = searching ? (pageHas ? Visibility.Visible : Visibility.Collapsed)
+                                        : (string)page.Tag == _page ? Visibility.Visible : Visibility.Collapsed;
+        }
+        // While results come from several sections, no one section is selected.
+        if (searching)
+        {
+            foreach (var nav in Nav.Children.OfType<RadioButton>()) nav.IsChecked = false;
+        }
+        else if (Nav.Children.OfType<RadioButton>().All(n => n.IsChecked != true)) ShowPage(_page);
+        NoResults.Visibility = searching && found == 0 ? Visibility.Visible : Visibility.Collapsed;
+        NoResultsTitle.Text = $"No settings match '{SearchBox.Text.Trim()}'";
+        RowLines.Update(Pages);
+        PageScroller.ScrollToTop();
+    }
+
+    /// <summary>Hidden by its own panel (Appearance's "all colors" list) rather than by search.</summary>
+    private static bool InsideCollapsed(DependencyObject row, DependencyObject stop)
+    {
+        for (var d = LogicalTreeHelper.GetParent(row); d != null && d != stop; d = LogicalTreeHelper.GetParent(d))
+            if (d is UIElement { Visibility: not Visibility.Visible }) return true;
+        return false;
+    }
+
+    /// <summary>All the words in a part of the window: labels, hints, and the choices in its dropdowns.</summary>
+    private static string TextOf(DependencyObject root)
+    {
+        var parts = new List<string>();
+        void Walk(DependencyObject d)
+        {
+            switch (d)
+            {
+                case TextBlock t: parts.Add(t.Text); break;
+                case ContentControl { Content: string s }: parts.Add(s); break;
+            }
+            foreach (var child in LogicalTreeHelper.GetChildren(d).OfType<DependencyObject>()) Walk(child);
+        }
+        Walk(root);
+        return string.Join(' ', parts);
+    }
+
+    /// <summary>Shows or hides a row because of another setting, and keeps search from bringing it back.</summary>
+    private void SetRowShown(FrameworkElement row, bool shown, bool animate = true)
+    {
+        if (shown) _stateHidden.Remove(row);
+        else _stateHidden.Add(row);
+        if (SearchBox.Text.Length > 0) ApplySearch();
+        else if (animate && !_loading) Fx.Reveal(row, shown, offsetY: -4);
+        else row.Visibility = shown ? Visibility.Visible : Visibility.Collapsed;
+        RowLines.Update(Pages);
     }
 
     private void Changed(object sender, EventArgs e)
@@ -161,7 +294,7 @@ public partial class SettingsWindow : ChromeWindow
     private void SyncSharing()
     {
         bool own = ShareServerKind.SelectedIndex == 1;
-        OwnServerPanel.Visibility = own ? Visibility.Visible : Visibility.Collapsed;
+        SetRowShown(OwnServerPanel, own);
         ShareServerHint.Text = own
             ? "Your own Lumina share server, set up below."
             : ShareService.DefaultServer is { } server
@@ -259,8 +392,9 @@ public partial class SettingsWindow : ChromeWindow
 
     private void SyncAudioRows()
     {
-        SystemDevice.IsEnabled = RecordSystemAudio.IsChecked == true;
-        MicDevice.IsEnabled = RecordMicrophone.IsChecked == true;
+        // A device list only shows while its sound is being recorded.
+        SetRowShown(SystemDeviceRow, RecordSystemAudio.IsChecked == true);
+        SetRowShown(MicDeviceRow, RecordMicrophone.IsChecked == true);
     }
 
     private void AudioCheck_Click(object sender, RoutedEventArgs e) => SyncAudioRows();
@@ -271,7 +405,7 @@ public partial class SettingsWindow : ChromeWindow
         bool available = Ffmpeg.IsAvailable;
         FfmpegStatus.Text = installing ? Ffmpeg.InstallStage : available ? Ffmpeg.Describe() : "Needed for recording - free, " + Ffmpeg.DownloadSizeText;
         FfmpegStatus.ToolTip = FfmpegStatus.Text;
-        FfmpegStatus.Foreground = (System.Windows.Media.Brush)FindResource(available || installing ? "Text2Brush" : "DangerBrush");
+        FfmpegStatus.SetResourceReference(TextBlock.ForegroundProperty, available || installing ? "Text2Brush" : "DangerBrush");
         FfmpegDownload.Visibility = available ? Visibility.Collapsed : Visibility.Visible;
         FfmpegDownload.Content = installing ? "Cancel" : "Download";
         FfmpegDownload.Style = (Style)FindResource(installing ? typeof(Button) : "AccentButton");
@@ -337,7 +471,7 @@ public partial class SettingsWindow : ChromeWindow
 
     private void AfterScreenshot_Changed(object sender, SelectionChangedEventArgs e)
     {
-        if (!_loading) Fx.Reveal(PreviewSecondsRow, AfterScreenshot.SelectedIndex == 0, offsetY: -4);
+        if (!_loading) SetRowShown(PreviewSecondsRow, AfterScreenshot.SelectedIndex == 0);
     }
 
     private void PreviewSeconds_Changed(object sender, RoutedPropertyChangedEventArgs<double> e)

@@ -27,6 +27,8 @@ public sealed class ColorPicker : Border
     private readonly Border _preview;
     private readonly TextBox _hex;
     private readonly WrapPanel _recent;
+    private readonly Button _dropper;
+    private bool _editorTools = true;
 
     /// <summary>Raised live while dragging (<c>final</c> = false) and once when a pick is settled.</summary>
     public event Action<Color, bool>? ColorChanged;
@@ -34,13 +36,13 @@ public sealed class ColorPicker : Border
 
     public ColorPicker()
     {
-        Background = (Brush)FindResource("RaisedBrush");
-        BorderBrush = (Brush)FindResource("StrokeStrongBrush");
+        SetResourceReference(BackgroundProperty, "RaisedBrush");
+        SetResourceReference(BorderBrushProperty, "StrokeStrongBrush");
         BorderThickness = new Thickness(1);
-        CornerRadius = new CornerRadius(14);
+        SetResourceReference(CornerRadiusProperty, "RadiusLarge");
         Padding = new Thickness(12);
         Margin = new Thickness(14, 10, 14, 18); // room for the shadow inside the popup
-        Effect = (Effect)FindResource("FloatShadow");
+        SetResourceReference(EffectProperty, "FloatShadow");
 
         // Saturation (left to right) and brightness (top to bottom) over the current hue.
         _fieldHue = new Border { CornerRadius = new CornerRadius(9) };
@@ -121,19 +123,19 @@ public sealed class ColorPicker : Border
                 e.Handled = true;
             }
         };
-        var dropper = new Button
+        _dropper = new Button
         {
             Style = (Style)FindResource("IconButton"),
             ToolTip = "Pick a color from the image",
             Margin = new Thickness(6, 0, 0, 0),
             Content = new ShapePath { Style = (Style)FindResource("Icon"), Data = (Geometry)FindResource("IconEyedropper") },
         };
-        dropper.Click += (_, _) => EyedropperRequested?.Invoke();
+        _dropper.Click += (_, _) => EyedropperRequested?.Invoke();
         var row = new DockPanel { Margin = new Thickness(0, 12, 0, 0), LastChildFill = false };
         row.Children.Add(_preview);
         row.Children.Add(_hex);
-        DockPanel.SetDock(dropper, Dock.Right);
-        row.Children.Add(dropper);
+        DockPanel.SetDock(_dropper, Dock.Right);
+        row.Children.Add(_dropper);
 
         _recent = new WrapPanel { Margin = new Thickness(-3, 10, 0, 0), Width = FieldW + 6 };
 
@@ -152,6 +154,17 @@ public sealed class ColorPicker : Border
 
     public void SetColor(Color c) => SetColorCore(c);
 
+    /// <summary>The eyedropper and recent colors belong to the editor; Settings turns them off (and keeps its picks out of the recents).</summary>
+    public bool ShowEditorTools
+    {
+        get => _editorTools;
+        set
+        {
+            _editorTools = value;
+            _dropper.Visibility = _recent.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
+        }
+    }
+
     /// <summary>Remembers a settled custom color at the front of the recent list.</summary>
     public static void Remember(Color c)
     {
@@ -165,8 +178,11 @@ public sealed class ColorPicker : Border
 
     private void Commit(Color c)
     {
-        Remember(c);
-        BuildRecent();
+        if (_editorTools)
+        {
+            Remember(c);
+            BuildRecent();
+        }
         ColorChanged?.Invoke(c, true);
     }
 

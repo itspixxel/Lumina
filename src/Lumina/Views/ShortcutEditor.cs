@@ -24,7 +24,7 @@ public static class KeycapRow
     public static Border Cap(string text) => new()
     {
         Style = (Style)Application.Current.Resources["Keycap"],
-        Child = new TextBlock { Text = text, FontSize = 11, FontWeight = FontWeights.SemiBold },
+        Child = new TextBlock { Text = text, FontSize = 12, FontWeight = FontWeights.SemiBold },
     };
 }
 
@@ -52,7 +52,7 @@ public sealed class ShortcutEditor : StackPanel
             Style = (Style)Application.Current.Resources["GhostButton"],
             HorizontalAlignment = HorizontalAlignment.Left,
             Margin = new Thickness(-10, 4, 0, 0),
-            Content = new TextBlock { Text = "+  Add shortcut", Foreground = (Brush)Application.Current.Resources["AccentTextBrush"] },
+            Content = Themed(new TextBlock { Text = "+  Add shortcut" }, "AccentTextBrush"),
         };
         add.Click += (_, _) =>
         {
@@ -91,12 +91,11 @@ public sealed class ShortcutEditor : StackPanel
         _recordingKeys = null;
         foreach (var binding in Bindings) _rows.Children.Add(Row(binding));
         if (Bindings.Count == 0)
-            _rows.Children.Add(new TextBlock
+            _rows.Children.Add(Themed(new TextBlock
             {
                 Text = "No shortcuts. Lumina can still be opened from the tray icon.",
-                Foreground = (Brush)Application.Current.Resources["Text2Brush"],
                 Margin = new Thickness(0, 12, 0, 6),
-            });
+            }, "Text2Brush"));
     }
 
     private FrameworkElement Row(HotkeyBinding binding)
@@ -107,17 +106,21 @@ public sealed class ShortcutEditor : StackPanel
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
         bool recording = binding == _recording;
+        // The keys sit right in the row; only the one being recorded gets a box around it.
         var keys = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(-2, 0, 0, 0) };
         var recorder = new Button
         {
+            Style = (Style)Application.Current.Resources[recording ? typeof(Button) : "GhostButton"],
+            HorizontalAlignment = HorizontalAlignment.Left,
             HorizontalContentAlignment = HorizontalAlignment.Left,
-            Padding = new Thickness(10, 6, 10, 6),
+            Padding = new Thickness(8, 6, 10, 6),
+            Margin = new Thickness(-9, 0, 0, 0),
             Content = keys,
             ToolTip = "Click, then press the new shortcut",
         };
         if (recording)
         {
-            recorder.BorderBrush = (Brush)Application.Current.Resources["AccentBrush"];
+            recorder.SetResourceReference(Control.BorderBrushProperty, "AccentBrush");
             _recordingKeys = keys;
             ShowRecording(HotkeyModifiers.None);
         }
@@ -129,7 +132,7 @@ public sealed class ShortcutEditor : StackPanel
         };
         grid.Children.Add(recorder);
 
-        var mode = new ComboBox { Width = 140, Margin = new Thickness(8, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, ToolTip = "What this shortcut captures" };
+        var mode = new ComboBox { Width = 180, Margin = new Thickness(8, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, ToolTip = "What this shortcut captures" };
         foreach (var (_, name) in Modes) mode.Items.Add(name);
         mode.SelectedIndex = Array.FindIndex(Modes, m => m.Mode == binding.Mode);
         mode.SelectionChanged += (_, _) =>
@@ -195,13 +198,12 @@ public sealed class ShortcutEditor : StackPanel
     {
         if (_recordingKeys == null) return;
         KeycapRow.Fill(_recordingKeys, HotkeyBinding.Parts(mods, 0));
-        _recordingKeys.Children.Add(new TextBlock
+        _recordingKeys.Children.Add(Themed(new TextBlock
         {
             Text = mods == HotkeyModifiers.None ? "Press keys..." : "...",
-            Foreground = (Brush)Application.Current.Resources["Text2Brush"],
             VerticalAlignment = VerticalAlignment.Center,
             Margin = new Thickness(4, 0, 0, 0),
-        });
+        }, "Text2Brush"));
     }
 
     private void OnRecordProgress(HotkeyModifiers mods, int vk)
@@ -242,7 +244,13 @@ public sealed class ShortcutEditor : StackPanel
     private void ShowHint(string? text = null, bool warn = false)
     {
         _message.Text = text ?? "Click a shortcut to change it. Win + Shift + S takes over from Snipping Tool while Lumina runs.";
-        _message.Foreground = (Brush)Application.Current.Resources[warn ? "DangerBrush" : "Text2Brush"];
+        _message.SetResourceReference(TextBlock.ForegroundProperty, warn ? "DangerBrush" : "Text2Brush");
+    }
+
+    private static TextBlock Themed(TextBlock text, string brush)
+    {
+        text.SetResourceReference(TextBlock.ForegroundProperty, brush);
+        return text;
     }
 
     private static void Apply()

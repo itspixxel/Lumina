@@ -69,7 +69,10 @@ public sealed class AppSettings
     /// <summary>The welcome / recording setup card has been shown once.</summary>
     public bool SetupShown { get; set; }
     public int SettingsVersion { get; set; }
-    public string Theme { get; set; } = "System";
+    /// <summary>Left over from before themes (never used); read once and dropped.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? Theme { get; set; }
+    /// <summary>The look: a preset plus any colors and shapes changed on top of it.</summary>
+    public ThemeSettings Appearance { get; set; } = new();
     public bool StartWithWindows { get; set; }
     /// <summary>Download new releases in the background and restart into them when Lumina is idle.</summary>
     public bool AutoUpdate { get; set; } = true;
@@ -81,7 +84,7 @@ public sealed class AppSettings
     /// <summary>Custom colors picked in the editor, most recent first.</summary>
     public List<string> RecentColors { get; set; } = new();
 
-    internal AppSettings Migrate()
+    internal AppSettings Migrate(bool existing)
     {
         if (Hotkeys == null)
         {
@@ -98,6 +101,15 @@ public sealed class AppSettings
             if (!Hotkeys.Exists(h => h.SameKeys(record))) Hotkeys.Add(record);
             SettingsVersion = 2;
         }
+        if (SettingsVersion < 3)
+        {
+            // Themes arrived: people who already use Lumina keep the look they know; new installs get the default.
+            if (existing) Appearance = new ThemeSettings { Preset = "midnight" };
+            Theme = null;
+            SettingsVersion = 3;
+        }
+        Appearance ??= new ThemeSettings();
+        Appearance.Colors ??= new();
         return this;
     }
 }
@@ -117,14 +129,14 @@ public static class SettingsService
             if (File.Exists(AppPaths.SettingsFile))
             {
                 var settings = JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(AppPaths.SettingsFile), Options);
-                if (settings != null) return settings.Migrate();
+                if (settings != null) return settings.Migrate(existing: true);
             }
         }
         catch (Exception ex)
         {
             Log.Error(ex, "Loading settings; using defaults");
         }
-        return new AppSettings().Migrate();
+        return new AppSettings().Migrate(existing: false);
     }
 
     public static void Save(AppSettings settings)

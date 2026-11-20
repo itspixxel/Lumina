@@ -6,29 +6,28 @@
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
         <Style x:Key="ThumbButton" TargetType="Button">
             <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="v:Fx.HoverLift" Value="3" />
+            <Setter Property="v:Fx.HoverLift" Value="2" />
             <Setter Property="v:Fx.PressScale" Value="0.97" />
             <Setter Property="Margin" Value="0,0,14,14" />
-            <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Setter Property="Focusable" Value="False" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Grid Width="200">
-                            <Border CornerRadius="12" BorderThickness="1"
-                                    Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource StrokeBrush}" />
-                            <Border CornerRadius="12" BorderThickness="1" Background="{StaticResource RaisedBrush}" BorderBrush="{StaticResource StrokeStrongBrush}"
+                        <Grid>
+                            <Border CornerRadius="{DynamicResource RadiusCard}" BorderThickness="{DynamicResource Line}" Effect="{DynamicResource CardShadow}"
+                                    Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource StrokeBrush}" />
+                            <Border CornerRadius="{DynamicResource RadiusCard}" BorderThickness="{DynamicResource Line}" Background="{DynamicResource RaisedBrush}" BorderBrush="{DynamicResource StrokeStrongBrush}"
                                     Opacity="0" v:Fx.Show="{Binding IsMouseOver, RelativeSource={RelativeSource TemplatedParent}}" />
-                            <Border CornerRadius="12" Background="{StaticResource AccentSoftBrush}" Opacity="0"
+                            <Border CornerRadius="{DynamicResource RadiusCard}" Background="{DynamicResource AccentSoftBrush}" Opacity="0"
                                     v:Fx.Show="{Binding IsSelected}" />
-                            <ContentPresenter Margin="7" />
+                            <ContentPresenter Margin="{DynamicResource Line}" />
                             <!-- Drawn on top so the 2px selected ring doesn't shift the content. -->
-                            <Border CornerRadius="12" BorderThickness="2" BorderBrush="{StaticResource AccentBrush}"
+                            <Border CornerRadius="{DynamicResource RadiusCard}" BorderThickness="2" BorderBrush="{DynamicResource AccentBrush}"
                                     IsHitTestVisible="False" Opacity="0" v:Fx.Show="{Binding IsSelected}" />
-                            <!-- The keyboard cursor: an inner ring in the gap around the thumbnail, so nothing clips it and it
-                                 still shows on a selected tile. -->
-                            <Border CornerRadius="9" BorderThickness="1.5" BorderBrush="{StaticResource TextBrush}" Margin="3"
+                            <!-- The keyboard cursor: an inner ring, so nothing clips it and it still shows on a selected tile. -->
+                            <Border CornerRadius="{DynamicResource RadiusControl}" BorderThickness="1.5" BorderBrush="{DynamicResource TextBrush}" Margin="3"
                                     IsHitTestVisible="False" Opacity="0" v:Fx.ShowOpacity="0.75" v:Fx.Show="{Binding IsCurrent}" />
                         </Grid>
                     </ControlTemplate>
@@ -62,8 +61,8 @@
                 </Trigger>
                 <DataTrigger Binding="{Binding IsSelected}" Value="True">
                     <Setter Property="v:Fx.Show" Value="True" />
-                    <Setter Property="Background" Value="{StaticResource AccentGradient}" />
-                    <Setter Property="BorderBrush" Value="White" />
+                    <Setter Property="Background" Value="{DynamicResource AccentFill}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource OnAccentBrush}" />
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -71,24 +70,26 @@
             <Button Style="{StaticResource ThumbButton}" Click="Tile_Click" ToolTip="{Binding Details}"
                     ContextMenuOpening="Tile_ContextMenuOpening" Loaded="Tile_Loaded" Unloaded="Tile_Unloaded">
                 <StackPanel>
-                    <Grid>
-                        <Border Height="112" CornerRadius="8" Background="{StaticResource WindowBrush}" ClipToBounds="True">
-                            <Image Source="{Binding Thumb}" Stretch="Uniform" Margin="2" RenderOptions.BitmapScalingMode="HighQuality" />
+                    <!-- The picture sits flush in the card: no frame inside the frame. -->
+                    <Grid Height="{Binding ThumbHeight, RelativeSource={RelativeSource AncestorType=v:GalleryView}}">
+                        <Border CornerRadius="{DynamicResource RadiusCardTop}" Background="{DynamicResource WindowBrush}" ClipToBounds="True">
+                            <Image Source="{Binding Thumb}" Stretch="Uniform" Margin="6" RenderOptions.BitmapScalingMode="HighQuality" />
                         </Border>
-                        <Border Width="34" Height="34" CornerRadius="17" Background="#A61C1B29" BorderBrush="#40FFFFFF" BorderThickness="1"
+                        <Border Width="34" Height="34" CornerRadius="17" Background="#A6161616" BorderBrush="#40FFFFFF" BorderThickness="1"
                                 HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"
                                 Visibility="{Binding IsVideo, Converter={StaticResource BoolToVisibility}}">
                             <Path Data="{StaticResource IconPlay}" Fill="White" Stretch="Uniform" Width="11" Height="12" Margin="3,0,0,0" />
                         </Border>
                         <Border Style="{StaticResource SelectDot}" PreviewMouseLeftButtonDown="SelectDot_MouseDown"
                                 ToolTip="Select - Ctrl+click to add, Shift+click for a range">
-                            <Path Data="M5.5,10.2 L8.6,13.3 L14.5,7.2" Stroke="White" StrokeThickness="2.2"
+                            <Path Data="M5.5,10.2 L8.6,13.3 L14.5,7.2" Stroke="{DynamicResource OnAccentBrush}" StrokeThickness="2.2"
                                   StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
                                   Opacity="0" v:Fx.ShowPop="True" v:Fx.Show="{Binding IsSelected}" />
                         </Border>
                     </Grid>
-                    <Grid Margin="4,8,4,0">
-                        <TextBlock Text="{Binding Name}" FontSize="12" TextTrimming="CharacterEllipsis">
+                    <Border Height="1" Background="{DynamicResource StrokeBrush}" />
+                    <Grid Margin="11,9,11,0">
+                        <TextBlock Text="{Binding Name}" FontSize="13" TextTrimming="CharacterEllipsis">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
                                     <Style.Triggers>
@@ -99,19 +100,20 @@
                                 </Style>
                             </TextBlock.Style>
                         </TextBlock>
-                        <TextBox FontSize="12" Padding="4,1" Margin="-5,-3" Visibility="{Binding IsRenaming, Converter={StaticResource BoolToVisibility}}"
+                        <TextBox FontSize="13" Padding="4,1" Margin="-5,-3" Visibility="{Binding IsRenaming, Converter={StaticResource BoolToVisibility}}"
                                  IsVisibleChanged="RenameBox_IsVisibleChanged" KeyDown="RenameBox_KeyDown"
                                  LostKeyboardFocus="RenameBox_LostKeyboardFocus" />
                     </Grid>
-                    <TextBlock Text="{Binding Info}" FontSize="11" Margin="4,1,4,4" Foreground="{StaticResource Text3Brush}" />
+                    <TextBlock Text="{Binding Info}" FontSize="12" Margin="11,2,11,10" Foreground="{DynamicResource Text3Brush}" />
                 </StackPanel>
             </Button>
         </DataTemplate>
         <DataTemplate DataType="{x:Type v:GalleryTileRow}">
-            <ItemsControl ItemsSource="{Binding Items}" ItemTemplate="{StaticResource TileTemplate}" Focusable="False">
+            <!-- Tiles share the row; the last gap runs past the edge so the tiles themselves end on the content line. -->
+            <ItemsControl ItemsSource="{Binding Items}" ItemTemplate="{StaticResource TileTemplate}" Focusable="False" Margin="0,0,-14,0">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal" />
+                        <UniformGrid Rows="1" Columns="{Binding Columns, RelativeSource={RelativeSource AncestorType=v:GalleryView}}" />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
@@ -119,7 +121,7 @@
         <DataTemplate DataType="{x:Type v:GalleryHeaderRow}">
             <StackPanel Orientation="Horizontal" Margin="{Binding Margin}">
                 <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" />
-                <TextBlock Text="{Binding CountText}" FontSize="12" Foreground="{StaticResource Text3Brush}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding CountText}" FontSize="12.5" Foreground="{DynamicResource Text3Brush}" Margin="8,0,0,0" VerticalAlignment="Center" />
             </StackPanel>
         </DataTemplate>
     </UserControl.Resources>
@@ -132,34 +134,39 @@
 
         <!-- Header -->
         <Grid Grid.Row="0" Margin="0,0,0,4" MinHeight="40">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-                <TextBlock x:Name="TitleText" Text="Gallery" FontFamily="{StaticResource DisplayFont}" FontSize="18" FontWeight="SemiBold"
-                           VerticalAlignment="Center" />
-                <Button x:Name="ViewAllButton" Style="{StaticResource GhostButton}" Margin="10,0,0,0" Padding="8,4" VerticalAlignment="Center"
-                        Click="ViewAll_Click" ToolTip="Open the full gallery with search (Ctrl+F)" Visibility="Collapsed">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock x:Name="ViewAllText" Text="View all" FontSize="12" VerticalAlignment="Center" />
-                        <Path Data="M9,6 L15,12 L9,18" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="2"
-                              StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Width="12" Height="12" Stretch="Uniform"
-                              Margin="4,1,0,0" VerticalAlignment="Center" />
-                    </StackPanel>
-                </Button>
+            <StackPanel HorizontalAlignment="Left" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock x:Name="TitleText" Text="Gallery" FontFamily="{DynamicResource DisplayFont}" FontSize="{DynamicResource SectionTitleSize}" FontWeight="SemiBold"
+                               TextOptions.TextFormattingMode="{DynamicResource TitleTextMode}" TextOptions.TextRenderingMode="{DynamicResource TitleRenderMode}"
+                               VerticalAlignment="Center" />
+                    <Button x:Name="ViewAllButton" Style="{StaticResource GhostButton}" Margin="8,0,0,0" Padding="8,4" VerticalAlignment="Center"
+                            Click="ViewAll_Click" ToolTip="Open the full gallery with search (Ctrl+F)" Visibility="Collapsed">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock x:Name="ViewAllText" Text="View all" FontSize="13" VerticalAlignment="Center" />
+                            <Path Data="M9,6 L15,12 L9,18" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="2"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Width="12" Height="12" Stretch="Uniform"
+                                  Margin="4,1,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+                <ContentPresenter x:Name="SubtitleHost" Margin="0,5,0,0" Visibility="Collapsed" />
             </StackPanel>
-            <TextBlock x:Name="RecentHint" Text="Click to open, Ctrl or Shift+click to select" FontSize="12"
-                       VerticalAlignment="Center" HorizontalAlignment="Right" Foreground="{StaticResource Text3Brush}" />
+            <TextBlock x:Name="RecentHint" Text="Click to open, Ctrl or Shift+click to select" FontSize="12.5"
+                       VerticalAlignment="Center" HorizontalAlignment="Right" Foreground="{DynamicResource Text3Brush}" />
+            <ContentPresenter x:Name="HeaderHost" HorizontalAlignment="Right" VerticalAlignment="Center" />
 
             <!-- Selection actions, shown while anything is selected -->
             <Border x:Name="SelectionBar" Style="{StaticResource Pill}" HorizontalAlignment="Right" VerticalAlignment="Center"
                     Padding="12,3,4,3" Visibility="Collapsed" Effect="{x:Null}">
                 <StackPanel Orientation="Horizontal">
-                    <Border Width="18" Height="18" CornerRadius="9" Background="{StaticResource AccentGradient}" VerticalAlignment="Center">
-                        <Path Data="M5,9.5 L8,12.5 L13.5,6.5" Stroke="White" StrokeThickness="2" StrokeStartLineCap="Round"
+                    <Border Width="18" Height="18" CornerRadius="9" Background="{DynamicResource AccentFill}" VerticalAlignment="Center">
+                        <Path Data="M5,9.5 L8,12.5 L13.5,6.5" Stroke="{DynamicResource OnAccentBrush}" StrokeThickness="2" StrokeStartLineCap="Round"
                               StrokeEndLineCap="Round" StrokeLineJoin="Round" />
                     </Border>
                     <TextBlock x:Name="SelectionText" Text="1 selected" FontWeight="SemiBold" VerticalAlignment="Center" Margin="8,0,10,0" />
                     <Rectangle Style="{StaticResource VDivider}" />
                     <Button Style="{StaticResource IconButton}" Click="SelectAll_Click" ToolTip="Select all (Ctrl+A)">
-                        <TextBlock Text="All" FontSize="12" Margin="2,0" />
+                        <TextBlock Text="All" FontSize="13" Margin="2,0" />
                     </Button>
                     <Button Style="{StaticResource IconButton}" Click="SelectionCopy_Click" ToolTip="Copy (Ctrl+C)">
                         <Path Style="{StaticResource Icon}" Data="{StaticResource IconCopy}" />
@@ -168,7 +175,7 @@
                         <Path Style="{StaticResource Icon}" Data="{StaticResource IconFolder}" />
                     </Button>
                     <Button Style="{StaticResource IconButton}" Click="SelectionDelete_Click" ToolTip="Move to Recycle Bin (Del), Shift+Del deletes permanently"
-                            Foreground="{StaticResource DangerBrush}">
+                            Foreground="{DynamicResource DangerBrush}">
                         <Path Style="{StaticResource Icon}" Data="{StaticResource IconTrash}" />
                     </Button>
                     <Rectangle Style="{StaticResource VDivider}" />
@@ -180,7 +187,9 @@
         </Grid>
 
         <Grid Grid.Row="1">
-            <!-- Rows of tiles (and date headers), virtualized so thousands of files stay fast. -->
+            <!-- Rows of tiles (and date headers), virtualized so thousands of files stay fast. The list reaches 12 px
+                 into the window margin; the scrollbar sits in that strip, so tiles end on the content line with or
+                 without one. -->
             <ItemsControl x:Name="RecentList" Margin="0,0,-12,0" Focusable="False"
                           VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Standard"
                           VirtualizingPanel.ScrollUnit="Pixel" ScrollViewer.CanContentScroll="True">
@@ -188,6 +197,16 @@
                     <ControlTemplate TargetType="ItemsControl">
                         <ScrollViewer x:Name="Scroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                                       CanContentScroll="True" Focusable="False">
+                            <ScrollViewer.Template>
+                                <ControlTemplate TargetType="ScrollViewer">
+                                    <Grid Background="{TemplateBinding Background}">
+                                        <ScrollContentPresenter Margin="0,0,12,0" CanContentScroll="{TemplateBinding CanContentScroll}" />
+                                        <ScrollBar x:Name="PART_VerticalScrollBar" HorizontalAlignment="Right"
+                                                   Value="{TemplateBinding VerticalOffset}" Maximum="{TemplateBinding ScrollableHeight}"
+                                                   ViewportSize="{TemplateBinding ViewportHeight}" Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}" />
+                                    </Grid>
+                                </ControlTemplate>
+                            </ScrollViewer.Template>
                             <!-- Top space inside the scroll area, so a hovered tile can lift without its top edge being cut off. -->
                             <ItemsPresenter Margin="0,8,0,20" />
                         </ScrollViewer>
@@ -199,14 +218,13 @@
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
-            <StackPanel x:Name="EmptyText" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"
-                        v:Fx.Entrance="True" v:Fx.EntranceDelay="200">
-                <Border Width="56" Height="56" CornerRadius="16" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource StrokeBrush}" BorderThickness="1"
+            <StackPanel x:Name="EmptyText" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed">
+                <Border Width="56" Height="56" CornerRadius="{DynamicResource RadiusLarge}" Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource StrokeBrush}" BorderThickness="1"
                         HorizontalAlignment="Center">
-                    <Path x:Name="EmptyIcon" Style="{StaticResource Icon}" Data="{StaticResource IconRegion}" Stroke="{StaticResource AccentTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <Path x:Name="EmptyIcon" Style="{StaticResource Icon}" Data="{StaticResource IconRegion}" Stroke="{DynamicResource Text2Brush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Border>
                 <TextBlock x:Name="EmptyTitle" Text="Your captures show up here" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,14,0,4" />
-                <TextBlock x:Name="EmptyHintText" Text="Use your capture shortcut, or pick a mode above." Foreground="{StaticResource Text2Brush}" HorizontalAlignment="Center" />
+                <TextBlock x:Name="EmptyHintText" Text="Use your capture shortcut, or pick a mode above." Foreground="{DynamicResource Text2Brush}" HorizontalAlignment="Center" />
                 <Button x:Name="ClearFiltersButton" Content="Clear search and filters" HorizontalAlignment="Center" Margin="0,14,0,0"
                         Click="ClearFilters_Click" Visibility="Collapsed" />
             </StackPanel>
