@@ -135,7 +135,7 @@ public sealed class RecordingFrame : RecordingSurfaceWindow
         var dots = new Shapes.Path
         {
             Data = Geometry.Parse("M0,0 h0.01 M5,0 h0.01 M10,0 h0.01 M15,0 h0.01 M0,4 h0.01 M5,4 h0.01 M10,4 h0.01 M15,4 h0.01"),
-            Stroke = Brushes.White,
+            Stroke = (Brush)Application.Current.Resources["OnAccentBrush"],
             StrokeThickness = 2.2,
             StrokeStartLineCap = PenLineCap.Round,
             StrokeEndLineCap = PenLineCap.Round,
@@ -148,7 +148,7 @@ public sealed class RecordingFrame : RecordingSurfaceWindow
             Width = 54,
             Height = 18,
             CornerRadius = new CornerRadius(9),
-            Background = (Brush)Application.Current.Resources["AccentGradient"],
+            Background = (Brush)Application.Current.Resources["AccentFill"],
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Top,
             Cursor = Cursors.SizeAll,
@@ -296,7 +296,7 @@ public sealed class RecordingToolbar : RecordingSurfaceWindow
         _halo.VerticalAlignment = _dot.VerticalAlignment = VerticalAlignment.Center;
 
         _time = new RollingText { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 4, 0) };
-        TextElement.SetFontFamily(_time, (FontFamily)Application.Current.Resources["DisplayFont"]);
+        TextElement.SetFontFamily(_time, (FontFamily)Application.Current.Resources["NumberFont"]);
         TextElement.SetFontWeight(_time, FontWeights.SemiBold);
         TextElement.SetFontSize(_time, 14);
         _time.SetText("0:00", animate: false);

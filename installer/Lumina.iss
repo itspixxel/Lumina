@@ -63,6 +63,8 @@ Type: files; Name: "{app}\Lumina.exe.new"
 
 [Files]
 Source: "{#SourceExe}"; DestDir: "{app}"; Flags: ignoreversion
+; The licenses of the fonts built into Lumina.exe (SIL Open Font License).
+Source: "..\src\Lumina\Assets\Fonts\OFL-*.txt"; DestDir: "{app}\Licenses"; Flags: ignoreversion
 
 [Icons]
 Name: "{autoprograms}\Lumina"; Filename: "{app}\Lumina.exe"

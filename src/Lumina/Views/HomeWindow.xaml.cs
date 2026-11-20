@@ -19,6 +19,9 @@ public partial class HomeWindow : ChromeWindow
     public HomeWindow()
     {
         InitializeComponent();
+        HeaderParts.Children.Clear();
+        Gallery.Subtitle = SubtitlePart;
+        Gallery.HeaderContent = SearchPart;
         Ffmpeg.StateChanged += UpdateRecordCard;
         App.Instance.Recorder.StateChanged += RecorderChanged;
         Closed += (_, _) =>
@@ -33,6 +36,24 @@ public partial class HomeWindow : ChromeWindow
         };
         Loaded += (_, _) => UpdateRecordCard();
         Gallery.ViewAllRequested += () => GalleryWindow.ShowGallery();
+        Theme.Changed += UpdateRecordCard;
+        Closed += (_, _) => Theme.Changed -= UpdateRecordCard;
+        _searchDelay.Tick += (_, _) =>
+        {
+            _searchDelay.Stop();
+            Gallery.Query = SearchBox.Text;
+        };
+    }
+
+    private readonly System.Windows.Threading.DispatcherTimer _searchDelay = new() { Interval = TimeSpan.FromMilliseconds(150) };
+
+    private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        bool empty = SearchBox.Text.Length == 0;
+        SearchPlaceholder.Visibility = empty ? Visibility.Visible : Visibility.Collapsed;
+        _searchDelay.Stop();
+        if (empty) Gallery.Query = ""; // clearing is instant
+        else _searchDelay.Start();
     }
 
     /// <summary>Each mode card's tooltip names its key here (1 to 5) and its shortcut from anywhere, if set.</summary>
@@ -73,10 +94,11 @@ public partial class HomeWindow : ChromeWindow
         RecordBadge.Visibility = badge != null ? Visibility.Visible : Visibility.Collapsed;
         RecordBadgeText.Text = badge ?? "";
         RecordBadgeIcon.Visibility = warn ? Visibility.Visible : Visibility.Collapsed;
-        var tint = warn ? Color.FromRgb(0xFF, 0xC2, 0x4D) : ((SolidColorBrush)FindResource("AccentTextBrush")).Color;
+        // Amber reads on both dark and light themes only in a shade picked for each.
+        var theme = Theme.Current;
+        var tint = warn ? (theme.IsDark ? Color.FromRgb(0xFF, 0xC2, 0x4D) : Color.FromRgb(0x8A, 0x5A, 0x00)) : theme["AccentText"];
         RecordBadgeText.Foreground = new SolidColorBrush(tint);
-        RecordBadge.Background = new SolidColorBrush(Color.FromArgb(0x33, tint.R, tint.G, tint.B));
-        RecordCaption.Text = shortcut != null ? shortcut : "Video with sound";
+        RecordBadge.Background = new SolidColorBrush(Theme.Mix(theme["Raised"], tint, theme.IsDark ? 0.2 : 0.12));
         RecordCard.ToolTip = warn
             ? "Recording needs FFmpeg, a free download. Click to set it up."
             : shortcut != null ? $"Record your screen (5), {shortcut} from anywhere" : "Record your screen (5)";
@@ -126,6 +148,13 @@ public partial class HomeWindow : ChromeWindow
 
     private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
     {
+        if (e.Key == Key.Escape && SearchBox.IsKeyboardFocusWithin)
+        {
+            if (SearchBox.Text.Length > 0) SearchBox.Clear();
+            else Gallery.Focus();
+            e.Handled = true;
+            return;
+        }
         if (Keyboard.FocusedElement is TextBox or ComboBox or ComboBoxItem) return;
         var mods = Keyboard.Modifiers;
         if (Gallery.HandleKey(e))
@@ -157,7 +186,8 @@ public partial class HomeWindow : ChromeWindow
         }
         else if (mods == ModifierKeys.Control && e.Key == Key.F)
         {
-            GalleryWindow.ShowGallery(focusSearch: true);
+            SearchBox.Focus();
+            SearchBox.SelectAll();
             e.Handled = true;
         }
         else if (mods == ModifierKeys.None && e.Key == Key.F5)

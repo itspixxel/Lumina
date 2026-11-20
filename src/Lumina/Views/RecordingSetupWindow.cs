@@ -50,14 +50,14 @@ public sealed class RecordingSetupWindow : Window
         {
             Width = 46,
             Height = 46,
-            CornerRadius = new CornerRadius(13),
-            Background = (Brush)FindResource("AccentGradient"),
+            CornerRadius = (CornerRadius)FindResource("RadiusControl"),
+            Background = (Brush)FindResource("AccentFill"),
             VerticalAlignment = VerticalAlignment.Top,
             Child = new ShapePath
             {
                 Style = (Style)FindResource("Icon"),
                 Data = (Geometry)FindResource(firstRun ? "IconRegion" : "IconRecord"),
-                Stroke = Brushes.White,
+                Stroke = (Brush)FindResource("OnAccentBrush"),
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
             },
@@ -69,7 +69,7 @@ public sealed class RecordingSetupWindow : Window
         {
             Text = Title,
             FontFamily = (FontFamily)FindResource("DisplayFont"),
-            FontSize = 20,
+            FontSize = Theme.TitleSize(20),
             FontWeight = FontWeights.SemiBold,
         });
         titles.Children.Add(new TextBlock
@@ -104,7 +104,7 @@ public sealed class RecordingSetupWindow : Window
         };
         section.Children.Add(_body);
 
-        _fill = new Border { CornerRadius = new CornerRadius(3), Background = (Brush)FindResource("AccentGradient"), HorizontalAlignment = HorizontalAlignment.Left, Width = 0 };
+        _fill = new Border { CornerRadius = new CornerRadius(3), Background = (Brush)FindResource("AccentFill"), HorizontalAlignment = HorizontalAlignment.Left, Width = 0 };
         _track = new Border
         {
             Height = 6,
@@ -154,7 +154,7 @@ public sealed class RecordingSetupWindow : Window
             Width = 480,
             Margin = new Thickness(28),
             Padding = new Thickness(24, 22, 24, 20),
-            CornerRadius = new CornerRadius(16),
+            CornerRadius = (CornerRadius)FindResource("RadiusLarge"),
             Background = (Brush)FindResource("RaisedBrush"),
             BorderBrush = (Brush)FindResource("StrokeStrongBrush"),
             BorderThickness = new Thickness(1),

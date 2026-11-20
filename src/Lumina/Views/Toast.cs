@@ -28,7 +28,7 @@ public sealed class Toast : Border
         Visibility = Visibility.Collapsed;
 
         _fill = new Border { CornerRadius = new CornerRadius(2), HorizontalAlignment = HorizontalAlignment.Left, Width = 0 };
-        _fill.SetResourceReference(BackgroundProperty, "AccentGradient");
+        _fill.SetResourceReference(BackgroundProperty, "AccentFill");
         _track = new Border
         {
             Width = 120, Height = 4, CornerRadius = new CornerRadius(2), Margin = new Thickness(0, 0, 10, 0),

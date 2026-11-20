@@ -7,6 +7,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
 using ShapePath = System.Windows.Shapes.Path;
+using Lumina.Services;
 
 namespace Lumina.Views;
 
@@ -46,7 +47,7 @@ public sealed class LuminaDialog : Window
 
         var (tint, soft) = kind switch
         {
-            DialogKind.Error or DialogKind.Warning => ((Brush)FindResource("DangerBrush"), (Brush)new SolidColorBrush(Color.FromArgb(0x30, 0xFF, 0x5C, 0x7A))),
+            DialogKind.Error or DialogKind.Warning => ((Brush)FindResource("DangerBrush"), (Brush)FindResource("DangerSoftBrush")),
             _ => ((Brush)FindResource("AccentTextBrush"), (Brush)FindResource("AccentSoftBrush")),
         };
 
@@ -54,7 +55,7 @@ public sealed class LuminaDialog : Window
         {
             Width = 42,
             Height = 42,
-            CornerRadius = new CornerRadius(12),
+            CornerRadius = (CornerRadius)FindResource("RadiusCard"),
             Background = soft,
             VerticalAlignment = VerticalAlignment.Top,
             Child = new ShapePath
@@ -68,14 +69,16 @@ public sealed class LuminaDialog : Window
         };
 
         var text = new StackPanel { Margin = new Thickness(16, 1, 0, 0) };
-        text.Children.Add(new TextBlock
+        var heading = new TextBlock
         {
             Text = title,
             FontFamily = (FontFamily)FindResource("DisplayFont"),
-            FontSize = 17,
+            FontSize = Theme.TitleSize(17),
             FontWeight = FontWeights.SemiBold,
             TextWrapping = TextWrapping.Wrap,
-        });
+        };
+        Theme.StyleTitle(heading);
+        text.Children.Add(heading);
         text.Children.Add(new TextBlock
         {
             Text = message,
@@ -117,7 +120,7 @@ public sealed class LuminaDialog : Window
             Width = 420,
             Margin = new Thickness(28),
             Padding = new Thickness(22, 22, 22, 18),
-            CornerRadius = new CornerRadius(16),
+            CornerRadius = (CornerRadius)FindResource("RadiusLarge"),
             Background = (Brush)FindResource("RaisedBrush"),
             BorderBrush = (Brush)FindResource("StrokeStrongBrush"),
             BorderThickness = new Thickness(1),

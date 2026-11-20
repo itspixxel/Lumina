@@ -2,29 +2,46 @@
                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                 xmlns:v="clr-namespace:Lumina.Views"
-                Title="Settings" Width="660" Height="780" MinWidth="540" MinHeight="440"
+                Title="Settings" Width="920" Height="740" MinWidth="740" MinHeight="460"
                 WindowStartupLocation="CenterScreen" Icon="/Assets/lumina.ico">
     <v:ChromeWindow.Resources>
-        <Style x:Key="Section" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="12" />
+        <Style x:Key="PageTitle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{DynamicResource DisplayFont}" />
+            <Setter Property="FontSize" Value="{DynamicResource PageTitleSize}" />
+            <Setter Property="TextOptions.TextFormattingMode" Value="{DynamicResource TitleTextMode}" />
+            <Setter Property="TextOptions.TextRenderingMode" Value="{DynamicResource TitleRenderMode}" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource AccentTextBrush}" />
-            <Setter Property="Margin" Value="4,22,0,10" />
+            <Setter Property="Margin" Value="2,0,0,0" />
         </Style>
-        <Style x:Key="Hint" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="TextWrapping" Value="Wrap" />
-            <Setter Property="Foreground" Value="{StaticResource Text2Brush}" />
-            <Setter Property="Margin" Value="0,2,0,0" />
-        </Style>
-        <Style x:Key="RowDivider" TargetType="Border">
-            <Setter Property="Height" Value="1" />
-            <Setter Property="Background" Value="{StaticResource StrokeBrush}" />
-            <Setter Property="Margin" Value="0,2" />
-        </Style>
-        <Style x:Key="FieldLabel" TargetType="TextBlock">
-            <Setter Property="Margin" Value="0,0,0,8" />
-            <Setter Property="FontWeight" Value="SemiBold" />
+        <Style x:Key="NavItem" TargetType="RadioButton">
+            <Setter Property="Foreground" Value="{DynamicResource Text2Brush}" />
+            <Setter Property="FontSize" Value="13.5" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="GroupName" Value="nav" />
+            <Setter Property="Margin" Value="0,0,0,2" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Grid Height="34">
+                            <Border x:Name="Bd" CornerRadius="{DynamicResource RadiusControl}" Background="Transparent" />
+                            <Border CornerRadius="{DynamicResource RadiusControl}" Background="{DynamicResource HoverBrush}" Opacity="0"
+                                    v:Fx.Show="{Binding IsMouseOver, RelativeSource={RelativeSource TemplatedParent}}" />
+                            <ContentPresenter Margin="12,0" VerticalAlignment="Center" />
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource HoverBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
         <Style x:Key="FolderBox" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
             <!-- The template applies padding twice, so 16 lands the text just past the 28 px icon -->
@@ -32,7 +49,7 @@
         </Style>
         <Style x:Key="FolderBoxIcon" TargetType="Path" BasedOn="{StaticResource Icon}">
             <Setter Property="Data" Value="{StaticResource IconFolder}" />
-            <Setter Property="Stroke" Value="{StaticResource Text2Brush}" />
+            <Setter Property="Stroke" Value="{DynamicResource Text2Brush}" />
             <Setter Property="HorizontalAlignment" Value="Left" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="Margin" Value="10,0,0,0" />
@@ -40,277 +57,434 @@
         </Style>
     </v:ChromeWindow.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="32,4,32,32">
-            <TextBlock Text="Settings" FontFamily="{StaticResource DisplayFont}" FontSize="28" FontWeight="SemiBold" />
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="232" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
-            <TextBlock Text="SHORTCUTS" Style="{StaticResource Section}" />
-            <Border Style="{StaticResource Card}" Padding="18,6">
-                <StackPanel>
-                    <v:ShortcutEditor Margin="0,6,0,0" />
-                </StackPanel>
-            </Border>
-
-            <TextBlock Text="CAPTURE" Style="{StaticResource Section}" />
-            <Border Style="{StaticResource Card}" Padding="18,6">
-                <StackPanel>
-                    <CheckBox x:Name="ShowMagnifier">
-                        <StackPanel>
-                            <TextBlock Text="Magnifier" />
-                            <TextBlock Style="{StaticResource Hint}" Text="Zoomed pixels, coordinates, and the color under the cursor." />
-                        </StackPanel>
-                    </CheckBox>
-                    <Border Style="{StaticResource RowDivider}" />
-                    <CheckBox x:Name="CaptureCursor">
-                        <TextBlock Text="Include the mouse pointer" />
-                    </CheckBox>
-                    <Border Style="{StaticResource RowDivider}" />
-                    <CheckBox x:Name="HideWindows">
-                        <StackPanel>
-                            <TextBlock Text="Hide Lumina while capturing" />
-                            <TextBlock Style="{StaticResource Hint}" Text="Keeps Lumina's own windows out of the shot. Turn off to capture them too." />
-                        </StackPanel>
-                    </CheckBox>
-                </StackPanel>
-            </Border>
-
-            <TextBlock Text="RECORDING" Style="{StaticResource Section}" />
-            <Border Style="{StaticResource Card}">
-                <StackPanel>
-                    <!-- FFmpeg -->
-                    <DockPanel>
-                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button x:Name="FfmpegDownload" Style="{StaticResource AccentButton}" Content="Download" Margin="8,0,0,0" Click="FfmpegDownload_Click" />
-                            <Button x:Name="FfmpegBrowse" Content="Browse" Margin="8,0,0,0" Click="FfmpegBrowse_Click" ToolTip="Use an ffmpeg.exe you already have" />
-                            <Button x:Name="FfmpegReset" Content="Reset" Margin="8,0,0,0" Click="FfmpegReset_Click" ToolTip="Stop using your own ffmpeg.exe" />
-                        </StackPanel>
-                        <StackPanel>
-                            <TextBlock Text="FFmpeg" FontWeight="SemiBold" />
-                            <TextBlock x:Name="FfmpegStatus" Style="{StaticResource Hint}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" />
-                        </StackPanel>
-                    </DockPanel>
-                    <Border Style="{StaticResource RowDivider}" Margin="0,14,0,6" />
-
-                    <Grid Margin="0,6,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Margin="0,0,24,0">
-                            <TextBlock Text="Frame rate" Style="{StaticResource FieldLabel}" />
-                            <ComboBox x:Name="RecordingFps" Width="160">
-                                <ComboBoxItem Content="30 fps" Tag="30" />
-                                <ComboBoxItem Content="60 fps" Tag="60" />
-                                <ComboBoxItem Content="120 fps" Tag="120" />
-                                <ComboBoxItem Content="144 fps" Tag="144" />
-                            </ComboBox>
-                            <TextBlock Style="{StaticResource Hint}" Width="160" TextWrapping="Wrap" HorizontalAlignment="Left"
-                                       Text="Never more than the monitor's refresh rate." />
-                        </StackPanel>
-                        <StackPanel Grid.Column="1">
-                            <TextBlock Text="Countdown" Style="{StaticResource FieldLabel}" />
-                            <ComboBox x:Name="RecordingCountdown" Width="140">
-                                <ComboBoxItem Content="None" Tag="0" />
-                                <ComboBoxItem Content="3 seconds" Tag="3" />
-                                <ComboBoxItem Content="5 seconds" Tag="5" />
-                            </ComboBox>
-                        </StackPanel>
-                    </Grid>
-
-                    <TextBlock Text="Sound" Style="{StaticResource FieldLabel}" Margin="0,18,0,4" />
-                    <DockPanel Margin="0,4,0,0">
-                        <ComboBox x:Name="SystemDevice" DockPanel.Dock="Right" Width="260" Margin="20,0,0,0" VerticalAlignment="Center" />
-                        <CheckBox x:Name="RecordSystemAudio" Click="AudioCheck_Click">
-                            <StackPanel>
-                                <TextBlock Text="System audio" />
-                                <TextBlock Style="{StaticResource Hint}" Text="Whatever plays through this output." />
-                            </StackPanel>
-                        </CheckBox>
-                    </DockPanel>
-                    <DockPanel Margin="0,4,0,0">
-                        <ComboBox x:Name="MicDevice" DockPanel.Dock="Right" Width="260" Margin="20,0,0,0" VerticalAlignment="Center" />
-                        <CheckBox x:Name="RecordMicrophone" Click="AudioCheck_Click">
-                            <StackPanel>
-                                <TextBlock Text="Microphone" />
-                                <TextBlock Style="{StaticResource Hint}" Text="Your voice, from this input." />
-                            </StackPanel>
-                        </CheckBox>
-                    </DockPanel>
-                    <Border Style="{StaticResource RowDivider}" Margin="0,8,0,2" />
-                    <CheckBox x:Name="RecordCursor"><TextBlock Text="Show the mouse pointer in recordings" /></CheckBox>
-                    <Border Style="{StaticResource RowDivider}" />
-                    <CheckBox x:Name="HardwareEncoding">
-                        <StackPanel>
-                            <TextBlock Text="Use the graphics card to encode" />
-                            <TextBlock Style="{StaticResource Hint}" Text="Lighter on the CPU when your GPU supports it (NVIDIA, Intel or AMD)." />
-                        </StackPanel>
-                    </CheckBox>
-
-                    <TextBlock Text="Recordings folder" Style="{StaticResource FieldLabel}" Margin="0,14,0,8" />
-                    <DockPanel>
-                        <Button DockPanel.Dock="Right" Content="Open" Margin="8,0,0,0" Click="OpenRecordingsFolder_Click" />
-                        <Button DockPanel.Dock="Right" Content="Browse" Margin="8,0,0,0" Click="BrowseRecordings_Click" />
-                        <Grid>
-                            <TextBox x:Name="RecordingsDirectory" Style="{StaticResource FolderBox}" />
-                            <Path Style="{StaticResource FolderBoxIcon}" />
-                        </Grid>
-                    </DockPanel>
-                </StackPanel>
-            </Border>
-
-            <TextBlock Text="AFTER CAPTURE" Style="{StaticResource Section}" />
-            <Border Style="{StaticResource Card}" Padding="18,6">
-                <StackPanel>
-                    <CheckBox x:Name="CopyToClipboard">
-                        <StackPanel>
-                            <TextBlock Text="Copy to clipboard" />
-                            <TextBlock Style="{StaticResource Hint}" Text="Screenshots, recordings and exported clips, ready to paste anywhere." />
-                        </StackPanel>
-                    </CheckBox>
-                    <Border Style="{StaticResource RowDivider}" />
-                    <CheckBox x:Name="AutoSave">
-                        <StackPanel>
-                            <TextBlock Text="Save screenshots to the output folder" />
-                            <TextBlock Style="{StaticResource Hint}" Text="Recordings are always saved, to the recordings folder." />
-                        </StackPanel>
-                    </CheckBox>
-                    <Border Style="{StaticResource RowDivider}" />
-                    <DockPanel Margin="0,12">
-                        <ComboBox x:Name="AfterScreenshot" DockPanel.Dock="Right" Width="230" Margin="20,0,0,0" VerticalAlignment="Center"
-                                  SelectionChanged="AfterScreenshot_Changed">
-                            <ComboBoxItem Content="Show a floating preview" Tag="preview" />
-                            <ComboBoxItem Content="Open the markup editor" Tag="editor" />
-                            <ComboBoxItem Content="Nothing" Tag="none" />
-                        </ComboBox>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="After a screenshot" />
-                            <TextBlock Style="{StaticResource Hint}" Text="Recordings always open in the trim editor." />
-                        </StackPanel>
-                    </DockPanel>
-                    <StackPanel x:Name="PreviewSecondsRow">
-                        <Border Style="{StaticResource RowDivider}" />
-                        <DockPanel Margin="0,12">
-                            <TextBlock Text="Preview stays for" VerticalAlignment="Center" Width="140" />
-                            <TextBlock x:Name="PreviewSecondsText" DockPanel.Dock="Right" Width="44" VerticalAlignment="Center" TextAlignment="Right"
-                                       Foreground="{StaticResource Text2Brush}" />
-                            <Slider x:Name="PreviewSeconds" Minimum="2" Maximum="30" IsSnapToTickEnabled="True" TickFrequency="1"
-                                    VerticalAlignment="Center" ValueChanged="PreviewSeconds_Changed" />
-                        </DockPanel>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
-
-            <TextBlock Text="OUTPUT" Style="{StaticResource Section}" />
-            <Border Style="{StaticResource Card}">
-                <StackPanel>
-                    <TextBlock Text="Folder" Style="{StaticResource FieldLabel}" />
-                    <DockPanel>
-                        <Button DockPanel.Dock="Right" Content="Open" Margin="8,0,0,0" Click="OpenFolder_Click" />
-                        <Button DockPanel.Dock="Right" Content="Browse" Margin="8,0,0,0" Click="Browse_Click" />
-                        <Grid>
-                            <TextBox x:Name="OutputDirectory" Style="{StaticResource FolderBox}" />
-                            <Path Style="{StaticResource FolderBoxIcon}" />
-                        </Grid>
-                    </DockPanel>
-
-                    <TextBlock Text="File name" Style="{StaticResource FieldLabel}" Margin="0,18,0,8" />
-                    <TextBox x:Name="FileNamePattern" TextChanged="Pattern_Changed" FontFamily="Cascadia Mono, Consolas" />
-                    <TextBlock x:Name="PatternPreview" Style="{StaticResource Hint}" Margin="2,8,0,0" Foreground="{StaticResource AccentTextBrush}" />
-                    <TextBlock x:Name="PatternHelp" Style="{StaticResource Hint}" Margin="2,2,0,0" />
-
-                    <Grid Margin="0,18,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Margin="0,0,28,0">
-                            <TextBlock Text="Format" Style="{StaticResource FieldLabel}" />
-                            <ComboBox x:Name="ImageFormat" Width="160" SelectionChanged="Format_Changed">
-                                <ComboBoxItem Content="PNG - lossless" />
-                                <ComboBoxItem Content="JPEG - smaller" />
-                            </ComboBox>
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" x:Name="QualityPanel">
-                            <DockPanel Margin="0,0,0,8">
-                                <TextBlock Text="JPEG quality" FontWeight="SemiBold" />
-                                <TextBlock x:Name="QualityText" DockPanel.Dock="Right" HorizontalAlignment="Right" Foreground="{StaticResource Text2Brush}" />
-                            </DockPanel>
-                            <Slider x:Name="JpegQuality" Minimum="40" Maximum="100" IsSnapToTickEnabled="True" TickFrequency="1"
-                                    ValueChanged="Quality_Changed" Margin="0,6,0,0" />
-                        </StackPanel>
-                    </Grid>
-                </StackPanel>
-            </Border>
-
-            <TextBlock Text="SHARING" Style="{StaticResource Section}" />
-            <Border Style="{StaticResource Card}" Padding="18,6">
-                <StackPanel>
-                    <DockPanel Margin="0,12">
-                        <ComboBox x:Name="ShareExpiry" DockPanel.Dock="Right" Width="230" Margin="20,0,0,0" VerticalAlignment="Center">
-                            <ComboBoxItem Content="1 hour" Tag="1" />
-                            <ComboBoxItem Content="1 day" Tag="24" />
-                            <ComboBoxItem Content="1 week" Tag="168" />
-                        </ComboBox>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Links expire after" />
-                            <TextBlock Style="{StaticResource Hint}" TextWrapping="Wrap"
-                                       Text="Get link uploads a capture and copies a short link to it. Nothing is uploaded otherwise." />
-                        </StackPanel>
-                    </DockPanel>
-                    <Border Style="{StaticResource RowDivider}" />
-                    <DockPanel Margin="0,12">
-                        <ComboBox x:Name="ShareServerKind" DockPanel.Dock="Right" Width="230" Margin="20,0,0,0" VerticalAlignment="Center"
-                                  SelectionChanged="ShareServerKind_Changed">
-                            <ComboBoxItem Content="Lumina's share server" />
-                            <ComboBoxItem Content="My own server" />
-                        </ComboBox>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Where files go" />
-                            <TextBlock x:Name="ShareServerHint" Style="{StaticResource Hint}" TextWrapping="Wrap" />
-                        </StackPanel>
-                    </DockPanel>
-                    <StackPanel x:Name="OwnServerPanel" Margin="0,0,0,14">
-                        <TextBlock Text="Server address" Style="{StaticResource FieldLabel}" />
-                        <TextBox x:Name="ShareServer" />
-                        <TextBlock Text="Upload token (if your server needs one)" Style="{StaticResource FieldLabel}" Margin="0,14,0,8" />
-                        <PasswordBox x:Name="ShareToken" PasswordChanged="ShareToken_Changed" />
-                        <TextBlock Style="{StaticResource Hint}" Margin="2,8,0,0" TextWrapping="Wrap">
-                            Run your own copy on Cloudflare's free tier with the <Hyperlink Click="ShareGuide_Click">setup guide</Hyperlink>.
-                        </TextBlock>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
-
-            <TextBlock Text="GENERAL" Style="{StaticResource Section}" />
-            <Border Style="{StaticResource Card}" Padding="18,6">
-                <StackPanel>
-                    <CheckBox x:Name="StartWithWindows"><TextBlock Text="Start Lumina when you sign in" /></CheckBox>
-                    <Border Style="{StaticResource RowDivider}" />
-                    <CheckBox x:Name="AutoUpdate">
-                        <StackPanel>
-                            <TextBlock Text="Keep Lumina up to date" />
-                            <TextBlock Style="{StaticResource Hint}" Text="Downloads new versions in the background and restarts into them when Lumina isn't in use." />
-                        </StackPanel>
-                    </CheckBox>
-                </StackPanel>
-            </Border>
-
-            <TextBlock Text="ABOUT" Style="{StaticResource Section}" />
-            <Border Style="{StaticResource Card}">
-                <StackPanel>
-                    <DockPanel>
-                        <Button x:Name="UpdateButton" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="12,0,0,0" Click="UpdateButton_Click" />
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock x:Name="VersionText" FontWeight="SemiBold" />
-                            <TextBlock x:Name="UpdateStatus" Style="{StaticResource Hint}" />
-                        </StackPanel>
-                    </DockPanel>
-                    <TextBlock Style="{StaticResource Hint}" Margin="0,8,0,0">
-                        Data folder: <Hyperlink Click="DataFolder_Click"><Run x:Name="DataFolderText" /></Hyperlink>
-                    </TextBlock>
-                </StackPanel>
-            </Border>
+        <!-- Sections, and a search across all of them -->
+        <StackPanel Grid.Column="0" Margin="16,4,16,0">
+            <Grid Margin="0,0,0,12">
+                <!-- The theme applies Padding twice (template margin and text view), so these are half the real insets. -->
+                <TextBox x:Name="SearchBox" Padding="16,3,10,3" TextChanged="SearchBox_TextChanged" />
+                <Path Style="{StaticResource Icon}" Data="{StaticResource IconSearch}" Stroke="{DynamicResource Text3Brush}"
+                      HorizontalAlignment="Left" VerticalAlignment="Center" Margin="11,0,0,0" IsHitTestVisible="False">
+                    <Path.LayoutTransform>
+                        <ScaleTransform ScaleX="0.66" ScaleY="0.66" />
+                    </Path.LayoutTransform>
+                </Path>
+                <!-- Starts a few px past where typed text (and the caret) begins, so the blinking caret never sits on the first letter. -->
+                <TextBlock x:Name="SearchPlaceholder" Text="Find a setting" Foreground="{DynamicResource Text3Brush}"
+                           VerticalAlignment="Center" Margin="38,0,10,0" IsHitTestVisible="False" />
+            </Grid>
+            <StackPanel x:Name="Nav">
+                <RadioButton Style="{StaticResource NavItem}" Content="Shortcuts" Tag="Shortcuts" Checked="Nav_Checked" />
+                <RadioButton Style="{StaticResource NavItem}" Content="Capture" Tag="Capture" Checked="Nav_Checked" />
+                <RadioButton Style="{StaticResource NavItem}" Content="Recording" Tag="Recording" Checked="Nav_Checked" />
+                <RadioButton Style="{StaticResource NavItem}" Content="After capture" Tag="AfterCapture" Checked="Nav_Checked" />
+                <RadioButton Style="{StaticResource NavItem}" Content="Output" Tag="Output" Checked="Nav_Checked" />
+                <RadioButton Style="{StaticResource NavItem}" Content="Sharing" Tag="Sharing" Checked="Nav_Checked" />
+                <RadioButton Style="{StaticResource NavItem}" Content="Appearance" Tag="Appearance" Checked="Nav_Checked" />
+                <RadioButton Style="{StaticResource NavItem}" Content="General" Tag="General" Checked="Nav_Checked" />
+                <RadioButton Style="{StaticResource NavItem}" Content="About" Tag="About" Checked="Nav_Checked" />
+            </StackPanel>
         </StackPanel>
-    </ScrollViewer>
+
+        <ScrollViewer x:Name="PageScroller" Grid.Column="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel x:Name="Pages" Margin="8,4,32,32">
+
+                <!-- ============ Shortcuts ============ -->
+                <StackPanel x:Name="ShortcutsPage" Tag="Shortcuts">
+                    <TextBlock Text="Shortcuts" Style="{StaticResource PageTitle}" />
+                    <StackPanel Tag="group">
+                        <TextBlock Text="Capture from anywhere" Style="{StaticResource SettingsGroupTitle}" />
+                        <Border Style="{StaticResource SettingsCard}" Padding="18,8">
+                            <v:ShortcutEditor />
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- ============ Capture ============ -->
+                <StackPanel x:Name="CapturePage" Tag="Capture">
+                    <TextBlock Text="Capture" Style="{StaticResource PageTitle}" />
+                    <StackPanel Tag="group">
+                        <TextBlock Text="While selecting" Style="{StaticResource SettingsGroupTitle}" />
+                        <Border Style="{StaticResource SettingsCard}">
+                            <StackPanel>
+                                <Border Style="{StaticResource SettingsRow}">
+                                    <CheckBox x:Name="ShowMagnifier">
+                                        <StackPanel>
+                                            <TextBlock Text="Magnifier" Style="{StaticResource SettingsRowTitle}" />
+                                            <TextBlock Style="{StaticResource SettingsHint}" Text="Zoomed pixels, coordinates, and the color under the cursor." />
+                                        </StackPanel>
+                                    </CheckBox>
+                                </Border>
+                                <Border Style="{StaticResource SettingsRow}">
+                                    <CheckBox x:Name="CaptureCursor">
+                                        <TextBlock Text="Include the mouse pointer" Style="{StaticResource SettingsRowTitle}" />
+                                    </CheckBox>
+                                </Border>
+                                <Border Style="{StaticResource SettingsRow}">
+                                    <CheckBox x:Name="HideWindows">
+                                        <StackPanel>
+                                            <TextBlock Text="Hide Lumina while capturing" Style="{StaticResource SettingsRowTitle}" />
+                                            <TextBlock Style="{StaticResource SettingsHint}" Text="Keeps Lumina's own windows out of the shot. Turn off to capture them too." />
+                                        </StackPanel>
+                                    </CheckBox>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- ============ Recording ============ -->
+                <StackPanel x:Name="RecordingPage" Tag="Recording">
+                    <TextBlock Text="Recording" Style="{StaticResource PageTitle}" />
+                    <StackPanel Tag="group">
+                        <TextBlock Text="Video" Style="{StaticResource SettingsGroupTitle}" />
+                        <Border Style="{StaticResource SettingsCard}">
+                            <StackPanel>
+                                <Border Style="{StaticResource SettingsRow}">
+                                    <DockPanel>
+                                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="20,0,0,0">
+                                            <Button x:Name="FfmpegDownload" Style="{StaticResource AccentButton}" Content="Download" Margin="8,0,0,0" Click="FfmpegDownload_Click" />
+                                            <Button x:Name="FfmpegBrowse" Content="Browse" Margin="8,0,0,0" Click="FfmpegBrowse_Click" ToolTip="Use an ffmpeg.exe you already have" />
+                                            <Button x:Name="FfmpegReset" Content="Reset" Margin="8,0,0,0" Click="FfmpegReset_Click" ToolTip="Stop using your own ffmpeg.exe" />
+                                        </StackPanel>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="FFmpeg" Style="{StaticResource SettingsRowTitle}" />
+                                            <TextBlock x:Name="FfmpegStatus" Style="{StaticResource SettingsHint}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </DockPanel>
+                                </Border>
+                                <Border Style="{StaticResource SettingsRow}">
+                                    <DockPanel>
+                                        <ComboBox x:Name="RecordingFps" Style="{StaticResource SettingsPick}">
+                                            <ComboBoxItem Content="30 fps" Tag="30" />
+                                            <ComboBoxItem Content="60 fps" Tag="60" />
+                                            <ComboBoxItem Content="120 fps" Tag="120" />
+                                            <ComboBoxItem Content="144 fps" Tag="144" />
+                                        </ComboBox>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="Frame rate" Style="{StaticResource SettingsRowTitle}" />
+                                            <TextBlock Style="{StaticResource SettingsHint}" Text="Never more than the monitor's refresh rate." />
+                                        </StackPanel>
+                                    </DockPanel>
+                                </Border>
+                                <Border Style="{StaticResource SettingsRow}">
+                                    <DockPanel>
+                                        <ComboBox x:Name="RecordingCountdown" Style="{StaticResource SettingsPick}">
+                                            <ComboBoxItem Content="None" Tag="0" />
+                                            <ComboBoxItem Content="3 seconds" Tag="3" />
+                                            <ComboBoxItem Content="5 seconds" Tag="5" />
+                                        </ComboBox>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="Countdown" Style="{StaticResource SettingsRowTitle}" />
+                                            <TextBlock Style="{StaticResource SettingsHint}" Text="Before the recording starts." />
+                                        </StackPanel>
+                                    </DockPanel>
+                                </Border>
+                                <Border Style="{StaticResource SettingsRow}">
+                                    <CheckBox x:Name="RecordCursor">
+                                        <TextBlock Text="Show the mouse pointer in recordings" Style="{StaticResource SettingsRowTitle}" />
+                                    </CheckBox>
+                                </Border>
+                                <Border Style="{StaticResource SettingsRow}">
+                                    <CheckBox x:Name="HardwareEncoding">
+                                        <StackPanel>
+                                            <TextBlock Text="Use the graphics card to encode" Style="{StaticResource SettingsRowTitle}" />
+                                            <TextBlock Style="{StaticResource SettingsHint}" Text="Lighter on the CPU when your GPU supports it (NVIDIA, Intel or AMD)." />
+                                        </StackPanel>
+                                    </CheckBox>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <StackPanel Tag="group">
+                        <TextBlock Text="Sound" Style="{StaticResource SettingsGroupTitle}" />
+                        <Border Style="{StaticResource SettingsCard}">
+                            <StackPanel>
+                                <Border Style="{StaticResource SettingsRow}">
+                                    <CheckBox x:Name="RecordSystemAudio" Click="AudioCheck_Click">
+                                        <StackPanel>
+                                            <TextBlock Text="System audio" Style="{StaticResource SettingsRowTitle}" />
+                                            <TextBlock Style="{StaticResource SettingsHint}" Text="Whatever plays through this output." />
+                                        </StackPanel>
+                                    </CheckBox>
+                                </Border>
+                                <Border x:Name="SystemDeviceRow" Style="{StaticResource SettingsRow}">
+                                    <DockPanel>
+                                        <ComboBox x:Name="SystemDevice" Style="{StaticResource SettingsPick}" />
+                                        <TextBlock Text="Output device" Style="{StaticResource SettingsRowTitle}" VerticalAlignment="Center" Foreground="{DynamicResource Text2Brush}" />
+                                    </DockPanel>
+                                </Border>
+                                <Border Style="{StaticResource SettingsRow}">
+                                    <CheckBox x:Name="RecordMicrophone" Click="AudioCheck_Click">
+                                        <StackPanel>
+                                            <TextBlock Text="Microphone" Style="{StaticResource SettingsRowTitle}" />
+                                            <TextBlock Style="{StaticResource SettingsHint}" Text="Your voice, from this input." />
+                                        </StackPanel>
+                                    </CheckBox>
+                                </Border>
+                                <Border x:Name="MicDeviceRow" Style="{StaticResource SettingsRow}">
+                                    <DockPanel>
+                                        <ComboBox x:Name="MicDevice" Style="{StaticResource SettingsPick}" />
+                                        <TextBlock Text="Input device" Style="{StaticResource SettingsRowTitle}" VerticalAlignment="Center" Foreground="{DynamicResource Text2Brush}" />
+                                    </DockPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <StackPanel Tag="group">
+                        <TextBlock Text="Files" Style="{StaticResource SettingsGroupTitle}" />
+                        <Border Style="{StaticResource SettingsCard}">
+                            <StackPanel>
+                                <Border Style="{StaticResource SettingsRow}">
+                                    <StackPanel>
+                                        <TextBlock Text="Recordings folder" Style="{StaticResource SettingsRowTitle}" Margin="0,0,0,8" />
+                                        <DockPanel>
+                                            <Button DockPanel.Dock="Right" Content="Open" Margin="8,0,0,0" Click="OpenRecordingsFolder_Click" />
+                                            <Button DockPanel.Dock="Right" Content="Browse" Margin="8,0,0,0" Click="BrowseRecordings_Click" />
+                                            <Grid>
+                                                <TextBox x:Name="RecordingsDirectory" Style="{StaticResource FolderBox}" />
+                                                <Path Style="{StaticResource FolderBoxIcon}" />
+                                            </Grid>
+                                        </DockPanel>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- ============ After capture ============ -->
+                <StackPanel x:Name="AfterCapturePage" Tag="AfterCapture">
+                    <TextBlock Text="After capture" Style="{StaticResource PageTitle}" />
+                    <StackPanel Tag="group">
+                        <TextBlock Text="Every capture" Style="{StaticResource SettingsGroupTitle}" />
+                        <Border Style="{StaticResource SettingsCard}">
+                            <StackPanel>
+                                <Border Style="{StaticResource SettingsRow}">
+                                    <CheckBox x:Name="CopyToClipboard">
+                                        <StackPanel>
+                                            <TextBlock Text="Copy to clipboard" Style="{StaticResource SettingsRowTitle}" />
+                                            <TextBlock Style="{StaticResource SettingsHint}" Text="Screenshots, recordings and exported clips, ready to paste anywhere." />
+                                        </StackPanel>
+                                    </CheckBox>
+                                </Border>
+                                <Border Style="{StaticResource SettingsRow}">
+                                    <CheckBox x:Name="AutoSave">
+                                        <StackPanel>
+                                            <TextBlock Text="Save screenshots to the output folder" Style="{StaticResource SettingsRowTitle}" />
+                                            <TextBlock Style="{StaticResource SettingsHint}" Text="Recordings are always saved, to the recordings folder." />
+                                        </StackPanel>
+                                    </CheckBox>
+                                </Border>
+                                <Border Style="{StaticResource SettingsRow}">
+                                    <DockPanel>
+                                        <ComboBox x:Name="AfterScreenshot" Style="{StaticResource SettingsPick}" SelectionChanged="AfterScreenshot_Changed">
+                                            <ComboBoxItem Content="Show a floating preview" Tag="preview" />
+                                            <ComboBoxItem Content="Open the markup editor" Tag="editor" />
+                                            <ComboBoxItem Content="Nothing" Tag="none" />
+                                        </ComboBox>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="After a screenshot" Style="{StaticResource SettingsRowTitle}" />
+                                            <TextBlock Style="{StaticResource SettingsHint}" Text="Recordings always open in the trim editor." />
+                                        </StackPanel>
+                                    </DockPanel>
+                                </Border>
+                                <Border x:Name="PreviewSecondsRow" Style="{StaticResource SettingsRow}">
+                                    <DockPanel>
+                                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Width="240" Margin="20,0,0,0" VerticalAlignment="Center">
+                                            <Slider x:Name="PreviewSeconds" Width="190" Minimum="2" Maximum="30" IsSnapToTickEnabled="True" TickFrequency="1"
+                                                    VerticalAlignment="Center" ValueChanged="PreviewSeconds_Changed" />
+                                            <TextBlock x:Name="PreviewSecondsText" Width="46" VerticalAlignment="Center" TextAlignment="Right"
+                                                       Foreground="{DynamicResource Text2Brush}" />
+                                        </StackPanel>
+                                        <TextBlock Text="Preview stays for" Style="{StaticResource SettingsRowTitle}" VerticalAlignment="Center" />
+                                    </DockPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- ============ Output ============ -->
+                <StackPanel x:Name="OutputPage" Tag="Output">
+                    <TextBlock Text="Output" Style="{StaticResource PageTitle}" />
+                    <StackPanel Tag="group">
+                        <TextBlock Text="Screenshots" Style="{StaticResource SettingsGroupTitle}" />
+                        <Border Style="{StaticResource SettingsCard}">
+                            <StackPanel>
+                                <Border Style="{StaticResource SettingsRow}">
+                                    <StackPanel>
+                                        <TextBlock Text="Folder" Style="{StaticResource SettingsRowTitle}" Margin="0,0,0,8" />
+                                        <DockPanel>
+                                            <Button DockPanel.Dock="Right" Content="Open" Margin="8,0,0,0" Click="OpenFolder_Click" />
+                                            <Button DockPanel.Dock="Right" Content="Browse" Margin="8,0,0,0" Click="Browse_Click" />
+                                            <Grid>
+                                                <TextBox x:Name="OutputDirectory" Style="{StaticResource FolderBox}" />
+                                                <Path Style="{StaticResource FolderBoxIcon}" />
+                                            </Grid>
+                                        </DockPanel>
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource SettingsRow}">
+                                    <StackPanel>
+                                        <TextBlock Text="File name" Style="{StaticResource SettingsRowTitle}" Margin="0,0,0,8" />
+                                        <TextBox x:Name="FileNamePattern" TextChanged="Pattern_Changed" FontFamily="Cascadia Mono, Consolas" />
+                                        <TextBlock x:Name="PatternPreview" Style="{StaticResource SettingsHint}" Margin="2,8,0,0" Foreground="{DynamicResource AccentTextBrush}" />
+                                        <TextBlock x:Name="PatternHelp" Style="{StaticResource SettingsHint}" Margin="2,2,0,0" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource SettingsRow}">
+                                    <DockPanel>
+                                        <ComboBox x:Name="ImageFormat" Style="{StaticResource SettingsPick}" SelectionChanged="Format_Changed">
+                                            <ComboBoxItem Content="PNG - lossless" />
+                                            <ComboBoxItem Content="JPEG - smaller" />
+                                        </ComboBox>
+                                        <TextBlock Text="Format" Style="{StaticResource SettingsRowTitle}" VerticalAlignment="Center" />
+                                    </DockPanel>
+                                </Border>
+                                <Border x:Name="QualityPanel" Style="{StaticResource SettingsRow}">
+                                    <DockPanel>
+                                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Width="240" Margin="20,0,0,0" VerticalAlignment="Center">
+                                            <Slider x:Name="JpegQuality" Width="190" Minimum="40" Maximum="100" IsSnapToTickEnabled="True" TickFrequency="1"
+                                                    VerticalAlignment="Center" ValueChanged="Quality_Changed" />
+                                            <TextBlock x:Name="QualityText" Width="46" VerticalAlignment="Center" TextAlignment="Right" Foreground="{DynamicResource Text2Brush}" />
+                                        </StackPanel>
+                                        <TextBlock Text="JPEG quality" Style="{StaticResource SettingsRowTitle}" VerticalAlignment="Center" />
+                                    </DockPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- ============ Sharing ============ -->
+                <StackPanel x:Name="SharingPage" Tag="Sharing">
+                    <TextBlock Text="Sharing" Style="{StaticResource PageTitle}" />
+                    <StackPanel Tag="group">
+                        <TextBlock Text="Get link" Style="{StaticResource SettingsGroupTitle}" />
+                        <Border Style="{StaticResource SettingsCard}">
+                            <StackPanel>
+                                <Border Style="{StaticResource SettingsRow}">
+                                    <DockPanel>
+                                        <ComboBox x:Name="ShareExpiry" Style="{StaticResource SettingsPick}">
+                                            <ComboBoxItem Content="1 hour" Tag="1" />
+                                            <ComboBoxItem Content="1 day" Tag="24" />
+                                            <ComboBoxItem Content="1 week" Tag="168" />
+                                        </ComboBox>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="Links expire after" Style="{StaticResource SettingsRowTitle}" />
+                                            <TextBlock Style="{StaticResource SettingsHint}"
+                                                       Text="Get link uploads a capture and copies a short link to it. Nothing is uploaded otherwise." />
+                                        </StackPanel>
+                                    </DockPanel>
+                                </Border>
+                                <Border Style="{StaticResource SettingsRow}">
+                                    <DockPanel>
+                                        <ComboBox x:Name="ShareServerKind" Style="{StaticResource SettingsPick}" SelectionChanged="ShareServerKind_Changed">
+                                            <ComboBoxItem Content="Lumina's share server" />
+                                            <ComboBoxItem Content="My own server" />
+                                        </ComboBox>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="Where files go" Style="{StaticResource SettingsRowTitle}" />
+                                            <TextBlock x:Name="ShareServerHint" Style="{StaticResource SettingsHint}" />
+                                        </StackPanel>
+                                    </DockPanel>
+                                </Border>
+                                <Border x:Name="OwnServerPanel" Style="{StaticResource SettingsRow}">
+                                    <StackPanel>
+                                        <TextBlock Text="Server address" Style="{StaticResource SettingsRowTitle}" Margin="0,0,0,8" />
+                                        <TextBox x:Name="ShareServer" />
+                                        <TextBlock Text="Upload token (if your server needs one)" Style="{StaticResource SettingsRowTitle}" Margin="0,14,0,8" />
+                                        <PasswordBox x:Name="ShareToken" PasswordChanged="ShareToken_Changed" />
+                                        <TextBlock Style="{StaticResource SettingsHint}" Margin="2,8,0,0">
+                                            Run your own copy on Cloudflare's free tier with the <Hyperlink Click="ShareGuide_Click">setup guide</Hyperlink>.
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- ============ Appearance ============ -->
+                <StackPanel x:Name="AppearancePage" Tag="Appearance">
+                    <TextBlock Text="Appearance" Style="{StaticResource PageTitle}" />
+                    <v:AppearancePanel x:Name="Appearance" />
+                </StackPanel>
+
+                <!-- ============ General ============ -->
+                <StackPanel x:Name="GeneralPage" Tag="General">
+                    <TextBlock Text="General" Style="{StaticResource PageTitle}" />
+                    <StackPanel Tag="group">
+                        <TextBlock Text="Startup and updates" Style="{StaticResource SettingsGroupTitle}" />
+                        <Border Style="{StaticResource SettingsCard}">
+                            <StackPanel>
+                                <Border Style="{StaticResource SettingsRow}">
+                                    <CheckBox x:Name="StartWithWindows">
+                                        <TextBlock Text="Start Lumina when you sign in" Style="{StaticResource SettingsRowTitle}" />
+                                    </CheckBox>
+                                </Border>
+                                <Border Style="{StaticResource SettingsRow}">
+                                    <CheckBox x:Name="AutoUpdate">
+                                        <StackPanel>
+                                            <TextBlock Text="Keep Lumina up to date" Style="{StaticResource SettingsRowTitle}" />
+                                            <TextBlock Style="{StaticResource SettingsHint}" Text="Downloads new versions in the background and restarts into them when Lumina isn't in use." />
+                                        </StackPanel>
+                                    </CheckBox>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- ============ About ============ -->
+                <StackPanel x:Name="AboutPage" Tag="About">
+                    <TextBlock Text="About" Style="{StaticResource PageTitle}" />
+                    <StackPanel Tag="group">
+                        <TextBlock Text="Version" Style="{StaticResource SettingsGroupTitle}" />
+                        <Border Style="{StaticResource SettingsCard}">
+                            <StackPanel>
+                                <Border Style="{StaticResource SettingsRow}">
+                                    <DockPanel>
+                                        <Button x:Name="UpdateButton" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="20,0,0,0" Click="UpdateButton_Click" />
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock x:Name="VersionText" Style="{StaticResource SettingsRowTitle}" />
+                                            <TextBlock x:Name="UpdateStatus" Style="{StaticResource SettingsHint}" />
+                                        </StackPanel>
+                                    </DockPanel>
+                                </Border>
+                                <Border Style="{StaticResource SettingsRow}">
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="Data folder" Style="{StaticResource SettingsRowTitle}" />
+                                        <TextBlock Style="{StaticResource SettingsHint}">
+                                            <Hyperlink Click="DataFolder_Click"><Run x:Name="DataFolderText" /></Hyperlink>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource SettingsRow}">
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="Fonts" Style="{StaticResource SettingsRowTitle}" />
+                                        <TextBlock Style="{StaticResource SettingsHint}"
+                                                   Text="Inter, Geist, Newsreader, Nunito and Pixelify Sans, used under the SIL Open Font License 1.1." />
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel x:Name="NoResults" Visibility="Collapsed" Margin="2,40,0,0">
+                    <TextBlock x:Name="NoResultsTitle" FontWeight="SemiBold" FontSize="14" />
+                    <TextBlock Text="Try another word, like folder, sound or color." Style="{StaticResource SettingsHint}" Margin="0,4,0,0" />
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
 </v:ChromeWindow>

@@ -3,11 +3,12 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
+using Lumina.Services;
 
 namespace Lumina.Views;
 
 /// <summary>
-/// Base for Lumina's main windows: draws its own Midnight title bar (via WindowChrome) while keeping
+/// Base for Lumina's main windows: draws its own themed title bar (via WindowChrome) while keeping
 /// native resizing, snapping, rounded corners and the DWM shadow.
 /// </summary>
 public class ChromeWindow : Window
@@ -26,6 +27,8 @@ public class ChromeWindow : Window
     {
         Style = (Style)Application.Current.FindResource("ChromeWindowStyle");
         SourceInitialized += (_, _) => ApplyDwmStyle();
+        Theme.Changed += ApplyDwmStyle;
+        Closed += (_, _) => Theme.Changed -= ApplyDwmStyle;
     }
 
     public override void OnApplyTemplate()
@@ -37,11 +40,16 @@ public class ChromeWindow : Window
         if (GetTemplateChild("PART_Close") is Button close) close.Click += (_, _) => Close();
     }
 
+    /// <summary>Dark or light frame, round corners, and a 1 px border in the theme's strong line color.</summary>
     private void ApplyDwmStyle()
     {
         var hwnd = new WindowInteropHelper(this).Handle;
-        int dark = 1, round = 2;
-        int border = 0x0040282A; // COLORREF (0x00BBGGRR) of #2A2840
+        if (hwnd == IntPtr.Zero) return;
+        var theme = Theme.Current;
+        var line = theme["StrokeStrong"];
+        // Square corners make square windows; small ones, the small Windows rounding.
+        int dark = theme.IsDark ? 1 : 0, round = theme.Corners == 0 ? 1 : theme.Corners <= 6 ? 3 : 2;
+        int border = line.R | (line.G << 8) | (line.B << 16); // COLORREF is 0x00BBGGRR
         DwmSetWindowAttribute(hwnd, 20, ref dark, sizeof(int));  // DWMWA_USE_IMMERSIVE_DARK_MODE
         DwmSetWindowAttribute(hwnd, 33, ref round, sizeof(int)); // DWMWA_WINDOW_CORNER_PREFERENCE = round
         DwmSetWindowAttribute(hwnd, 34, ref border, sizeof(int)); // DWMWA_BORDER_COLOR

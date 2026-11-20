@@ -63,7 +63,14 @@ A lightweight, modern screenshot and screen recording tool for Windows - a repla
 - PNG, JPEG, GIF and MP4 files up to 100 MB. The editors share what you see: unsaved markup, or the trimmed clip.
 - Works with **your own server**: the [share server](share-server/) is a small Cloudflare Worker you can run on Cloudflare's free tier, with an optional upload token. Lumina's own share server is coming soon; until then, Get link shows up once you've set yours in *Settings > Sharing*.
 
-<p align="center"><img src="docs/screenshots/settings.png" width="520" alt="Settings: shortcuts, capture options and recording with audio devices"></p>
+### Themes
+- **Six looks** in *Settings > Appearance*, each with its own colors, fonts, corners and depth: **Midnight** (the original violet), **Graphite** (flat and gray, Geist titles on a dot grid), **Paper** (light, with Newsreader serif titles), **Ember** (warm and round, Nunito, a glow on accent buttons), **Strider** (crimson and square, with pixel titles, thick outlines and ledged buttons) and **System** (follows Windows' light or dark mode and accent color).
+- **Change any part of a theme**: every color (with a readability check), the font, corners, line weight, depth (flat, soft, glow or blocky) and background pattern. Changes show in every window at once.
+- **Export and import** themes as small JSON files to share or keep.
+
+![Graphite, Paper, Ember and Strider themes on the home window](docs/screenshots/themes.png)
+
+<p align="center"><img src="docs/screenshots/settings.png" width="520" alt="Settings, Appearance: the six theme presets and their colors"></p>
 
 ## Install
 
@@ -145,8 +152,9 @@ src/Lumina/
   Editor/     markup document, annotations and the editing canvas
   Recording/  screen recorder, WASAPI audio capture, FFmpeg setup and the recording flow
   Services/   settings, output, clipboard, hotkeys, startup, updates, sharing, the library index and thumbnails
-  Views/      home, gallery, editor, settings, preview, dialogs and the motion helpers (Fx)
-  Themes/     the "Midnight" design system
+  Views/      home, gallery, editor, settings, appearance, preview, dialogs and the motion helpers (Fx)
+  Themes/     shared control styles; the colors, fonts and shapes come from Services/Theme.cs
+  Assets/     the app icon and the bundled theme fonts (SIL Open Font License, licenses beside them)
 installer/    the Inno Setup script for Lumina-<version>-setup.exe
 share-server/ the Cloudflare Worker behind Get link
 tools/        icon generator
@@ -162,6 +170,7 @@ tools/        icon generator
 - [x] Search the text inside screenshots (OCR)
 - [x] Optional short-link uploads (temporary, self-hosted storage)
 - [x] Installer
+- [x] Themes with custom colors, fonts and shapes
 
 ## Status
 
