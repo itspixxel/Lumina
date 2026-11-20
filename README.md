@@ -68,7 +68,9 @@ A lightweight, modern screenshot and screen recording tool for Windows - a repla
 - **Change any part of a theme**: every color (with a readability check), the font, corners, line weight, depth (flat, soft, glow or blocky) and background pattern. Changes show in every window at once.
 - **Export and import** themes as small JSON files to share or keep.
 
-<p align="center"><img src="docs/screenshots/settings.png" width="520" alt="Settings: shortcuts, capture options and recording with audio devices"></p>
+![Graphite, Paper, Ember and Strider themes on the home window](docs/screenshots/themes.png)
+
+<p align="center"><img src="docs/screenshots/settings.png" width="520" alt="Settings, Appearance: the six theme presets and their colors"></p>
 
 ## Install
 
