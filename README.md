@@ -32,7 +32,7 @@ A lightweight, modern screenshot and screen recording tool for Windows - a repla
 - Open any image file from the home window to mark it up.
 - Smooth zoom (Ctrl + scroll zooms around the cursor), fit-to-window and 1:1, full undo/redo.
 
-![The markup editor with a box, numbered steps, an arrow, text, a highlight and blurred emails](docs/screenshots/editor.png)
+![The markup editor with a box, numbered steps, an arrow, text, a highlight and pixelated emails](docs/screenshots/editor.png)
 
 ### Screen recording
 - **Win + Shift + R** (or the Record card / tray menu) picks a region, window or screen with the same overlay, then counts down and records.
@@ -68,9 +68,7 @@ A lightweight, modern screenshot and screen recording tool for Windows - a repla
 - **Change any part of a theme**: every color (with a readability check), the font, corners, line weight, depth (flat, soft, glow or blocky) and background pattern. Changes show in every window at once.
 - **Export and import** themes as small JSON files to share or keep.
 
-![The home window in five themes, stacked: Midnight, Graphite, Paper, Ember and Strider in front](docs/screenshots/themes.png)
-
-<p align="center"><img src="docs/screenshots/settings.png" width="520" alt="Settings, Appearance: the six theme presets and their colors"></p>
+<p align="center"><img src="docs/screenshots/themes.png" width="640" alt="Settings, Appearance: the six theme presets, Midnight, Graphite, Paper, Ember, Strider and System"></p>
 
 ## Install
 
