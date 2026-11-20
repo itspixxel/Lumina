@@ -45,6 +45,8 @@ public static class ClipboardService
     /// <summary>Puts a file on the clipboard, as Explorer's Copy does, so it pastes into chats and folders.</summary>
     public static bool CopyFile(string path) => Set(() => Clipboard.SetFileDropList(new StringCollection { path }));
 
+    public static bool CopyText(string text) => Set(() => Clipboard.SetText(text));
+
     private static bool Set(Action set)
     {
         for (int attempt = 0; attempt < 10; attempt++)

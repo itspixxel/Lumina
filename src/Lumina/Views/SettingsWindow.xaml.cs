@@ -40,6 +40,7 @@ public partial class SettingsWindow : ChromeWindow
         StartWithWindows.IsChecked = _s.StartWithWindows;
         AutoUpdate.IsChecked = _s.AutoUpdate;
         LoadRecording();
+        LoadSharing();
 
         PatternHelp.Text = "Tokens: " + FileNameFormatter.TokenHelp;
         VersionText.Text = $"Lumina {Updater.Current.ToString(3)}" + (AppPaths.IsPortable ? " (portable)" : "");
@@ -116,6 +117,7 @@ public partial class SettingsWindow : ChromeWindow
         _s.JpegQuality = (int)JpegQuality.Value;
 
         SaveRecording();
+        SaveSharing();
 
         bool startup = StartWithWindows.IsChecked == true;
         if (startup != _s.StartWithWindows) StartupService.Apply(startup);
@@ -126,6 +128,55 @@ public partial class SettingsWindow : ChromeWindow
         if (_s.OutputDirectory != before || _s.RecordingsDirectory != beforeRecordings)
             App.Instance.Controller.NotifySaved(); // refresh the home list
     }
+
+    // ---------- Sharing ----------
+
+    private void LoadSharing()
+    {
+        Select(ShareExpiry, ShareService.ExpiryHours.ToString());
+        bool own = ShareService.UsesOwnServer;
+        ShareServerKind.SelectedIndex = own ? 1 : 0;
+        ShareServer.Text = _s.ShareServer ?? "";
+        ShareToken.Password = _s.ShareToken ?? "";
+        if (ShareService.DefaultServer == null) ((ComboBoxItem)ShareServerKind.Items[0]).Content = "Lumina's server (coming soon)";
+        SyncSharing();
+    }
+
+    private void SaveSharing()
+    {
+        if (ShareExpiry.SelectedItem is ComboBoxItem { Tag: string hours } && int.TryParse(hours, out int h)) _s.ShareExpiryHours = h;
+        string address = ShareServer.Text.Trim();
+        if (ShareServerKind.SelectedIndex == 1 && address.Length > 0)
+        {
+            if (!address.Contains("://")) address = "https://" + address;
+            _s.ShareServer = address.TrimEnd('/');
+        }
+        else
+        {
+            _s.ShareServer = null;
+        }
+        _s.ShareToken = string.IsNullOrWhiteSpace(ShareToken.Password) ? null : ShareToken.Password.Trim();
+    }
+
+    private void SyncSharing()
+    {
+        bool own = ShareServerKind.SelectedIndex == 1;
+        OwnServerPanel.Visibility = own ? Visibility.Visible : Visibility.Collapsed;
+        ShareServerHint.Text = own
+            ? "Your own Lumina share server, set up below."
+            : ShareService.DefaultServer is { } server
+                ? $"Files go to {new Uri(server).Host} and are deleted when they expire."
+                : "Lumina's own server isn't live yet. Until then, Get link works with your own server.";
+    }
+
+    private void ShareServerKind_Changed(object sender, SelectionChangedEventArgs e)
+    {
+        if (OwnServerPanel != null) SyncSharing();
+    }
+
+    private void ShareToken_Changed(object sender, RoutedEventArgs e) => Changed(sender, e);
+
+    private void ShareGuide_Click(object sender, RoutedEventArgs e) => Updater.OpenPage(ShareService.SetupGuide);
 
     // ---------- Recording ----------
 

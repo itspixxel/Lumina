@@ -268,6 +268,37 @@
         </Setter>
     </Style>
 
+    <Style TargetType="PasswordBox">
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="Background" Value="{StaticResource RaisedBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource StrokeBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CaretBrush" Value="{StaticResource TextBrush}" />
+        <Setter Property="SelectionBrush" Value="{StaticResource AccentBrush}" />
+        <Setter Property="Padding" Value="10,7" />
+        <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="PasswordBox">
+                    <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="9">
+                        <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" Focusable="False"
+                                      HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource StrokeStrongBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- ============ Slider ============ -->
     <Style x:Key="SliderFill" TargetType="RepeatButton">
         <Setter Property="Focusable" Value="False" />

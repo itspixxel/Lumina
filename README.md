@@ -56,18 +56,26 @@ A lightweight, modern screenshot and screen recording tool for Windows - a repla
 - **Keyboard friendly**: arrow keys, Home / End and Page Up / Down move around (`Shift` to select a range), Space selects, Enter opens.
 - Multi-select (click the corner circle, or Ctrl / Shift + click), copy, rename (F2), reveal in Explorer and delete to the Recycle Bin (Shift + Delete deletes permanently).
 
+### Share with a link
+- **Get link** in the floating preview, the markup editor (`Ctrl + L`), the trim editor (`Ctrl + L`) and the gallery's right-click menu uploads the capture and copies a short link, ready to paste into a chat.
+- **Links expire on their own** after 1 hour, 1 day or 1 week (your choice in Settings), and can be deleted sooner from the gallery.
+- **Nothing is uploaded unless you ask.** The first time, Lumina explains where the file goes before uploading anything.
+- PNG, JPEG, GIF and MP4 files up to 100 MB. The editors share what you see: unsaved markup, or the trimmed clip.
+- Works with **your own server**: the [share server](share-server/) is a small Cloudflare Worker you can run on Cloudflare's free tier, with an optional upload token. Lumina's own share server is coming soon; until then, Get link shows up once you've set yours in *Settings > Sharing*.
+
 <p align="center"><img src="docs/screenshots/settings.png" width="520" alt="Settings: shortcuts, capture options and recording with audio devices"></p>
 
 ## Install
 
 Download the latest build from the [Releases](../../releases) page:
 
+- **`Lumina-<version>-setup.exe`** (recommended): installs Lumina for your account, with no admin prompt, and adds it to the Start menu. It can start Lumina when you sign in, and it uninstalls cleanly from *Settings > Apps*.
 - **`Lumina-<version>-win-x64.zip`**: self-contained, no install or runtime needed. Unzip anywhere and run `Lumina.exe`.
 - **`Lumina-<version>-win-x64-framework.zip`**: much smaller, but needs the [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0).
 
 From 0.3.2 on, Lumina keeps itself up to date: it downloads new releases in the background and restarts into them when it isn't in use (you can turn this off in Settings, under General).
 
-Lumina lives in the system tray. Settings are stored in `%AppData%\Lumina`. For a fully **portable** setup, create an empty file named `portable` next to `Lumina.exe` and everything will be kept in a `data` folder beside it.
+Lumina lives in the system tray. Settings are stored in `%AppData%\Lumina` (uninstalling asks whether to remove them too; your captures are never touched). For a fully **portable** setup, create an empty file named `portable` next to `Lumina.exe` and everything will be kept in a `data` folder beside it.
 
 > Windows SmartScreen may warn about an unrecognised app because the builds aren't code-signed yet. Choose *More info*, then *Run anyway*.
 
@@ -86,6 +94,7 @@ Lumina lives in the system tray. Settings are stored in `%AppData%\Lumina`. For 
 | Editor | `[` / `]` | Smaller / larger brush |
 | Editor | `Ctrl + Z` / `Ctrl + Y` | Undo / redo |
 | Editor | `Ctrl + C`, `Ctrl + S`, `Ctrl + Shift + S` | Copy, save, save as |
+| Editor | `Ctrl + L` | Get a link to share |
 | Editor | `Ctrl + E`, `Ctrl + Delete` | Show in folder, delete |
 | Editor | `Ctrl + 0` / `Ctrl + 1` / `Ctrl + scroll` | Fit, actual size, zoom |
 | Trim editor | `Space` | Play / pause |
@@ -93,6 +102,7 @@ Lumina lives in the system tray. Settings are stored in `%AppData%\Lumina`. For 
 | Trim editor | `I` / `O`, `Home` / `End` | Set trim start / end, jump to start / end |
 | Trim editor | `Ctrl + C`, `Ctrl + S`, `Ctrl + Shift + S` | Copy the video, save the trim, save as |
 | Trim editor | `Ctrl + G`, `Ctrl + E` | Export a GIF, show in folder |
+| Trim editor | `Ctrl + L` | Get a link to share |
 | Trim editor | `M`, `R`, `Delete` | Sound on / off (the microphone, when it has its own track), reset the trim, delete |
 | Home | `1` to `5` | Region / Window / Screen / Freeform / Record |
 | Home | `Ctrl + O`, `Ctrl + ,`, `Ctrl + E`, `F5` | Open an image, settings, open folder, refresh |
@@ -118,6 +128,15 @@ To produce a self-contained single-file build:
 dotnet publish src/Lumina -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish
 ```
 
+To build the installer, install [Inno Setup 6](https://jrsoftware.org/isinfo.php) (`winget install JRSoftware.InnoSetup`), publish the self-contained build to `publish/sc` and run:
+
+```bash
+dotnet publish src/Lumina -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o publish/sc
+iscc /DAppVersion=<version> installer/Lumina.iss
+```
+
+which writes `publish/Lumina-<version>-alpha-setup.exe`.
+
 ### Project layout
 
 ```
@@ -125,9 +144,11 @@ src/Lumina/
   Capture/    screen capture, the selection overlay and capture animations
   Editor/     markup document, annotations and the editing canvas
   Recording/  screen recorder, WASAPI audio capture, FFmpeg setup and the recording flow
-  Services/   settings, output, clipboard, hotkeys, startup, updates, the library index and thumbnails
+  Services/   settings, output, clipboard, hotkeys, startup, updates, sharing, the library index and thumbnails
   Views/      home, gallery, editor, settings, preview, dialogs and the motion helpers (Fx)
   Themes/     the "Midnight" design system
+installer/    the Inno Setup script for Lumina-<version>-setup.exe
+share-server/ the Cloudflare Worker behind Get link
 tools/        icon generator
 ```
 
@@ -139,8 +160,8 @@ tools/        icon generator
 - [x] Full gallery view with search
 - [x] Auto-update
 - [x] Search the text inside screenshots (OCR)
-- [ ] Optional short-link uploads (temporary, self-hosted storage)
-- [ ] Installer
+- [x] Optional short-link uploads (temporary, self-hosted storage)
+- [x] Installer
 
 ## Status
 

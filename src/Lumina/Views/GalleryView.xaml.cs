@@ -938,6 +938,20 @@ public partial class GalleryView : UserControl
                 ? Menus.Entry("Play and trim", "IconPlay", () => Open(one), "Enter")
                 : Menus.Entry("Edit", "IconPen", () => Open(one), "Enter"));
             menu.Items.Add(Menus.Entry(one.IsVideo ? "Copy video" : "Copy image", "IconCopy", () => CopyItems(targets), "Ctrl+C"));
+            if (ShareService.IsAvailable && ShareService.CanShare(one.Path))
+            {
+                if (ShareService.ActiveLink(one.Path) is { } link)
+                {
+                    var copy = Menus.Entry("Copy link", "IconLink", () => _ = ShareFlow.GetLinkAsync(Owner, one.Path, Toast));
+                    copy.ToolTip = $"{link.Url}, expires {ShareFlow.Remaining(link.ExpiresAt)}";
+                    menu.Items.Add(copy);
+                    menu.Items.Add(Menus.Entry("Delete link", "IconClose", () => _ = ShareFlow.DeleteLinkAsync(Owner, link, Toast)));
+                }
+                else
+                {
+                    menu.Items.Add(Menus.Entry("Get link", "IconLink", () => _ = ShareFlow.GetLinkAsync(Owner, one.Path, Toast)));
+                }
+            }
             menu.Items.Add(Menus.Entry("Rename", "IconText", () => StartRename(one), "F2"));
             menu.Items.Add(Menus.Entry("Show in folder", "IconFolder", () => OutputService.ShowInFolder(one.Path)));
             menu.Items.Add(new Separator());

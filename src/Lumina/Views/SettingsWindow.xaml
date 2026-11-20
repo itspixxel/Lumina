@@ -243,6 +243,45 @@
                 </StackPanel>
             </Border>
 
+            <TextBlock Text="SHARING" Style="{StaticResource Section}" />
+            <Border Style="{StaticResource Card}" Padding="18,6">
+                <StackPanel>
+                    <DockPanel Margin="0,12">
+                        <ComboBox x:Name="ShareExpiry" DockPanel.Dock="Right" Width="230" Margin="20,0,0,0" VerticalAlignment="Center">
+                            <ComboBoxItem Content="1 hour" Tag="1" />
+                            <ComboBoxItem Content="1 day" Tag="24" />
+                            <ComboBoxItem Content="1 week" Tag="168" />
+                        </ComboBox>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="Links expire after" />
+                            <TextBlock Style="{StaticResource Hint}" TextWrapping="Wrap"
+                                       Text="Get link uploads a capture and copies a short link to it. Nothing is uploaded otherwise." />
+                        </StackPanel>
+                    </DockPanel>
+                    <Border Style="{StaticResource RowDivider}" />
+                    <DockPanel Margin="0,12">
+                        <ComboBox x:Name="ShareServerKind" DockPanel.Dock="Right" Width="230" Margin="20,0,0,0" VerticalAlignment="Center"
+                                  SelectionChanged="ShareServerKind_Changed">
+                            <ComboBoxItem Content="Lumina's share server" />
+                            <ComboBoxItem Content="My own server" />
+                        </ComboBox>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="Where files go" />
+                            <TextBlock x:Name="ShareServerHint" Style="{StaticResource Hint}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </DockPanel>
+                    <StackPanel x:Name="OwnServerPanel" Margin="0,0,0,14">
+                        <TextBlock Text="Server address" Style="{StaticResource FieldLabel}" />
+                        <TextBox x:Name="ShareServer" />
+                        <TextBlock Text="Upload token (if your server needs one)" Style="{StaticResource FieldLabel}" Margin="0,14,0,8" />
+                        <PasswordBox x:Name="ShareToken" PasswordChanged="ShareToken_Changed" />
+                        <TextBlock Style="{StaticResource Hint}" Margin="2,8,0,0" TextWrapping="Wrap">
+                            Run your own copy on Cloudflare's free tier with the <Hyperlink Click="ShareGuide_Click">setup guide</Hyperlink>.
+                        </TextBlock>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
             <TextBlock Text="GENERAL" Style="{StaticResource Section}" />
             <Border Style="{StaticResource Card}" Padding="18,6">
                 <StackPanel>

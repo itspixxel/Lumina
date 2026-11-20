@@ -36,6 +36,7 @@ public partial class QuickPreviewWindow : Window
         _saveTask = saveTask;
         _appName = appName;
         Thumb.Source = image;
+        LinkButton.Visibility = ShareService.IsAvailable ? Visibility.Visible : Visibility.Collapsed;
 
         _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(Math.Clamp(App.Settings.PreviewSeconds, 2, 60)) };
         _timer.Tick += (_, _) => Dismiss();
@@ -177,6 +178,15 @@ public partial class QuickPreviewWindow : Window
         bool alreadySaved = _path != null;
         var path = await EnsureSavedAsync();
         if (path != null && alreadySaved) OutputService.ShowInFolder(path);
+    }
+
+    private async void Link_Click(object sender, RoutedEventArgs e)
+    {
+        // Sharing needs the file, so this saves it first if auto-save is off.
+        _timer.Stop();
+        var path = await EnsureSavedAsync();
+        if (path != null) await ShareFlow.GetLinkAsync(this, path, status: text => InfoText.Text = text);
+        if (!_closing && !IsMouseOver) _timer.Start();
     }
 
     private void Edit_Click(object sender, RoutedEventArgs e) => OpenEditor();

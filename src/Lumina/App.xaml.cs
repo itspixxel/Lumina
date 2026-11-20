@@ -13,6 +13,7 @@ public partial class App : Application
 {
     private Mutex? _singleInstance;
     private EventWaitHandle? _activateSignal;
+    private EventWaitHandle? _quitSignal;
     private TrayIcon? _tray;
     private KeyboardHook? _hook;
 
@@ -32,6 +33,14 @@ public partial class App : Application
         _singleInstance = new Mutex(true, @"Local\Lumina.SingleInstance", out bool isFirst);
         if (!isFirst && updated) isFirst = WaitForPreviousInstance(_singleInstance);
         _activateSignal = new EventWaitHandle(false, EventResetMode.AutoReset, @"Local\Lumina.Activate");
+        _quitSignal = new EventWaitHandle(false, EventResetMode.AutoReset, @"Local\Lumina.Quit");
+        if (e.Args.Contains("--quit"))
+        {
+            // Sent by the installer before it replaces or removes Lumina.exe.
+            if (!isFirst) _quitSignal.Set();
+            Shutdown();
+            return;
+        }
         if (!isFirst)
         {
             // Already running: bring the existing instance forward instead.
@@ -44,6 +53,11 @@ public partial class App : Application
             while (_activateSignal.WaitOne()) Dispatcher.BeginInvoke(ShowHome);
         })
         { IsBackground = true, Name = "Lumina.Activation" }.Start();
+        new Thread(() =>
+        {
+            if (_quitSignal.WaitOne()) Dispatcher.BeginInvoke(Quit);
+        })
+        { IsBackground = true, Name = "Lumina.Quit" }.Start();
 
         DispatcherUnhandledException += (_, args) =>
         {
@@ -53,6 +67,8 @@ public partial class App : Application
         };
 
         Settings = SettingsService.Load();
+        if (StartupService.Sync(Settings)) SettingsService.Save(Settings);
+        Installation.Sync();
 
         _tray = new TrayIcon();
         _hook = new KeyboardHook(Dispatcher);

@@ -211,5 +211,6 @@
                         Click="ClearFilters_Click" Visibility="Collapsed" />
             </StackPanel>
         </Grid>
+        <v:Toast x:Name="Toast" Grid.Row="1" VerticalAlignment="Bottom" Margin="24,0,24,20" />
     </Grid>
 </UserControl>

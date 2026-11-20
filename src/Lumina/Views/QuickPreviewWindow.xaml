@@ -50,6 +50,9 @@
                     <Button x:Name="SaveButton" Style="{StaticResource PreviewButton}" Click="Save_Click">
                         <Path x:Name="SaveIcon" Style="{StaticResource Icon}" Data="{StaticResource IconSave}" />
                     </Button>
+                    <Button x:Name="LinkButton" Style="{StaticResource PreviewButton}" Click="Link_Click" ToolTip="Get a link to share">
+                        <Path Style="{StaticResource Icon}" Data="{StaticResource IconLink}" />
+                    </Button>
                     <Button Style="{StaticResource PreviewButton}" Click="Edit_Click" ToolTip="Mark up">
                         <Path Style="{StaticResource Icon}" Data="{StaticResource IconPen}" />
                     </Button>
