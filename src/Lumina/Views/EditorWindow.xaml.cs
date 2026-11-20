@@ -33,6 +33,7 @@ public partial class EditorWindow : ChromeWindow
     private EditorWindow(EditorDocument doc, string? path, Task? pendingSave, Task<bool>? copied)
     {
         InitializeComponent();
+        LinkButton.Visibility = ShareService.IsAvailable ? Visibility.Visible : Visibility.Collapsed;
         _path = path;
         _pendingSave = pendingSave;
         _onDisk = path != null && pendingSave == null;
@@ -340,6 +341,37 @@ public partial class EditorWindow : ChromeWindow
         Flash(ok ? "Copied to clipboard" : "Clipboard is busy, try again");
     }
 
+    private async void Link_Click(object sender, RoutedEventArgs e) => await ShareAsync();
+
+    /// <summary>Shares what Copy would copy: the saved file when it's current, otherwise a render of the markup.</summary>
+    private async Task ShareAsync()
+    {
+        Canvas.CommitText();
+        string file;
+        if (_path != null && _onDisk && !Canvas.IsDirty)
+        {
+            file = _path;
+        }
+        else
+        {
+            // Unsaved changes are shared without touching the file on disk.
+            string dir = Path.Combine(AppPaths.TempDir, "share");
+            Directory.CreateDirectory(dir);
+            file = Path.Combine(dir, (_path != null ? Path.GetFileNameWithoutExtension(_path) : "Lumina capture") + ".png");
+            try
+            {
+                await OutputService.SaveAsync(Canvas.Doc.RenderFinal(), file);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Rendering for a share link");
+                Flash("Couldn't prepare the image, try again");
+                return;
+            }
+        }
+        await ShareFlow.GetLinkAsync(this, file, Toast);
+    }
+
     private async void Save_Click(object sender, RoutedEventArgs e) => await SaveAsync();
 
     private async Task<bool> SaveAsync()
@@ -591,6 +623,7 @@ public partial class EditorWindow : ChromeWindow
                 case Key.Z: Canvas.Undo(); break;
                 case Key.Y: Canvas.Redo(); break;
                 case Key.C: e.Handled = true; await CopyAsync(); return;
+                case Key.L: e.Handled = true; await ShareAsync(); return;
                 case Key.S: e.Handled = true; await SaveAsync(); return;
                 case Key.E: ShowInFolder(); break;
                 case Key.Delete: e.Handled = true; await DeleteAsync(); return;

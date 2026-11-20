@@ -85,6 +85,12 @@
                     <TextBlock Text="Copy" Margin="7,0,0,0" VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
+            <Button x:Name="LinkButton" Style="{StaticResource GhostButton}" Click="Link_Click" ToolTip="Upload and copy a link to share (Ctrl+L)" Padding="10,6" Margin="2,0,0,0">
+                <StackPanel Orientation="Horizontal">
+                    <Path Style="{StaticResource Icon}" Data="{StaticResource IconLink}" />
+                    <TextBlock Text="Get link" Margin="7,0,0,0" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
             <Button Style="{StaticResource GhostButton}" Click="SaveAs_Click" ToolTip="Save a copy somewhere else (Ctrl+Shift+S)" Padding="10,6" Margin="2,0">
                 <TextBlock Text="Save as..." VerticalAlignment="Center" />
             </Button>

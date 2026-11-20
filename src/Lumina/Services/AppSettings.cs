@@ -55,6 +55,16 @@ public sealed class AppSettings
     public string? MicrophoneDevice { get; set; }
     public bool HardwareEncoding { get; set; } = true;
 
+    // Sharing
+    /// <summary>How long share links last, in hours (one of ShareService.ExpiryChoices).</summary>
+    public int ShareExpiryHours { get; set; } = 24;
+    /// <summary>The user's own share server. Null uses Lumina's.</summary>
+    public string? ShareServer { get; set; }
+    /// <summary>Upload token for the user's own server, if it needs one.</summary>
+    public string? ShareToken { get; set; }
+    /// <summary>The user has seen, and agreed to, what sharing a link does.</summary>
+    public bool ShareConsent { get; set; }
+
     // General
     /// <summary>The welcome / recording setup card has been shown once.</summary>
     public bool SetupShown { get; set; }

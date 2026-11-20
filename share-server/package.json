@@ -1,0 +1,14 @@
+{
+  "name": "lumina-share",
+  "private": true,
+  "description": "Short-lived share links for Lumina, on Cloudflare Workers and R2",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "node test/smoke.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

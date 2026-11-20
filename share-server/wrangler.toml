@@ -1,0 +1,30 @@
+name = "lumina-share"
+main = "src/index.js"
+compatibility_date = "2025-10-01"
+
+# Where the files live. Create it once with: npx wrangler r2 bucket create lumina-share
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "lumina-share"
+
+# Removes expired files every hour.
+[triggers]
+crons = ["17 * * * *"]
+
+# At most 20 uploads a minute from one address.
+[[ratelimits]]
+name = "UPLOAD_LIMITER"
+namespace_id = "1001"
+simple = { limit = 20, period = 60 }
+
+[vars]
+MAX_UPLOAD_MB = "100"
+MAX_EXPIRY_HOURS = "168"
+# Shown on the home page so people can report a file. Leave empty to hide.
+ABUSE_CONTACT = ""
+# The address links are built from, for example "https://share.example.com". Empty uses the request's own address.
+PUBLIC_URL = ""
+
+# Secrets (set with npx wrangler secret put NAME, never written here):
+#   UPLOAD_TOKEN  when set, uploads need "Authorization: Bearer <token>" (use this for a private server)
+#   ADMIN_TOKEN   lets you delete any file by sending it as X-Delete-Key

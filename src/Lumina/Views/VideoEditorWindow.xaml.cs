@@ -40,6 +40,7 @@ public partial class VideoEditorWindow : ChromeWindow
     private VideoEditorWindow(string path)
     {
         InitializeComponent();
+        LinkButton.Visibility = ShareService.IsAvailable ? Visibility.Visible : Visibility.Collapsed;
         _path = path;
         UpdateTitle();
         Timeline.SeekRequested += t => Seek(t);
@@ -515,15 +516,27 @@ public partial class VideoEditorWindow : ChromeWindow
     /// <summary>Puts the clip on the clipboard as a file, ready to paste into chats or Explorer.</summary>
     private async Task CopyAsync()
     {
-        string file = _path;
-        if (IsModified)
-        {
-            string dir = Path.Combine(AppPaths.TempDir, "clips");
-            Directory.CreateDirectory(dir);
-            file = Path.Combine(dir, Path.GetFileNameWithoutExtension(_path) + "_clip.mp4");
-            if (!await RunAsync("Preparing clip...", () => ExportMp4Async(file))) return;
-        }
+        if (await PrepareClipAsync() is not { } file) return;
         Done(ClipboardService.CopyFile(file) ? "Copied to clipboard" : "Clipboard is busy, try again", null);
+    }
+
+    private async void Link_Click(object sender, RoutedEventArgs e) => await ShareAsync();
+
+    /// <summary>Uploads what Copy would copy and puts a link to it on the clipboard.</summary>
+    private async Task ShareAsync()
+    {
+        if (await PrepareClipAsync() is not { } file) return;
+        await ShareFlow.GetLinkAsync(this, file, Toast);
+    }
+
+    /// <summary>The recording itself, or with a trim or sound change pending, a temporary clip of it.</summary>
+    private async Task<string?> PrepareClipAsync()
+    {
+        if (!IsModified) return _path;
+        string dir = Path.Combine(AppPaths.TempDir, "clips");
+        Directory.CreateDirectory(dir);
+        string file = Path.Combine(dir, Path.GetFileNameWithoutExtension(_path) + "_clip.mp4");
+        return await RunAsync("Preparing clip...", () => ExportMp4Async(file)) ? file : null;
     }
 
     // ---------- UI ----------
@@ -713,6 +726,10 @@ public partial class VideoEditorWindow : ChromeWindow
             case Key.C when mods == ModifierKeys.Control:
                 e.Handled = true;
                 await CopyAsync();
+                return;
+            case Key.L when mods == ModifierKeys.Control:
+                e.Handled = true;
+                await ShareAsync();
                 return;
             case Key.S when mods == (ModifierKeys.Control | ModifierKeys.Shift):
                 SaveAs_Click(this, e);

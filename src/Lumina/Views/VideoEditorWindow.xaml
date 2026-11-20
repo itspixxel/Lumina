@@ -147,6 +147,12 @@
                         <TextBlock Text="Copy" />
                     </StackPanel>
                 </Button>
+                <Button x:Name="LinkButton" Margin="6,0,0,0" Click="Link_Click" ToolTip="Upload the clip and copy a link to share (Ctrl+L)">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Style="{StaticResource ChipIcon}" Data="{StaticResource IconLink}" />
+                        <TextBlock Text="Get link" />
+                    </StackPanel>
+                </Button>
                 <Button Margin="6,0,0,0" Click="SaveAs_Click" ToolTip="Save a copy as MP4 or GIF (Ctrl+Shift+S)">
                     <TextBlock Text="Save as..." />
                 </Button>
