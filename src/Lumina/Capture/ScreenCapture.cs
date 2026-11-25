@@ -162,6 +162,62 @@ public static class WindowFinder
         return list;
     }
 
+    /// <summary>
+    /// The front-most top-level window of another process whose title contains <paramref name="text"/>
+    /// (ignoring case). Minimized windows count, so they can be restored before recording.
+    /// </summary>
+    public static WindowInfo? FindByTitle(string text)
+    {
+        WindowInfo? found = null;
+        uint self = (uint)Environment.ProcessId;
+        EnumWindows((hwnd, _) =>
+        {
+            if (!IsWindowVisible(hwnd)) return true;
+            if (DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, out int cloaked, sizeof(int)) == 0 && cloaked != 0) return true;
+            GetWindowThreadProcessId(hwnd, out uint pid);
+            if (pid == self) return true;
+            string title = GetTitle(hwnd);
+            if (title.Length == 0 || !title.Contains(text, StringComparison.OrdinalIgnoreCase)) return true;
+            found = new WindowInfo { Handle = hwnd, Bounds = GetBounds(hwnd), Title = title, ProcessId = pid };
+            return false;
+        }, IntPtr.Zero);
+        return found;
+    }
+
+    /// <summary>A window's visible bounds in physical pixels, without the invisible resize border, clipped to the desktop.</summary>
+    public static Int32Rect GetBounds(IntPtr hwnd)
+    {
+        if (DwmGetWindowAttribute(hwnd, DWMWA_EXTENDED_FRAME_BOUNDS, out RECT r, Marshal.SizeOf<RECT>()) != 0)
+            GetWindowRect(hwnd, out r);
+        return RectUtil.Intersect(RectUtil.From(r), ScreenCapture.VirtualScreen);
+    }
+
+    /// <summary>
+    /// Restores a window if it's minimized and brings it to the front. Windows only lets the foreground app
+    /// hand focus over, so this borrows the foreground thread's input state for the switch. Best effort:
+    /// returns whether the window ended up in front.
+    /// </summary>
+    public static bool BringToFront(IntPtr hwnd)
+    {
+        if (IsIconic(hwnd)) ShowWindow(hwnd, SW_RESTORE);
+        if (GetForegroundWindow() == hwnd) return true;
+        if (SetForegroundWindow(hwnd) && GetForegroundWindow() == hwnd) return true;
+
+        uint target = GetWindowThreadProcessId(GetForegroundWindow(), out _);
+        uint self = GetCurrentThreadId();
+        bool attached = target != 0 && target != self && AttachThreadInput(self, target, true);
+        try
+        {
+            BringWindowToTop(hwnd);
+            SetForegroundWindow(hwnd);
+        }
+        finally
+        {
+            if (attached) AttachThreadInput(self, target, false);
+        }
+        return GetForegroundWindow() == hwnd;
+    }
+
     public static string? GetForegroundProcessName()
     {
         IntPtr hwnd = GetForegroundWindow();

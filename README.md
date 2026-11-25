@@ -43,6 +43,7 @@ A lightweight, modern screenshot and screen recording tool for Windows - a repla
 - **Trim editor** opens when you stop: drag the handles on the filmstrip, then save, save as MP4 or GIF, export a GIF at a chosen width, or copy the file.
 - **Separate sound tracks**: recordings with both system audio and the microphone keep each source on its own track, so the trim editor can mute either one before saving.
 - **Straight to the clipboard**: finished recordings and exported clips are copied as files, ready to paste into a chat or folder (follows the same *Copy to clipboard* setting as screenshots).
+- **Scriptable**: record a window, region or screen from the command line with no clicks and get the file's path back (see [Recording from the command line](#recording-from-the-command-line)).
 - Uses **FFmpeg**: Lumina downloads it for you on first run (about 115 MB, one click), or point it at your own `ffmpeg.exe` in Settings.
 
 ![The trim editor with a filmstrip timeline and trim handles](docs/screenshots/trim.png)
@@ -116,6 +117,37 @@ Lumina lives in the system tray. Settings are stored in `%AppData%\Lumina` (unin
 | Home, gallery | `Enter`, `Space`, `F2`, `Delete`, `Ctrl + C`, `Ctrl + A`, `Esc` | Open, select, rename, delete, copy, select all, clear selection |
 | Gallery | Type, or `Ctrl + F` | Search |
 | Gallery | `Esc` | Clear the search, then the filters |
+
+### Recording from the command line
+
+Scripts and tools can record without the overlay. Running `Lumina.exe --record` hands the request to the running Lumina (or starts one in the background), waits until the clip is saved, prints its full path and exits with `0`.
+
+```
+Lumina.exe --record --window "Notepad" --seconds 6 --no-editor
+```
+
+| Option | What it does |
+| --- | --- |
+| `--record` | Start a recording. Needs one of `--window`, `--region` or `--screen`. |
+| `--window "<text>"` | Record the front-most window whose title contains the text (case doesn't matter). It's restored and brought to the front first. |
+| `--region x,y,w,h` | Record this rectangle, in physical screen pixels. |
+| `--screen [n]` | Record the primary screen, or screen `n` counting from the left. |
+| `--seconds N` | Stop and save after `N` seconds of recording (decimals are fine). Without it, recording runs until `--stop` or the recording bar's stop button. |
+| `--stop` | Stop a recording started with `--record`. It prints the same path. |
+| `--no-countdown` | Start straight away instead of counting down. |
+| `--no-editor` | Don't open the trim editor or copy the clip to the clipboard. |
+| `--no-audio` | Record without sound. |
+| `--mic` | Include the microphone. Command line recordings leave it off by default; system audio follows your settings. |
+
+Frame rate, encoder, cursor and output folder come from your settings. On failure Lumina prints `Lumina: <reason>` to stderr and exits with `1` (or `2` when it can't reach a running Lumina, e.g. an older version that doesn't take commands). The last saved path is also written to `%AppData%\Lumina\last-recording.txt`.
+
+Lumina is a windowed app, so a shell only waits for it when it reads the output. Bash does that already; in PowerShell, pipe the output:
+
+```powershell
+$path = (& Lumina.exe --record --window "Notepad" --seconds 6 --no-editor | Out-String).Trim()
+```
+
+The request travels over a named pipe that only your user account can open, and only from this PC.
 
 ## Building from source
 

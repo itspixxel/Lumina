@@ -41,6 +41,18 @@ public partial class App : Application
             Shutdown();
             return;
         }
+        if (CommandChannel.IsCommand(e.Args))
+        {
+            // Scripted recording: hand the command to the running Lumina (starting one if needed) and wait.
+            if (isFirst)
+            {
+                _singleInstance.ReleaseMutex();
+                _singleInstance.Dispose();
+                _singleInstance = null;
+            }
+            Shutdown(CommandChannel.RunClient(e.Args, startIfNeeded: isFirst));
+            return;
+        }
         if (!isFirst)
         {
             // Already running: bring the existing instance forward instead.
@@ -80,6 +92,9 @@ public partial class App : Application
         };
         ApplyShortcuts();
         _hook.Start();
+        CommandChannel.StartServer(args => RecordCommand.Parse(args) is { } record
+            ? Recorder.RecordAsync(record)
+            : Recorder.StopScriptedAsync());
 
         if (!e.Args.Contains("--background")) ShowHome();
         if (!Settings.SetupShown)
