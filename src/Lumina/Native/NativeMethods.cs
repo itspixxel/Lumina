@@ -127,5 +127,20 @@ internal static class NativeMethods
     [DllImport("dwmapi.dll")] public static extern int DwmGetWindowAttribute(IntPtr hWnd, int attr, out RECT value, int size);
     [DllImport("dwmapi.dll")] public static extern int DwmGetWindowAttribute(IntPtr hWnd, int attr, out int value, int size);
 
+    public const int SW_RESTORE = 9;
+    public static readonly IntPtr HWND_TOP = IntPtr.Zero;
+    [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr hWnd, int cmd);
+    [DllImport("user32.dll")] public static extern bool BringWindowToTop(IntPtr hWnd);
+    [DllImport("user32.dll")] public static extern bool AttachThreadInput(uint attach, uint attachTo, bool on);
+
+    // Console output for the command line client (Lumina is a GUI app, so it has no console of its own).
+    public const int STD_OUTPUT_HANDLE = -11, STD_ERROR_HANDLE = -12, ATTACH_PARENT_PROCESS = -1;
+    public const uint FILE_TYPE_UNKNOWN = 0, GENERIC_WRITE = 0x40000000, FILE_SHARE_WRITE = 2, OPEN_EXISTING = 3;
+    [DllImport("kernel32.dll")] public static extern IntPtr GetStdHandle(int which);
+    [DllImport("kernel32.dll")] public static extern uint GetFileType(IntPtr handle);
+    [DllImport("kernel32.dll")] public static extern bool AttachConsole(int pid);
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    public static extern IntPtr CreateFile(string name, uint access, uint share, IntPtr security, uint disposition, uint flags, IntPtr template);
+
     public static bool IsKeyDown(int vk) => (GetAsyncKeyState(vk) & 0x8000) != 0;
 }
